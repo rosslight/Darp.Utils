@@ -4,10 +4,12 @@ using System.ComponentModel;
 
 /// <summary> A generic interface for a configuration file </summary>
 /// <typeparam name="TConfig">The type describing the underlying config</typeparam>
-public interface IConfigurationService<TConfig> : INotifyPropertyChanged
+public interface IConfigurationService<TConfig> : IDisposable, INotifyPropertyChanged
 {
     /// <summary> Gives back whether a config value is available </summary>
     bool IsLoaded { get; }
+    /// <summary> Gives back whether the config service is disposed </summary>
+    bool IsDisposed { get; }
     /// <summary> The config </summary>
     TConfig Config { get; }
     /// <summary> The path to the main config file </summary>

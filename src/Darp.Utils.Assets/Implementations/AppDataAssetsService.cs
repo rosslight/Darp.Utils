@@ -1,4 +1,4 @@
-namespace Darp.Utils.Assets.Assets.Impl;
+namespace Darp.Utils.Assets.Implementations;
 
 /// <inheritdoc />
 public sealed class AppDataAssetsService : IAppDataAssetsService
@@ -22,12 +22,15 @@ public sealed class AppDataAssetsService : IAppDataAssetsService
     /// <inheritdoc />
     public Stream GetWriteOnlySteam(string uri)
     {
-        string path = Path.Join(BasePath, uri);
-        if (!Exists(uri))
+        var path = Path.Join(BasePath, uri);
+        if (Exists(uri))
         {
-            string directoryPath = Path.GetDirectoryName(path) ?? throw new Exception("Could not get directory name");
-            Directory.CreateDirectory(directoryPath);
+            return File.OpenWrite(path);
         }
+
+        var directoryPath = Path.GetDirectoryName(path)
+                            ?? throw new DirectoryNotFoundException("Could not get directory name");
+        Directory.CreateDirectory(directoryPath);
         return File.OpenWrite(path);
     }
 }

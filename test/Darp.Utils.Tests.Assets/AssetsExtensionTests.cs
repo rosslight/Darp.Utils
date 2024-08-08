@@ -4,7 +4,7 @@ using System.Text.Json;
 using Common;
 using FluentAssertions;
 using NSubstitute;
-using Utils.Assets.Assets;
+using Utils.Assets;
 
 public sealed class AssetsExtensionTests
 {
@@ -18,13 +18,13 @@ public sealed class AssetsExtensionTests
     public async Task DeserializeJsonAsync_WhenCalled_ReturnsDeserializedObject()
     {
         // Arrange
-        var readOnlyService = Substitute.For<IReadOnlyAssetsService>();
+        IReadOnlyAssetsService readOnlyService = Substitute.For<IReadOnlyAssetsService>();
         var stream = new MemoryStream(TestConfig);
         readOnlyService.GetReadOnlySteam(Arg.Any<string>()).Returns(stream);
-        var cancellationToken = CancellationToken.None;
+        CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
-        var result = await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", null, cancellationToken);
+        TestObject result = await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", null, cancellationToken);
 
         // Assert
         result.Should().NotBeNull();
@@ -35,9 +35,9 @@ public sealed class AssetsExtensionTests
     public async Task DeserializeJsonAsync_WhenDeserializationReturnsNull_ThrowsException()
     {
         // Arrange
-        var readOnlyService = Substitute.For<IReadOnlyAssetsService>();
+        IReadOnlyAssetsService readOnlyService = Substitute.For<IReadOnlyAssetsService>();
         readOnlyService.GetReadOnlySteam(Arg.Any<string>()).Returns(new MemoryStream());
-        var cancellationToken = CancellationToken.None;
+        CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
         Func<Task> act = async () => await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", null, cancellationToken);
@@ -50,18 +50,18 @@ public sealed class AssetsExtensionTests
     public async Task SerializeJsonAsync_WhenCalled_SerializesObject()
     {
         // Arrange
-        var writeOnlyService = Substitute.For<IWriteOnlyAssetsService>();
+        IWriteOnlyAssetsService writeOnlyService = Substitute.For<IWriteOnlyAssetsService>();
         var buffer = new byte[100];
         var stream = new MemoryStream(buffer);
         writeOnlyService.GetWriteOnlySteam(Arg.Any<string>()).Returns(stream);
         var testObject = new TestObject { Name = "Test" };
-        var cancellationToken = CancellationToken.None;
+        CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
         await writeOnlyService.SerializeJsonAsync("test.json", testObject, null, cancellationToken);
 
         var memoryStream = new MemoryStream(buffer.TrimBufferEnd());
-        var resultObject = await JsonSerializer.DeserializeAsync<TestObject>(memoryStream, cancellationToken: cancellationToken);
+        TestObject? resultObject = await JsonSerializer.DeserializeAsync<TestObject>(memoryStream, cancellationToken: cancellationToken);
 
         // Assert
         resultObject.Should().NotBeNull();
@@ -72,8 +72,8 @@ public sealed class AssetsExtensionTests
     public async Task CopyToAsync_WhenCalled_CopiesStreamCorrectly()
     {
         // Arrange
-        var sourceService = Substitute.For<IReadOnlyAssetsService>();
-        var targetService = Substitute.For<IWriteOnlyAssetsService>();
+        IReadOnlyAssetsService sourceService = Substitute.For<IReadOnlyAssetsService>();
+        IWriteOnlyAssetsService targetService = Substitute.For<IWriteOnlyAssetsService>();
         var sourceStream = new MemoryStream("Test data"u8.ToArray());
         var buffer = new byte[100];
         var targetStream = new MemoryStream(buffer);
@@ -88,7 +88,7 @@ public sealed class AssetsExtensionTests
         var memoryStream = new MemoryStream(buffer.TrimBufferEnd());
         memoryStream.Length.Should().BeGreaterThan(0);
         using var reader = new StreamReader(memoryStream);
-        string content = await reader.ReadToEndAsync();
+        var content = await reader.ReadToEndAsync();
         content.Should().Be("Test data");
     }
 

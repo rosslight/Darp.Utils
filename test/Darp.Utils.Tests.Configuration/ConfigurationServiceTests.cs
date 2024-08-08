@@ -1,10 +1,11 @@
 namespace Darp.Utils.Tests.Configuration;
 
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Assets.Assets;
+using Assets;
 using Common;
 using Darp.Utils.Configuration;
 using FluentAssertions;
@@ -16,7 +17,11 @@ using Xunit.Abstractions;
 public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
 {
     private const string ConfigFileName = "testConfig.json";
-    private readonly ILogger _logger = new LoggerConfiguration().WriteTo.TestOutput(outputHelper).CreateLogger();
+    private readonly ILogger _logger = new LoggerConfiguration()
+        .WriteTo
+        .TestOutput(outputHelper, formatProvider:CultureInfo.InvariantCulture)
+        .CreateLogger();
+
     private static void CreateServices(out IAssetsService assetsService,
         out ConfigurationService<TestConfig> configurationService)
     {
@@ -30,7 +35,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
         // Arrange
         CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
         var expectedConfig = new TestConfig { Setting = "Test" };
-        string json = JsonSerializer.Serialize(expectedConfig, configurationService.WriteOptions);
+        var json = JsonSerializer.Serialize(expectedConfig, configurationService.WriteOptions);
         using var ms = new MemoryStream();
         await using var writer = new StreamWriter(ms);
         await writer.WriteAsync(json);
@@ -42,6 +47,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
 
         // Act
         TestConfig config = await configurationService.LoadConfigurationAsync(CancellationToken.None);
+        configurationService.Dispose();
 
         // Assert
         config.Should().NotBeNull();
@@ -65,6 +71,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
 
         // Act
         TestConfig config = await configurationService.LoadConfigurationAsync(CancellationToken.None);
+        configurationService.Dispose();
 
         // Assert
         config.Should().NotBeNull();
@@ -84,13 +91,14 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
         // Act
         _logger.Information("BufferBeforeWrite: {Bytes}", buffer);
         TestConfig returnedConfig = await configurationService.WriteConfigurationAsync(newConfig, CancellationToken.None);
+        configurationService.Dispose();
         _logger.Information("BufferAfterWrite: {Bytes}", buffer);
 
         // Assert
         returnedConfig.Should().BeEquivalentTo(newConfig);
         configurationService.IsLoaded.Should().BeTrue();
         configurationService.Config.Should().BeEquivalentTo(newConfig);
-        var writtenConfig = await JsonSerializer.DeserializeAsync<TestConfig>(new MemoryStream(buffer.TrimBufferEnd()));
+        TestConfig? writtenConfig = await JsonSerializer.DeserializeAsync<TestConfig>(new MemoryStream(buffer.TrimBufferEnd()));
         writtenConfig.Should().BeEquivalentTo(newConfig);
     }
 
@@ -99,14 +107,15 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     {
         // Act
         CreateServices(out IAssetsService _, out ConfigurationService<TestConfig> configurationService);
+        configurationService.Dispose();
 
         // Assert
         configurationService.IsLoaded.Should().BeFalse();
         configurationService.Config.Should().BeEquivalentTo(new TestConfig());
     }
+}
 
-    public sealed record TestConfig
-    {
-        public string Setting { get; init; } = "Default";
-    }
+internal sealed record TestConfig
+{
+    public string Setting { get; init; } = "Default";
 }

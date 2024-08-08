@@ -4,9 +4,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Assets;
-using Assets.Assets;
 
-/// <inheritdoc />
+/// <inheritdoc cref="IConfigurationService{TConfig}"/>
 public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfig>
     where TConfig : new()
 {
@@ -31,6 +30,8 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     public JsonSerializerOptions WriteOptions { get; } = new() { WriteIndented = true };
     /// <inheritdoc />
     public bool IsLoaded { get => _isLoaded; private set => SetField(ref _isLoaded, value); }
+    /// <inheritdoc />
+    public bool IsDisposed { get; private set; }
 
     /// <inheritdoc />
     public TConfig Config { get => _config; private set => SetField(ref _config, value); }
@@ -41,6 +42,7 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     /// <inheritdoc />
     public async Task<TConfig> LoadConfigurationAsync(CancellationToken cancellationToken)
     {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         if (!_configurationAssetsService.Exists(_configFileName))
         {
             IsLoaded = true;
@@ -49,7 +51,7 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
 
         await using Stream stream = _configurationAssetsService.GetReadOnlySteam(_configFileName);
         Config = await JsonSerializer.DeserializeAsync<TConfig>(stream, cancellationToken: cancellationToken)
-                 ?? throw new Exception("Deserialization yielded no result");
+                 ?? throw new JsonException("Deserialization yielded no result");
         IsLoaded = true;
         return Config;
     }
@@ -57,6 +59,7 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     /// <inheritdoc />
     public async Task<TConfig> WriteConfigurationAsync(TConfig configuration, CancellationToken cancellationToken)
     {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         await _semaphore.WaitAsync(cancellationToken);
         await _configurationAssetsService.SerializeJsonAsync(_configFileName, configuration, WriteOptions, cancellationToken);
         Config = configuration;
@@ -71,14 +74,19 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
-            return false;
+            return;
         }
         field = value;
         OnPropertyChanged(propertyName);
-        return true;
+    }
+
+    public void Dispose()
+    {
+        _semaphore.Dispose();
+        IsDisposed = true;
     }
 }
