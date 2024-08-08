@@ -3,8 +3,10 @@ namespace Darp.Utils.Tests.Assets;
 using System.Text.Json;
 using Common;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Utils.Assets;
+using Utils.Assets.Abstractions;
 
 public sealed class AssetsExtensionTests
 {
@@ -90,6 +92,20 @@ public sealed class AssetsExtensionTests
         using var reader = new StreamReader(memoryStream);
         var content = await reader.ReadToEndAsync();
         content.Should().Be("Test data");
+    }
+
+    [Fact]
+    public void Assets_WhenUsingDI_ShouldWork()
+    {
+        // Arrange
+        const string relativePath = "RelativePath";
+        var appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        ServiceProvider provider = new ServiceCollection()
+            .AddAppDataAssetsService("RelativePath")
+            .BuildServiceProvider();
+
+        IAppDataAssetsService service = provider.GetRequiredService<IAppDataAssetsService>();
+        service.BasePath.Should().Be(Path.Join(appDataDirectory, relativePath));
     }
 
     private sealed class TestObject

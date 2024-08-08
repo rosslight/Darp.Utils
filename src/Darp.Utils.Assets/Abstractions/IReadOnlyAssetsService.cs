@@ -1,4 +1,4 @@
-namespace Darp.Utils.Assets;
+namespace Darp.Utils.Assets.Abstractions;
 
 /// <summary> An interface for reading from assets </summary>
 public interface IReadOnlyAssetsService

@@ -6,10 +6,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Assets;
+using Assets.Abstractions;
 using Common;
 using Darp.Utils.Configuration;
 using FluentAssertions;
 using FluentAssertions.Events;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Serilog;
 using Xunit;
@@ -153,7 +155,6 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     {
         // Arrange
         var newConfig = new TestConfig { Setting = "newValue" };
-        const string expectedPropertyName = nameof(ConfigurationService<TestConfig>.Config);
         CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
         var buffer = new byte[100];
         var ms = new MemoryStream(buffer);
@@ -168,6 +169,22 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
         monitor.Should().RaisePropertyChangeFor(service => service.IsLoaded);
         monitor.Should().RaisePropertyChangeFor(service => service.Config);
         monitor.Should().RaisePropertyChangeFor(service => service.IsDisposed);
+    }
+
+    [Fact]
+    public async Task Config_WhenUsingDI_ShouldWork()
+    {
+        // Arrange
+        var newConfig = new TestConfig { Setting = "NewValue" };
+        ServiceProvider provider = new ServiceCollection()
+            .AddAppDataAssetsService("RelativePath")
+            .AddConfigurationFile<TestConfig, IAppDataAssetsService>("config.json")
+            .BuildServiceProvider();
+
+        IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
+        await service.LoadConfigurationAsync();
+        await service.WriteConfigurationAsync(newConfig);
+        service.Config.Should().Be(newConfig);
     }
 }
 

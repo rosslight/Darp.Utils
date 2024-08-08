@@ -1,6 +1,7 @@
 namespace Darp.Utils.Assets;
 
 using System.Text.Json;
+using Abstractions;
 
 /// <summary> Extensions for everything related to assets </summary>
 public static class AssetsExtensions

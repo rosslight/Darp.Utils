@@ -1,4 +1,9 @@
-namespace Darp.Utils.Assets.Implementations;
+namespace Darp.Utils.Assets;
+
+using Darp.Utils.Assets.Abstractions;
+
+/// <summary> An interface for reading and writing to the AppData </summary>
+public interface IAppDataAssetsService : IAssetsService;
 
 /// <inheritdoc />
 public sealed class AppDataAssetsService : IAppDataAssetsService

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Assets;
+using Assets.Abstractions;
 
 /// <inheritdoc cref="IConfigurationService{TConfig}"/>
 public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfig>
@@ -86,6 +87,7 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
         OnPropertyChanged(propertyName);
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         _semaphore.Dispose();
