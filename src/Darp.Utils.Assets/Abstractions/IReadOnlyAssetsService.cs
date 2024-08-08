@@ -6,11 +6,11 @@ public interface IReadOnlyAssetsService
     /// <summary> The base path of the assets </summary>
     string BasePath { get; }
     /// <summary> Determines whether the specified asset exists. </summary>
-    /// <param name="uri">The uri to check</param>
+    /// <param name="path">The path to check</param>
     /// <returns>True if the asset could be found</returns>
-    bool Exists(string uri);
+    bool Exists(string? path);
     /// <summary> Opens an existing asset for reading. </summary>
-    /// <param name="uri">The uri to read from</param>
-    /// <returns>A read-only Stream on the specified uri.</returns>
-    Stream GetReadOnlySteam(string uri);
+    /// <param name="path">The path to read from</param>
+    /// <returns>A read-only Stream on the specified <paramref name="path"/>.</returns>
+    Stream GetReadOnlySteam(string path);
 }

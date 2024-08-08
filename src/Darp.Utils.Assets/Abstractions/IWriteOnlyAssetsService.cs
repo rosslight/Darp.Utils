@@ -4,7 +4,7 @@ namespace Darp.Utils.Assets.Abstractions;
 public interface IWriteOnlyAssetsService
 {
     /// <summary> Opens an asset for writing and creates it if not existent. </summary>
-    /// <param name="uri">The uri to write to</param>
-    /// <returns>A write-only Stream on the specified uri.</returns>
-    Stream GetWriteOnlySteam(string uri);
+    /// <param name="path">The path to write to</param>
+    /// <returns>A write-only Stream on the specified path.</returns>
+    Stream GetWriteOnlySteam(string path);
 }

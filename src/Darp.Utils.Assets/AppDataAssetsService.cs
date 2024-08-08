@@ -19,23 +19,23 @@ public sealed class AppDataAssetsService : IAppDataAssetsService
     }
 
     /// <inheritdoc />
-    public bool Exists(string uri) => Path.Exists(Path.Join(BasePath, uri));
+    public bool Exists(string? path) => Path.Exists(Path.Join(BasePath, path));
 
     /// <inheritdoc />
-    public Stream GetReadOnlySteam(string uri) => File.OpenRead(Path.Join(BasePath, uri));
+    public Stream GetReadOnlySteam(string path) => File.OpenRead(Path.Join(BasePath, path));
 
     /// <inheritdoc />
-    public Stream GetWriteOnlySteam(string uri)
+    public Stream GetWriteOnlySteam(string path)
     {
-        var path = Path.Join(BasePath, uri);
-        if (Exists(uri))
+        var joinedPath = Path.Join(BasePath, path);
+        if (Exists(joinedPath))
         {
-            return File.OpenWrite(path);
+            return File.OpenWrite(joinedPath);
         }
 
-        var directoryPath = Path.GetDirectoryName(path)
+        var directoryPath = Path.GetDirectoryName(joinedPath)
                             ?? throw new DirectoryNotFoundException("Could not get directory name");
         Directory.CreateDirectory(directoryPath);
-        return File.OpenWrite(path);
+        return File.OpenWrite(joinedPath);
     }
 }
