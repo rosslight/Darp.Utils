@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Darp.Utils.Configuration\Darp.Utils.Configuration.csproj" />
+      <ProjectReference Include="..\Darp.Utils.Tests.Common\Darp.Utils.Tests.Common.csproj" />
+    </ItemGroup>
+
+</Project>

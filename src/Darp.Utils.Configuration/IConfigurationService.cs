@@ -1,6 +1,6 @@
-using System.ComponentModel;
+namespace Darp.Utils.Configuration;
 
-namespace Rosslight.Utils.Configuration;
+using System.ComponentModel;
 
 /// <summary> A generic interface for a configuration file </summary>
 /// <typeparam name="TConfig">The type describing the underlying config</typeparam>

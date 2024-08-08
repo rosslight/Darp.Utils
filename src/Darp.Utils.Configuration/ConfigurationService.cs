@@ -1,9 +1,10 @@
+namespace Darp.Utils.Configuration;
+
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Rosslight.Utils.Assets;
-
-namespace Rosslight.Utils.Configuration;
+using Assets;
+using Assets.Assets;
 
 /// <inheritdoc />
 public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfig>
@@ -67,14 +68,15 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     /// <inheritdoc />
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
         field = value;
         OnPropertyChanged(propertyName);
         return true;

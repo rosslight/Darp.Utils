@@ -1,10 +1,10 @@
+namespace Darp.Utils.Tests.Assets;
+
 using System.Text.Json;
+using Common;
 using FluentAssertions;
 using NSubstitute;
-using Rosslight.Utils.Assets;
-using Rosslight.Utils.Tests.Configuration;
-
-namespace Rosslight.Utils.Tests.Assets;
+using Utils.Assets.Assets;
 
 public sealed class AssetsExtensionTests
 {
@@ -21,7 +21,7 @@ public sealed class AssetsExtensionTests
         var readOnlyService = Substitute.For<IReadOnlyAssetsService>();
         var stream = new MemoryStream(TestConfig);
         readOnlyService.GetReadOnlySteam(Arg.Any<string>()).Returns(stream);
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // Act
         var result = await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", null, cancellationToken);
@@ -37,7 +37,7 @@ public sealed class AssetsExtensionTests
         // Arrange
         var readOnlyService = Substitute.For<IReadOnlyAssetsService>();
         readOnlyService.GetReadOnlySteam(Arg.Any<string>()).Returns(new MemoryStream());
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // Act
         Func<Task> act = async () => await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", null, cancellationToken);
@@ -55,7 +55,7 @@ public sealed class AssetsExtensionTests
         var stream = new MemoryStream(buffer);
         writeOnlyService.GetWriteOnlySteam(Arg.Any<string>()).Returns(stream);
         var testObject = new TestObject { Name = "Test" };
-        CancellationToken cancellationToken = CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
         // Act
         await writeOnlyService.SerializeJsonAsync("test.json", testObject, null, cancellationToken);

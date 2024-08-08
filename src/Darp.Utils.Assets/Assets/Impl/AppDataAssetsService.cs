@@ -1,4 +1,4 @@
-namespace Rosslight.Utils.Assets.Impl;
+namespace Darp.Utils.Assets.Assets.Impl;
 
 /// <inheritdoc />
 public sealed class AppDataAssetsService : IAppDataAssetsService

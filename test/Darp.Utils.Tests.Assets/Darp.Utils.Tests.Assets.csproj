@@ -2,11 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <WarningsAsErrors>Nullable</WarningsAsErrors>
-        <IsPackable>false</IsPackable>
-        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,11 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Assets\Impl\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\src\Rosslight.Utils\Rosslight.Utils.csproj" />
+      <ProjectReference Include="..\..\src\Darp.Utils.Assets\Darp.Utils.Assets.csproj" />
+      <ProjectReference Include="..\Darp.Utils.Tests.Common\Darp.Utils.Tests.Common.csproj" />
     </ItemGroup>
 
 </Project>

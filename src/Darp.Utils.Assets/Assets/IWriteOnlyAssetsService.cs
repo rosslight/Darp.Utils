@@ -1,4 +1,4 @@
-namespace Rosslight.Utils.Assets;
+namespace Darp.Utils.Assets.Assets;
 
 /// <summary> An interface for writing to assets </summary>
 public interface IWriteOnlyAssetsService

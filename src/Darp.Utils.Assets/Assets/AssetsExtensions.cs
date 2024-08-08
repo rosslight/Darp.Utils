@@ -1,6 +1,6 @@
-using System.Text.Json;
+namespace Darp.Utils.Assets.Assets;
 
-namespace Rosslight.Utils.Assets;
+using System.Text.Json;
 
 /// <summary> Extensions for everything related to assets </summary>
 public static class AssetsExtensions
