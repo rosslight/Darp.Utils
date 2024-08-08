@@ -14,6 +14,7 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     private readonly IAssetsService _configurationAssetsService;
     private TConfig _config = new();
     private bool _isLoaded;
+    private bool _isDisposed;
     private readonly SemaphoreSlim _semaphore = new(1);
 
     /// <summary> Instantiate a new Configuration service </summary>
@@ -30,14 +31,15 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     public JsonSerializerOptions WriteOptions { get; } = new() { WriteIndented = true };
     /// <inheritdoc />
     public bool IsLoaded { get => _isLoaded; private set => SetField(ref _isLoaded, value); }
+
     /// <inheritdoc />
-    public bool IsDisposed { get; private set; }
+    public bool IsDisposed { get => _isDisposed; private set => SetField(ref _isDisposed, value); }
 
     /// <inheritdoc />
     public TConfig Config { get => _config; private set => SetField(ref _config, value); }
 
     /// <inheritdoc />
-    public string Path => System.IO.Path.Combine(_configurationAssetsService.BasePath, _configFileName);
+    public string Path => System.IO.Path.Join(_configurationAssetsService.BasePath, _configFileName);
 
     /// <inheritdoc />
     public async Task<TConfig> LoadConfigurationAsync(CancellationToken cancellationToken)

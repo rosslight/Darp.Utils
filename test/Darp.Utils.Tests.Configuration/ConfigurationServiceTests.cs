@@ -9,6 +9,7 @@ using Assets;
 using Common;
 using Darp.Utils.Configuration;
 using FluentAssertions;
+using FluentAssertions.Events;
 using NSubstitute;
 using Serilog;
 using Xunit;
@@ -17,6 +18,7 @@ using Xunit.Abstractions;
 public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
 {
     private const string ConfigFileName = "testConfig.json";
+    private const string BasePath = "some/path";
     private readonly ILogger _logger = new LoggerConfiguration()
         .WriteTo
         .TestOutput(outputHelper, formatProvider:CultureInfo.InvariantCulture)
@@ -26,6 +28,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
         out ConfigurationService<TestConfig> configurationService)
     {
         assetsService = Substitute.For<IAssetsService>();
+        assetsService.BasePath.Returns(BasePath);
         configurationService = new ConfigurationService<TestConfig>(ConfigFileName, assetsService);
     }
 
@@ -112,6 +115,59 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
         // Assert
         configurationService.IsLoaded.Should().BeFalse();
         configurationService.Config.Should().BeEquivalentTo(new TestConfig());
+    }
+
+    [Fact]
+    public void Config_Path_ReturnsCorrectPath()
+    {
+        // Arrange
+        CreateServices(out IAssetsService _, out ConfigurationService<TestConfig> configurationService);
+
+        // Assert
+        configurationService.Path.Should().Be(Path.Join(BasePath, ConfigFileName));
+        configurationService.Dispose();
+    }
+
+    [Fact]
+    public async Task Config_PropertyChanged_ShouldNotRaiseOnSameWrite()
+    {
+        // Arrange
+        CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
+        var buffer = new byte[100];
+        var ms = new MemoryStream(buffer);
+        assetsService.GetWriteOnlySteam(ConfigFileName).Returns(ms);
+        IMonitor<ConfigurationService<TestConfig>> monitor = configurationService.Monitor();
+
+        // Act
+        await configurationService.WriteConfigurationAsync(configurationService.Config, default);
+        configurationService.Dispose();
+
+        // Assert
+        monitor.Should().RaisePropertyChangeFor(service => service.IsLoaded);
+        monitor.Should().NotRaisePropertyChangeFor(service => service.Config);
+        monitor.Should().RaisePropertyChangeFor(service => service.IsDisposed);
+    }
+
+    [Fact]
+    public async Task Config_PropertyChanged_ShouldRaiseOnDifferentWrite()
+    {
+        // Arrange
+        var newConfig = new TestConfig { Setting = "newValue" };
+        const string expectedPropertyName = nameof(ConfigurationService<TestConfig>.Config);
+        CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
+        var buffer = new byte[100];
+        var ms = new MemoryStream(buffer);
+        assetsService.GetWriteOnlySteam(ConfigFileName).Returns(ms);
+        IMonitor<ConfigurationService<TestConfig>> monitor = configurationService.Monitor();
+
+        // Act
+        await configurationService.WriteConfigurationAsync(newConfig, default);
+        configurationService.Dispose();
+
+        // Assert
+        monitor.Should().RaisePropertyChangeFor(service => service.IsLoaded);
+        monitor.Should().RaisePropertyChangeFor(service => service.Config);
+        monitor.Should().RaisePropertyChangeFor(service => service.IsDisposed);
     }
 }
 
