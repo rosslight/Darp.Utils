@@ -4,7 +4,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>Nullable;CS9124</WarningsAsErrors>
-
-    <AnalysisLevel>latest-all</AnalysisLevel>
   </PropertyGroup>
 </Project>

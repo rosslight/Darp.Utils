@@ -21,9 +21,13 @@ public static class AssetsExtensions
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sourceAssetsService);
-        await using Stream stream = sourceAssetsService.GetReadOnlySteam(path);
-        return await JsonSerializer.DeserializeAsync<TValue>(stream, options, cancellationToken)
-               ?? throw new JsonException("Deserialization returned null");
+        Stream stream = sourceAssetsService.GetReadOnlySteam(path);
+        await using (stream.ConfigureAwait(false))
+        {
+            return await JsonSerializer.DeserializeAsync<TValue>(stream, options, cancellationToken)
+                       .ConfigureAwait(false)
+                   ?? throw new JsonException("Deserialization returned null");
+        }
     }
 
     /// <summary> Serialize a json from a given value and write it to the asset </summary>
@@ -42,9 +46,12 @@ public static class AssetsExtensions
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(targetAssetsService);
-        await using Stream stream = targetAssetsService.GetWriteOnlySteam(path);
-        stream.SetLength(0);
-        await JsonSerializer.SerializeAsync(stream, value, options, cancellationToken);
+        Stream stream = targetAssetsService.GetWriteOnlySteam(path);
+        await using (stream.ConfigureAwait(false))
+        {
+            stream.SetLength(0);
+            await JsonSerializer.SerializeAsync(stream, value, options, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -64,8 +71,12 @@ public static class AssetsExtensions
     {
         ArgumentNullException.ThrowIfNull(sourceAssetsService);
         ArgumentNullException.ThrowIfNull(targetAssetsService);
-        await using Stream sourceStream = sourceAssetsService.GetReadOnlySteam(sourcePath);
-        await using Stream targetStream = targetAssetsService.GetWriteOnlySteam(targetPath);
-        await sourceStream.CopyToAsync(targetStream, cancellationToken);
+        Stream sourceStream = sourceAssetsService.GetReadOnlySteam(sourcePath);
+        Stream targetStream = targetAssetsService.GetWriteOnlySteam(targetPath);
+        await using (sourceStream.ConfigureAwait(false))
+        await using (targetStream.ConfigureAwait(false))
+        {
+            await sourceStream.CopyToAsync(targetStream, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

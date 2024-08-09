@@ -52,19 +52,24 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
             return Config;
         }
 
-        await using Stream stream = _configurationAssetsService.GetReadOnlySteam(_configFileName);
-        Config = await JsonSerializer.DeserializeAsync<TConfig>(stream, cancellationToken: cancellationToken)
-                 ?? throw new JsonException("Deserialization yielded no result");
-        IsLoaded = true;
-        return Config;
+        Stream stream = _configurationAssetsService.GetReadOnlySteam(_configFileName);
+        await using (stream.ConfigureAwait(false))
+        {
+            Config = await JsonSerializer.DeserializeAsync<TConfig>(stream, cancellationToken: cancellationToken)
+                         .ConfigureAwait(false)
+                     ?? throw new JsonException("Deserialization yielded no result");
+            IsLoaded = true;
+            return Config;
+        }
     }
 
     /// <inheritdoc />
     public async Task<TConfig> WriteConfigurationAsync(TConfig configuration, CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
-        await _semaphore.WaitAsync(cancellationToken);
-        await _configurationAssetsService.SerializeJsonAsync(_configFileName, configuration, WriteOptions, cancellationToken);
+        await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await _configurationAssetsService.SerializeJsonAsync(_configFileName, configuration, WriteOptions, cancellationToken)
+            .ConfigureAwait(false);
         Config = configuration;
         IsLoaded = true;
         _semaphore.Release();

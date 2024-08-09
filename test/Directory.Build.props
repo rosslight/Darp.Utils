@@ -2,9 +2,11 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NoWarn>CA1062,CA1859</NoWarn>
+    <NoWarn>CA1062,CA1859,CA1707</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
