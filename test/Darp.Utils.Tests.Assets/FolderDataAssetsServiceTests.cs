@@ -41,7 +41,8 @@ public sealed class FolderDataAssetsServiceTests
         // Arrange
         const string testFileName = "test.json";
         var testData = new TestData("Test");
-        using IDisposable dis = CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService, out var _, out var _);
+        using IDisposable dis =
+            CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService, out var _, out var _);
 
         // Act
         appDataService.Exists(testFileName).Should().BeFalse();
@@ -59,7 +60,8 @@ public sealed class FolderDataAssetsServiceTests
         // Arrange
         const string testFileName = "test.json";
         var testData = new TestData("Test");
-        using IDisposable dis = CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService, out var _, out var _);
+        using IDisposable dis =
+            CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService, out var _, out var _);
 
         // Act
         await appDataService.SerializeJsonAsync(testFileName, testData);
@@ -71,6 +73,23 @@ public sealed class FolderDataAssetsServiceTests
 
         // Assert
         await act.Should().ThrowAsync<Exception>();
+    }
+
+    [Fact]
+    public void UsingDI_AddFolderAssetsService_ShouldNotThrow()
+    {
+        // Arrange
+        const string relativePath = "RelativePath";
+        var appDataDirectory = Path.GetTempPath();
+        ServiceProvider provider = new ServiceCollection()
+            .AddFolderAssetsService(relativePath, appDataDirectory)
+            .BuildServiceProvider();
+
+        // Act
+        Action act = () => provider.GetRequiredService<IFolderAssetsService>();
+
+        // Assert
+        act.Should().NotThrow();
     }
 
     [Fact]
@@ -90,17 +109,16 @@ public sealed class FolderDataAssetsServiceTests
     }
 
     [Fact]
-    public void UsingDI_AddFolderAssetsService_ShouldNotThrow()
+    public void UsingDI_AddProgramDataAssetsService_ShouldNotThrow()
     {
         // Arrange
         const string relativePath = "RelativePath";
-        var appDataDirectory = Path.GetTempPath();
         ServiceProvider provider = new ServiceCollection()
-            .AddFolderAssetsService(relativePath, appDataDirectory)
+            .AddProgramDataAssetsService(relativePath)
             .BuildServiceProvider();
 
         // Act
-        Action act = () => provider.GetRequiredService<IFolderAssetsService>();
+        Action act = () => provider.GetRequiredService<IProgramDataAssetsService>();
 
         // Assert
         act.Should().NotThrow();

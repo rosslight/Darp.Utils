@@ -72,7 +72,6 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
 
         assetsService.Exists(ConfigFileName).Returns(false);
         assetsService.GetWriteOnlySteam(ConfigFileName).Returns(new MemoryStream(buffer));
-        assetsService.GetReadOnlySteam(ConfigFileName).Returns(_ => new MemoryStream(buffer.TrimBufferEnd()));
 
         // Act
         TestConfig config = await configurationService.LoadConfigurationAsync(CancellationToken.None);
