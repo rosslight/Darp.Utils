@@ -1,8 +1,10 @@
 namespace Darp.Utils.Configuration;
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Assets;
 using Assets.Abstractions;
 
@@ -17,19 +19,46 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     private bool _isLoaded;
     private bool _isDisposed;
     private readonly SemaphoreSlim _semaphore = new(1);
+    private readonly JsonTypeInfo<TConfig> _configTypeInfo;
 
     /// <summary> Instantiate a new Configuration service </summary>
     /// <param name="configFileName">The name of the config file</param>
     /// <param name="configurationAssetsService">The assets service to be read from or written to</param>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
     public ConfigurationService(string configFileName, IAssetsService configurationAssetsService)
+        : this(configFileName, configurationAssetsService, CreateDefaultJsonTypeInfo())
+    {
+    }
+
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
+    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
+    private static JsonTypeInfo<TConfig> CreateDefaultJsonTypeInfo()
+    {
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        return (JsonTypeInfo<TConfig>)options.GetTypeInfo(typeof(TConfig));
+    }
+
+    /// <summary> Instantiate a new Configuration service </summary>
+    /// <param name="configFileName">The name of the config file</param>
+    /// <param name="configurationAssetsService">The assets service to be read from or written to</param>
+    /// <param name="typeInfo">Metadata about the type to convert.</param>
+    public ConfigurationService(string configFileName,
+        IAssetsService configurationAssetsService,
+        JsonTypeInfo<TConfig> typeInfo)
     {
         _configFileName = configFileName;
         //_defaultAssetsService = defaultAssetsService;
         _configurationAssetsService = configurationAssetsService;
+        _configTypeInfo = typeInfo;
     }
 
     /// <summary> The JsonSerializerOptions used </summary>
-    public JsonSerializerOptions WriteOptions { get; } = new() { WriteIndented = true };
+    public JsonSerializerOptions WriteOptions => _configTypeInfo.Options;
     /// <inheritdoc />
     public bool IsLoaded { get => _isLoaded; private set => SetField(ref _isLoaded, value); }
 
@@ -55,7 +84,7 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
         Stream stream = _configurationAssetsService.GetReadOnlySteam(_configFileName);
         await using (stream.ConfigureAwait(false))
         {
-            Config = await JsonSerializer.DeserializeAsync<TConfig>(stream, cancellationToken: cancellationToken)
+            Config = await JsonSerializer.DeserializeAsync(stream, _configTypeInfo, cancellationToken: cancellationToken)
                          .ConfigureAwait(false)
                      ?? throw new JsonException("Deserialization yielded no result");
             IsLoaded = true;
@@ -68,7 +97,7 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-        await _configurationAssetsService.SerializeJsonAsync(_configFileName, configuration, WriteOptions, cancellationToken)
+        await _configurationAssetsService.SerializeJsonAsync(_configFileName, configuration, _configTypeInfo, cancellationToken)
             .ConfigureAwait(false);
         Config = configuration;
         IsLoaded = true;

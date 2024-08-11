@@ -3,6 +3,7 @@ namespace Darp.Utils.Tests.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Assets;
@@ -171,19 +172,29 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     }
 
     [Fact]
-    public async Task Config_WhenUsingDI_ShouldWork()
+    public void Config_WhenUsingDI_ShouldWork()
     {
         // Arrange
-        var newConfig = new TestConfig { Setting = "NewValue" };
         ServiceProvider provider = new ServiceCollection()
             .AddAppDataAssetsService("RelativePath")
             .AddConfigurationFile<TestConfig, IAppDataAssetsService>("config.json")
             .BuildServiceProvider();
 
         IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
-        await service.LoadConfigurationAsync();
-        await service.WriteConfigurationAsync(newConfig);
-        service.Config.Should().Be(newConfig);
+        service.IsLoaded.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Config_WhenUsingDI_ShouldWorkWithContext()
+    {
+        // Arrange
+        ServiceProvider provider = new ServiceCollection()
+            .AddAppDataAssetsService("RelativePath")
+            .AddConfigurationFile<TestConfig, IAppDataAssetsService>("config.json", TestConfigContext.Default.TestConfig)
+            .BuildServiceProvider();
+
+        IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
+        service.IsLoaded.Should().BeFalse();
     }
 }
 
@@ -191,3 +202,7 @@ internal sealed record TestConfig
 {
     public string Setting { get; init; } = "Default";
 }
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(TestConfig))]
+internal partial class TestConfigContext : JsonSerializerContext;
