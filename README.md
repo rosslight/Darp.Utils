@@ -25,6 +25,7 @@ IAppDataAssetsService service = provider.GetRequiredService<IAppDataAssetsServic
 await service.SerializeJsonAsync("test.json", new { Prop1 = "value" });
 ```
 
+
 ## Darp.Utils.Configuration
 [![NuGet](https://img.shields.io/nuget/v/Darp.Utils.Configuration.svg)](https://www.nuget.org/packages/Darp.Utils.Configuration)
 [![Downloads](https://img.shields.io/nuget/dt/Darp.Utils.Configuration)](https://www.nuget.org/packages/Darp.Utils.Configuration)
@@ -42,4 +43,30 @@ ServiceProvider provider = new ServiceCollection()
 IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
 TestConfig config = await service.LoadConfigurationAsync();
 await service.WriteConfigurationAsync(config with { Setting = "NewValue" });
+```
+
+
+## Darp.Utils.Dialog
+[![NuGet](https://img.shields.io/nuget/v/Darp.Utils.Dialog.svg)](https://www.nuget.org/packages/Darp.Utils.Dialog)
+[![Downloads](https://img.shields.io/nuget/dt/Darp.Utils.Dialog)](https://www.nuget.org/packages/Darp.Utils.Dialog)
+
+A lightweight dialog service which allows for opening dialogs from the ViewModel.
+
+Example:
+```csharp
+ServiceProvider provider = new ServiceCollection()
+    .AddSingleton<IDialogService, AvaloniaDialogService>()
+    .BuildServiceProvider();
+
+IDialogService dialogService = provider.GetRequiredService<IDialogService>();
+await _dialogService.CreateMessageBoxDialog("Title", "Message").ShowAsync();
+
+// Assumes you have registered a view for 'SomeViewModel' in a ViewLocator
+// Works with any kind of content
+var viewModel = new SomeViewModel();
+await _dialogService.CreateContentDialog("Title", viewModel)
+    .SetDefaultButton(ContentDialogButton.Primary)
+    .SetCloseButton("Close")
+    .SetPrimaryButton("Ok", onClick: model => model.IsModelValid)
+    .ShowAsync();
 ```
