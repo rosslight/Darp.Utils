@@ -114,7 +114,7 @@ public sealed class ContentDialogBuilder<TContent>
                 {
                     notExecutingSubject.OnNext(false);
                     deferral = args.GetDeferral();
-                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default);
+                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default).ConfigureAwait(true);
                     args.Cancel = !shouldClose;
                 }
                 finally
@@ -157,7 +157,7 @@ public sealed class ContentDialogBuilder<TContent>
                 {
                     notExecutingSubject.OnNext(false);
                     deferral = args.GetDeferral();
-                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default);
+                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default).ConfigureAwait(true);
                     args.Cancel = !shouldClose;
                 }
                 finally
@@ -178,7 +178,7 @@ public sealed class ContentDialogBuilder<TContent>
         try
         {
             _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            return await _dialog.ShowAsync();
+            return await _dialog.ShowAsync().ConfigureAwait(true);
         }
         finally
         {

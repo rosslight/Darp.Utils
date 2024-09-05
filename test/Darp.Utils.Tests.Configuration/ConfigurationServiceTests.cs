@@ -205,4 +205,4 @@ internal sealed record TestConfig
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(TestConfig))]
-internal partial class TestConfigContext : JsonSerializerContext;
+internal sealed partial class TestConfigContext : JsonSerializerContext;
