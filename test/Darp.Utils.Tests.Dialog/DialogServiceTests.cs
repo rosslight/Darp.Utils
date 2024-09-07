@@ -151,7 +151,8 @@ public class DialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42);
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
         var subject = new BehaviorSubject<bool>(false);
 
         // Act and assert
@@ -223,7 +224,8 @@ public class DialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42);
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
         var subject = new BehaviorSubject<bool>(false);
 
         // Act and assert
