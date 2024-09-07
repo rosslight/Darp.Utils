@@ -7,6 +7,6 @@ public interface IDialogService : IDisposable
     /// <param name="title"> The title of the dialog </param>
     /// <param name="content"> The content of the dialog </param>
     /// <typeparam name="TContent"> The type of the content </typeparam>
-    /// <returns> The <see cref="ContentDialogBuilder{TContent}"/> </returns>
-    ContentDialogBuilder<TContent> CreateContentDialog<TContent>(string title, TContent content);
+    /// <returns> The <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </returns>
+    IContentDialogBuilder<TContent> CreateContentDialog<TContent>(string title, TContent content);
 }

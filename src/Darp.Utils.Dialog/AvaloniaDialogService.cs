@@ -1,13 +1,13 @@
 namespace Darp.Utils.Dialog;
 
-/// <summary> The implementation of the dialog service </summary>
+/// <summary> The implementation of the dialog service for avalonia </summary>
 public sealed class AvaloniaDialogService : IDialogService
 {
     private readonly List<IDisposable> _disposables = [];
 
     /// <inheritdoc />
-    public ContentDialogBuilder<TContent> CreateContentDialog<TContent>(string title, TContent content) =>
-        new(this, title, content);
+    public IContentDialogBuilder<TContent> CreateContentDialog<TContent>(string title, TContent content) =>
+        new FluentAvaloniaContentDialogBuilder<TContent>(this, title, content);
 
     internal T RegisterDisposable<T>(T disposable) where T : IDisposable
     {

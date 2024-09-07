@@ -11,8 +11,8 @@ public static class DialogServiceExtensions
     /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
     /// <param name="title"> The title of the dialog </param>
     /// <typeparam name="TContent"> The type of the content </typeparam>
-    /// <returns> The <see cref="ContentDialogBuilder{TContent}"/> </returns>
-    public static ContentDialogBuilder<TContent> CreateContentDialog<TContent>(this IDialogService dialogService, string title)
+    /// <returns> The <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </returns>
+    public static IContentDialogBuilder<TContent> CreateContentDialog<TContent>(this IDialogService dialogService, string title)
         where TContent : new()
     {
         ArgumentNullException.ThrowIfNull(dialogService);
@@ -26,8 +26,8 @@ public static class DialogServiceExtensions
     /// <param name="title"> The title of the dialog </param>
     /// <param name="message"> The message to be shown </param>
     /// <param name="isSelectable"> If true, a selectable TextBlock will be used to show the message </param>
-    /// <returns> The <see cref="ContentDialogBuilder{TContent}"/> </returns>
-    public static ContentDialogBuilder<MessageBoxModel> CreateMessageBoxDialog(this IDialogService dialogService,
+    /// <returns> The <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </returns>
+    public static IContentDialogBuilder<MessageBoxModel> CreateMessageBoxDialog(this IDialogService dialogService,
         string title,
         string message,
         bool isSelectable = false)
