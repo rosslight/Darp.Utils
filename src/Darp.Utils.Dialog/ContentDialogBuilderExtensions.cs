@@ -1,7 +1,6 @@
 namespace Darp.Utils.Dialog;
 
 using System.ComponentModel;
-using FluentAvalonia.UI.Controls;
 
 /// <summary> Extensions of the <see cref="IContentDialogBuilder{TContent}"/> </summary>
 public static class ContentDialogBuilderExtensions
@@ -10,11 +9,11 @@ public static class ContentDialogBuilderExtensions
     /// Enables the <see cref="ContentDialogButton.Primary"/> button and sets the text to be displayed.
     /// Provides a synchronous onClick function
     /// </summary>
-    /// <param name="builder"> The parent <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </param>
+    /// <param name="builder"> The parent <see cref="IContentDialogBuilder{TContent}"/> </param>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     /// <typeparam name="TContent"> The type of the content </typeparam>
     public static IContentDialogBuilder<TContent> SetPrimaryButton<TContent>(
         this IContentDialogBuilder<TContent> builder,
@@ -33,11 +32,11 @@ public static class ContentDialogBuilderExtensions
     /// Enables the <see cref="ContentDialogButton.Primary"/> button and sets the text to be displayed.
     /// Provides an asynchronous onClick function without <see cref="CancellationToken"/>
     /// </summary>
-    /// <param name="builder"> The parent <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </param>
+    /// <param name="builder"> The parent <see cref="IContentDialogBuilder{TContent}"/> </param>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     /// <typeparam name="TContent"> The type of the content </typeparam>
     public static IContentDialogBuilder<TContent> SetPrimaryButton<TContent>(
         this IContentDialogBuilder<TContent> builder,
@@ -56,11 +55,11 @@ public static class ContentDialogBuilderExtensions
     /// Enables the <see cref="ContentDialogButton.Secondary"/> button and sets the text to be displayed.
     /// Provides a synchronous onClick function
     /// </summary>
-    /// <param name="builder"> The parent <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </param>
+    /// <param name="builder"> The parent <see cref="IContentDialogBuilder{TContent}"/> </param>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     /// <typeparam name="TContent"> The type of the content </typeparam>
     public static IContentDialogBuilder<TContent> SetSecondaryButton<TContent>(
         this IContentDialogBuilder<TContent> builder,
@@ -79,11 +78,11 @@ public static class ContentDialogBuilderExtensions
     /// Enables the <see cref="ContentDialogButton.Secondary"/> button and sets the text to be displayed.
     /// Provides an asynchronous onClick function without <see cref="CancellationToken"/>
     /// </summary>
-    /// <param name="builder"> The parent <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </param>
+    /// <param name="builder"> The parent <see cref="IContentDialogBuilder{TContent}"/> </param>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     /// <typeparam name="TContent"> The type of the content </typeparam>
     public static IContentDialogBuilder<TContent> SetSecondaryButton<TContent>(
         this IContentDialogBuilder<TContent> builder,

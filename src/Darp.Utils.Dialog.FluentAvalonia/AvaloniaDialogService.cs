@@ -1,4 +1,4 @@
-namespace Darp.Utils.Dialog;
+namespace Darp.Utils.Dialog.FluentAvalonia;
 
 /// <summary> The implementation of the dialog service for avalonia </summary>
 public sealed class AvaloniaDialogService : IDialogService

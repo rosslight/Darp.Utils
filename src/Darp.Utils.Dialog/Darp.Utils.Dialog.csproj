@@ -2,13 +2,9 @@
 
     <PropertyGroup>
       <TargetFramework>net8.0</TargetFramework>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
       <Description>A very simple dialog service targeting avalonia</Description>
     </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="FluentAvaloniaUI" Version="2.1.0" />
-      <PackageReference Include="System.Reactive.Linq" Version="6.0.1" PrivateAssets="All"/>
-    </ItemGroup>
 
 </Project>

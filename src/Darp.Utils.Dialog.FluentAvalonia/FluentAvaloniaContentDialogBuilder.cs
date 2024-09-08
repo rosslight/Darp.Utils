@@ -1,4 +1,4 @@
-namespace Darp.Utils.Dialog;
+namespace Darp.Utils.Dialog.FluentAvalonia;
 
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -8,16 +8,18 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using FluentAvalonia.Core;
-using FluentAvalonia.UI.Controls;
+using global::FluentAvalonia.Core;
+using ContentDialogButton = Dialog.ContentDialogButton;
+using FluentContentDialog = global::FluentAvalonia.UI.Controls.ContentDialog;
+using FluentContentDialogButton = global::FluentAvalonia.UI.Controls.ContentDialogButton;
 
-/// <summary> The builder based on the <see cref="ContentDialog"/> of FluentAvalonia </summary>
+/// <summary> The builder based on the <see cref="FluentContentDialog"/> of FluentAvalonia </summary>
 /// <typeparam name="TContent"> The type of the content </typeparam>
 public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialogBuilder<TContent>
 {
     private readonly AvaloniaDialogService _dialogService;
     private readonly TopLevel? _topLevel;
-    internal ContentDialog Dialog { get; }
+    internal FluentContentDialog Dialog { get; }
 
     private CancellationTokenSource? _cancelTokenSource;
 
@@ -38,7 +40,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     {
         _dialogService = dialogService;
         _topLevel = topLevel;
-        Dialog = new ContentDialog
+        Dialog = new FluentContentDialog
         {
             Title = title,
             Content = content,
@@ -60,7 +62,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     /// <inheritdoc />
     public IContentDialogBuilder<TContent> SetDefaultButton(ContentDialogButton defaultButton)
     {
-        Dialog.DefaultButton = defaultButton;
+        Dialog.DefaultButton = (FluentContentDialogButton)defaultButton;
         return this;
     }
 
@@ -90,7 +92,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
         if (isEnabled is not null)
         {
-            Dialog[!ContentDialog.IsPrimaryButtonEnabledProperty] = isEnabled
+            Dialog[!FluentContentDialog.IsPrimaryButtonEnabledProperty] = isEnabled
                 .CombineLatest(notExecutingSubject)
                 .Select(x => x.First && x.Second)
                 .ToBinding();
@@ -127,7 +129,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
         if (isEnabled is not null)
         {
-            Dialog[!ContentDialog.IsSecondaryButtonEnabledProperty] = isEnabled
+            Dialog[!FluentContentDialog.IsSecondaryButtonEnabledProperty] = isEnabled
                 .CombineLatest(notExecutingSubject)
                 .Select(x => x.First && x.Second)
                 .ToBinding();
@@ -161,7 +163,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         try
         {
             _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            return await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+            return (ContentDialogResult) await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
         }
         finally
         {

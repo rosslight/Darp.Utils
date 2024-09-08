@@ -1,7 +1,5 @@
 namespace Darp.Utils.Dialog;
 
-using FluentAvalonia.UI.Controls;
-
 /// <summary> Extensions which add additional behavior to the <see cref="IDialogService"/> </summary>
 public static class DialogServiceExtensions
 {
@@ -11,7 +9,7 @@ public static class DialogServiceExtensions
     /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
     /// <param name="title"> The title of the dialog </param>
     /// <typeparam name="TContent"> The type of the content </typeparam>
-    /// <returns> The <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </returns>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
     public static IContentDialogBuilder<TContent> CreateContentDialog<TContent>(this IDialogService dialogService, string title)
         where TContent : new()
     {
@@ -26,7 +24,7 @@ public static class DialogServiceExtensions
     /// <param name="title"> The title of the dialog </param>
     /// <param name="message"> The message to be shown </param>
     /// <param name="isSelectable"> If true, a selectable TextBlock will be used to show the message </param>
-    /// <returns> The <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> </returns>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
     public static IContentDialogBuilder<MessageBoxModel> CreateMessageBoxDialog(this IDialogService dialogService,
         string title,
         string message,

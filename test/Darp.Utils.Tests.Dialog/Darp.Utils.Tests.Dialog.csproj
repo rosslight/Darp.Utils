@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Darp.Utils.Dialog\Darp.Utils.Dialog.csproj" />
+    <ProjectReference Include="..\..\src\Darp.Utils.Dialog.FluentAvalonia\Darp.Utils.Dialog.FluentAvalonia.csproj" />
     <ProjectReference Include="..\Darp.Utils.Tests.Common\Darp.Utils.Tests.Common.csproj" />
   </ItemGroup>
 

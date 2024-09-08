@@ -23,8 +23,6 @@ public sealed class MessageBoxModel : INotifyPropertyChanged
     /// <inheritdoc />
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
     private bool SetField<T>([NotNullIfNotNull(nameof(value))] ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
@@ -32,7 +30,7 @@ public sealed class MessageBoxModel : INotifyPropertyChanged
             return false;
         }
         field = value;
-        OnPropertyChanged(propertyName);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         return true;
     }
 }

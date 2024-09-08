@@ -1,7 +1,5 @@
 namespace Darp.Utils.Dialog;
 
-using FluentAvalonia.UI.Controls;
-
 /// <summary> The builder based on a content dialog </summary>
 /// <typeparam name="TContent"> The type of the content </typeparam>
 public interface IContentDialogBuilder<out TContent>
@@ -13,7 +11,7 @@ public interface IContentDialogBuilder<out TContent>
 
     /// <summary> Sets the button which is shown as the default button </summary>
     /// <param name="defaultButton"> The default <see cref="ContentDialogButton"/> </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     IContentDialogBuilder<TContent> SetDefaultButton(ContentDialogButton defaultButton);
 
     /// <summary>
@@ -21,7 +19,7 @@ public interface IContentDialogBuilder<out TContent>
     /// </summary>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     IContentDialogBuilder<TContent> SetCloseButton(string text,
         Func<TContent, bool>? onClick = null);
 
@@ -31,7 +29,7 @@ public interface IContentDialogBuilder<out TContent>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     IContentDialogBuilder<TContent> SetPrimaryButton(string text,
         IObservable<bool>? isEnabled = null,
         Func<TContent, CancellationToken, Task<bool>>? onClick = null);
@@ -42,7 +40,7 @@ public interface IContentDialogBuilder<out TContent>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
-    /// <returns> The same <see cref="FluentAvaloniaContentDialogBuilder{TContent}"/> instance </returns>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
     IContentDialogBuilder<TContent> SetSecondaryButton(string text,
         IObservable<bool>? isEnabled = null,
         Func<TContent, CancellationToken, Task<bool>>? onClick = null);
