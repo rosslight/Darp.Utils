@@ -32,7 +32,11 @@ public sealed partial class InputDialogData : ObservableValidator, IDialogData
     /// <summary> Set a custom input validation </summary>
     public Func<string?, ValidationResult?>? ValidateInputCallback { get; set; }
 
-    private static ValidationResult? ValidateInput(string? input, ValidationContext context)
+    /// <summary> Validate the input. Necessary for the CustomValidation attribute </summary>
+    /// <param name="input"> The input string </param>
+    /// <param name="context"> The context of the validation </param>
+    /// <returns> The ValidationResult </returns>
+    public static ValidationResult? ValidateInput(string? input, ValidationContext context)
     {
         var instance = (InputDialogData)context.ObjectInstance;
         return instance.ValidateInputCallback?.Invoke(input);

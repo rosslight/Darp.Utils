@@ -3,6 +3,8 @@ namespace Darp.Utils.Dialog;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using DialogData;
+using DynamicData.Binding;
+using System.Reactive.Linq;
 
 /// <summary> Extensions which add additional behavior to the <see cref="IDialogService"/> </summary>
 public static class DialogServiceExtensions
@@ -56,15 +58,12 @@ public static class DialogServiceExtensions
         bool isMessageSelectable = false)
     {
         ArgumentNullException.ThrowIfNull(dialogService);
+        var dialogData = new InputDialogData { Message = message, IsMessageSelectable = isMessageSelectable };
         return dialogService
-            .CreateContentDialog(title, new InputDialogData
-            {
-                Message = message,
-                IsMessageSelectable = isMessageSelectable,
-            })
+            .CreateContentDialog(title, dialogData)
             .SetDefaultButton(ContentDialogButton.Primary)
             .SetCloseButton("Cancel")
-            .SetPrimaryButton("Ok");
+            .SetPrimaryButton("Ok", dialogData.WhenPropertyChanged(x => x.HasErrors).Select(x => !x.Value));
     }
 
     /// <summary> Configure the input field </summary>
