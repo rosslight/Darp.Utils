@@ -30,7 +30,7 @@
                  Text="{CompiledBinding Input}"
                  Watermark="{CompiledBinding InputWatermark}"
                  PasswordChar="{CompiledBinding IsPasswordInput, Converter={x:Static dialogData1:Converters.DialogCharConverter}}"
-                 Classes="{CompiledBinding ., Converter={x:Static dialogData1:Converters.InputDialogClassesConverter}}"/>
+                 Classes.revealPasswordButton="{CompiledBinding IsPasswordInput}"/>
     </StackPanel>
 </UserControl>
 
