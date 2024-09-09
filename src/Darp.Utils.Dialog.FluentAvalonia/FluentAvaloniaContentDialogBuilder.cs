@@ -4,10 +4,9 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
+using DialogData;
 using global::FluentAvalonia.Core;
 using ContentDialogButton = Dialog.ContentDialogButton;
 using FluentContentDialog = global::FluentAvalonia.UI.Controls.ContentDialog;
@@ -52,9 +51,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
                 .FirstOrDefault(x => x.Focusable);
             firstOrDefault?.Focus();
         };
-        Dialog.DataTemplates.Add(new FuncDataTemplate<MessageBoxModel>((model, _) => model.IsSelectable
-            ? new SelectableTextBlock { Text = model.Message, TextWrapping = TextWrapping.Wrap }
-            : new TextBlock { Text = model.Message, TextWrapping = TextWrapping.Wrap }));
+        Dialog.DataTemplates.Add(new DialogDataViewLocator());
         Title = title;
         Content = content;
     }

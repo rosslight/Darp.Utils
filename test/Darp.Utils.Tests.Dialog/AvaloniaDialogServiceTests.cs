@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Utils.Dialog;
+using Utils.Dialog.DialogData;
 using Utils.Dialog.FluentAvalonia;
 
 public sealed class SubstituteDialogService : IDialogService

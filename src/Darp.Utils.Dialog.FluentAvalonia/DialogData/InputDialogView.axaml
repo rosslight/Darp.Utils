@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dialogData="clr-namespace:Darp.Utils.Dialog.DialogData;assembly=Darp.Utils.Dialog"
+             xmlns:dialogData1="clr-namespace:Darp.Utils.Dialog.FluentAvalonia.DialogData"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Darp.Utils.Dialog.FluentAvalonia.DialogData.InputDialogView"
+             x:DataType="dialogData:InputDialogData">
+    <StackPanel>
+        <TextBlock Text="{CompiledBinding Message}"
+                   TextWrapping="WrapWithOverflow">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <CompiledBinding Path="!IsMessageSelectable"/>
+                    <CompiledBinding Path="Message" Converter="{x:Static ObjectConverters.IsNotNull}" />
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
+        <SelectableTextBlock Text="{CompiledBinding Message}"
+                             TextWrapping="WrapWithOverflow">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <CompiledBinding Path="IsMessageSelectable"/>
+                    <CompiledBinding Path="Message" Converter="{x:Static ObjectConverters.IsNotNull}" />
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </SelectableTextBlock>
+        <TextBox Name="InputBox"
+                 Text="{CompiledBinding Input}"
+                 Watermark="{CompiledBinding InputWatermark}"
+                 PasswordChar="{CompiledBinding IsPasswordInput, Converter={x:Static dialogData1:Converters.DialogCharConverter}}"
+                 Classes="{CompiledBinding ., Converter={x:Static dialogData1:Converters.InputDialogClassesConverter}}"/>
+    </StackPanel>
+</UserControl>
+

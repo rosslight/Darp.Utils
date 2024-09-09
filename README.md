@@ -52,6 +52,10 @@ await service.WriteConfigurationAsync(config with { Setting = "NewValue" });
 
 A lightweight dialog service which allows for opening dialogs from the ViewModel.
 
+| Implementation                                                                                                                                   | Description                                                                      |
+|--------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| [![NuGet](https://img.shields.io/nuget/v/Darp.Utils.Dialog.FluentAvalonia.svg)](https://www.nuget.org/packages/Darp.Utils.Dialog.FluentAvalonia) | Implementation based on [FluentAvalonia](https://github.com/amwx/FluentAvalonia) |
+
 Example:
 ```csharp
 ServiceProvider provider = new ServiceCollection()

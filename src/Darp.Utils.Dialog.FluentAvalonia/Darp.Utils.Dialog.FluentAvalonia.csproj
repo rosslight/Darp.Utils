@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <Description>Implementation of Darp.Utils.Dialog compatible with Avalonia</Description>
+  </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Darp.Utils.Dialog\Darp.Utils.Dialog.csproj" />
@@ -14,5 +14,12 @@
     <ItemGroup>
         <PackageReference Include="FluentAvaloniaUI" Version="2.1.0" />
         <PackageReference Include="System.Reactive.Linq" Version="6.0.1" PrivateAssets="All"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="DialogData\MessageBoxView.axaml.cs">
+        <DependentUpon>MessageBoxView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 </Project>
