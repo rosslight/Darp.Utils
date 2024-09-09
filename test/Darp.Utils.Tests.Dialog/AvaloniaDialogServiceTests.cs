@@ -300,12 +300,16 @@ public class AvaloniaDialogServiceTests
         bool? isSelectableTextBlock = null;
         builder.Dialog.Opened += (sender, _) =>
         {
-            TextBlock? textBlock = sender.GetVisualDescendants().OfType<TextBlock>().FirstOrDefault(x => x.Text == messageText);
+            TextBlock? textBlock = sender.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .FirstOrDefault(x => x.IsVisible && x.Text == messageText);
             if (textBlock is not null)
             {
                 isSelectableTextBlock = false;
             }
-            SelectableTextBlock? selectableTextBlock = sender.GetVisualDescendants().OfType<SelectableTextBlock>().FirstOrDefault(x => x.Text == messageText);
+            SelectableTextBlock? selectableTextBlock = sender.GetVisualDescendants()
+                .OfType<SelectableTextBlock>()
+                .FirstOrDefault(x => x.IsVisible && x.Text == messageText);
             if (selectableTextBlock is not null)
             {
                 isSelectableTextBlock = true;
