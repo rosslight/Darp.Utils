@@ -155,12 +155,13 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     }
 
     /// <inheritdoc />
-    public async Task<ContentDialogResult> ShowAsync(CancellationToken cancellationToken = default)
+    public async Task<ContentDialogResult<TContent>> ShowAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            return (ContentDialogResult) await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+            var result = (ContentDialogResult) await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+            return new ContentDialogResult<TContent>(result, Content);
         }
         finally
         {

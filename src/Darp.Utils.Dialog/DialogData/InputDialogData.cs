@@ -20,6 +20,7 @@ public sealed partial class InputDialogData : ObservableValidator, IDialogData
     /// <summary> If set to true, the <see cref="Message"/> is selectable </summary>
     public bool IsMessageSelectable { get; init; }
 
+    /// <summary> The input which can be set in the dialog </summary>
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [Required]

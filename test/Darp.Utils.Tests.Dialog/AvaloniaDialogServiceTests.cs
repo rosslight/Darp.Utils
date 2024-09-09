@@ -124,11 +124,13 @@ public class AvaloniaDialogServiceTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             window.MouseClick(button.GetRelativeBounds(window).Center, MouseButton.Left);
         };
-        await builder.ShowAsync();
+        ContentDialogResult<int> result = await builder.ShowAsync();
 
         // Assert
         builder.Should().BeEquivalentTo(returnedBuilder);
         contentReceivedOnClick.Should().Be(content);
+        result.Result.Should().Be(ContentDialogResult.None);
+        result.Content.Should().Be(content);
         window.Close();
     }
 
@@ -197,11 +199,13 @@ public class AvaloniaDialogServiceTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             window.MouseClick(button.GetRelativeBounds(window).Center, MouseButton.Left);
         };
-        await builder.ShowAsync();
+        ContentDialogResult<int> result = await builder.ShowAsync();
 
         // Assert
         builder.Should().BeEquivalentTo(returnedBuilder);
         contentReceivedOnClick.Should().Be(content);
+        result.Result.Should().Be(ContentDialogResult.Primary);
+        result.Content.Should().Be(content);
         window.Close();
     }
 
@@ -270,11 +274,13 @@ public class AvaloniaDialogServiceTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             window.MouseClick(button.GetRelativeBounds(window).Center, MouseButton.Left);
         };
-        await builder.ShowAsync();
+        ContentDialogResult<int> result = await builder.ShowAsync();
 
         // Assert
         builder.Should().BeEquivalentTo(returnedBuilder);
         contentReceivedOnClick.Should().Be(content);
+        result.Result.Should().Be(ContentDialogResult.Secondary);
+        result.Content.Should().Be(content);
         window.Close();
     }
 
@@ -316,10 +322,11 @@ public class AvaloniaDialogServiceTests
             }
             builder.Dialog.Hide();
         };
-        await builder.ShowAsync();
+        ContentDialogResult<MessageBoxModel> result = await builder.ShowAsync();
 
         // Assert
         isSelectableTextBlock.Should().Be(isSelectable);
+        result.Result.Should().Be(ContentDialogResult.None);
         window.Close();
     }
 }

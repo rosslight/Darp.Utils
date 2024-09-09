@@ -1,8 +1,10 @@
 namespace Darp.Utils.Dialog;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary> The builder based on a content dialog </summary>
 /// <typeparam name="TContent"> The type of the content </typeparam>
-public interface IContentDialogBuilder<out TContent>
+public interface IContentDialogBuilder<TContent>
 {
     /// <summary> The content of the dialog </summary>
     string Title { get; }
@@ -47,6 +49,26 @@ public interface IContentDialogBuilder<out TContent>
 
     /// <summary> Show the current dialog </summary>
     /// <param name="cancellationToken"> The CancellationToken to cancel the operation </param>
-    /// <returns> The task with the <see cref="ContentDialogResult"/> after the dialog has closed </returns>
-    Task<ContentDialogResult> ShowAsync(CancellationToken cancellationToken = default);
+    /// <returns> The task with the <see cref="ContentDialogResult{TContent}"/> after the dialog has closed </returns>
+    Task<ContentDialogResult<TContent>> ShowAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary> A dialog result which contains the content </summary>
+/// <param name="Result"> The result status </param>
+/// <param name="Content"> The content </param>
+/// <typeparam name="TContent"> The type of the <see cref="Content"/> </typeparam>
+[method: SetsRequiredMembers]
+public readonly record struct ContentDialogResult<TContent>(ContentDialogResult Result, TContent Content)
+{
+    /// <summary> The result status </summary>
+    public required ContentDialogResult Result { get; init; } = Result;
+    /// <summary> The content </summary>
+    public required TContent Content { get; init; } = Content;
+
+    /// <summary> The dialog closed with result <see cref="ContentDialogResult.None"/> </summary>
+    public bool IsNone => Result is ContentDialogResult.None;
+    /// <summary> The dialog closed with result <see cref="ContentDialogResult.Primary"/> </summary>
+    public bool IsPrimary => Result is ContentDialogResult.Primary;
+    /// <summary> The dialog closed with result <see cref="ContentDialogResult.Secondary"/> </summary>
+    public bool IsSecondary => Result is ContentDialogResult.Secondary;
 }
