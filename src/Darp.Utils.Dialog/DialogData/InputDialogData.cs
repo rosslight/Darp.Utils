@@ -38,6 +38,7 @@ public sealed partial class InputDialogData : ObservableValidator, IDialogData
     /// <returns> The ValidationResult </returns>
     public static ValidationResult? ValidateInput(string? input, ValidationContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
         var instance = (InputDialogData)context.ObjectInstance;
         return instance.ValidateInputCallback?.Invoke(input);
     }
