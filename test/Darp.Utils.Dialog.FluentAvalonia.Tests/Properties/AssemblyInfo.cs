@@ -1,4 +1,4 @@
 using Avalonia.Headless;
-using Darp.Utils.Tests.Dialog;
+using Darp.Utils.Dialog.FluentAvalonia.Tests;
 
 [assembly: AvaloniaTestApplication(typeof(TestAppBuilder))]

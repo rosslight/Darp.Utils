@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Darp.Utils.Dialog\Darp.Utils.Dialog.csproj" />
+    <PackageReference Include="FluentAssertions.Reactive" Version="0.2.0" />
+  </ItemGroup>
+
+</Project>

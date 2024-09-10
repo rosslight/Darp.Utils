@@ -9,8 +9,6 @@
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-      <PackageReference Include="DynamicData" Version="9.0.4" />
-      <PackageReference Include="System.Reactive.Linq" Version="6.0.1" />
     </ItemGroup>
 
 </Project>

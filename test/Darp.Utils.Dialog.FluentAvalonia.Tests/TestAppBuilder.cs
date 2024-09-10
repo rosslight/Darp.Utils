@@ -1,8 +1,8 @@
-namespace Darp.Utils.Tests.Dialog;
+namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
 
-using Avalonia.Headless;
 using Avalonia;
-using FluentAvalonia.Styling;
+using Avalonia.Headless;
+using global::FluentAvalonia.Styling;
 
 public class TestApp : Application
 {

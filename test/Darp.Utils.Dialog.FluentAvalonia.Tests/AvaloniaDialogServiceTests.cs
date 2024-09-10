@@ -1,4 +1,4 @@
-﻿namespace Darp.Utils.Tests.Dialog;
+﻿namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
 
 using System.Reactive.Subjects;
 using Avalonia;
@@ -8,12 +8,11 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Darp.Utils.Dialog;
+using Darp.Utils.Dialog.DialogData;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using Utils.Dialog;
-using Utils.Dialog.DialogData;
-using Utils.Dialog.FluentAvalonia;
 
 public sealed class SubstituteDialogService : IDialogService
 {
@@ -80,7 +79,7 @@ public class AvaloniaDialogServiceTests
 
         // Assert
         builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.DefaultButton.Should().Be((FluentAvalonia.UI.Controls.ContentDialogButton)button);
+        builder.Dialog.DefaultButton.Should().Be((global::FluentAvalonia.UI.Controls.ContentDialogButton)button);
     }
 
     [Fact]
