@@ -5,6 +5,7 @@
     <AnalysisLevel>latest-all</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAotCompatible>true</IsAotCompatible>
+    <IsPackable>true</IsPackable>
 
     <Authors>rosslight GmbH</Authors>
     <PackageProjectUrl>https://github.com/rosslight/Darp.Utils</PackageProjectUrl>

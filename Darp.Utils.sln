@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Dialog.FluentAva
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Dialog.FluentAvalonia.Tests", "test\Darp.Utils.Dialog.FluentAvalonia.Tests\Darp.Utils.Dialog.FluentAvalonia.Tests.csproj", "{796FD305-E622-4098-8FA8-5DFB5203C2B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.ResxSourceGenerator", "src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj", "{03116D24-4E3D-4314-8946-176E88EA7663}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{796FD305-E622-4098-8FA8-5DFB5203C2B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{796FD305-E622-4098-8FA8-5DFB5203C2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{796FD305-E622-4098-8FA8-5DFB5203C2B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03116D24-4E3D-4314-8946-176E88EA7663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03116D24-4E3D-4314-8946-176E88EA7663}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03116D24-4E3D-4314-8946-176E88EA7663}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03116D24-4E3D-4314-8946-176E88EA7663}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7E57404F-5D1F-46D9-941C-B1090DDBA567} = {E6A96FF6-3509-4DB0-8B55-7BEC3D3E286D}
@@ -75,5 +81,6 @@ Global
 		{16F4A919-C0B6-48CE-ADCC-E057433851C4} = {998FA92C-5039-4E21-8D9D-9B53CFFEB7A0}
 		{8A247DFD-1398-475A-9B44-CE0F567F48CD} = {E6A96FF6-3509-4DB0-8B55-7BEC3D3E286D}
 		{796FD305-E622-4098-8FA8-5DFB5203C2B3} = {998FA92C-5039-4E21-8D9D-9B53CFFEB7A0}
+		{03116D24-4E3D-4314-8946-176E88EA7663} = {E6A96FF6-3509-4DB0-8B55-7BEC3D3E286D}
 	EndGlobalSection
 EndGlobal
