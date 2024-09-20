@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 // https://github.com/dotnet/roslyn-analyzers/blame/f4c8475010cbc3d5956c99c1f2c2d49c03c5871b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator/AbstractResxGenerator.cs
 
 
@@ -31,8 +31,8 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Standard practice for diagnosing source generator failures.")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var resourceFiles = context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
-        var compilationInformation = context.CompilationProvider.Select(
+        IncrementalValuesProvider<AdditionalText> resourceFiles = context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
+        IncrementalValueProvider<CompilationInformation> compilationInformation = context.CompilationProvider.Select(
             (compilation, cancellationToken) =>
             {
                 //var methodImplOptions = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesMethodImplOptions);
@@ -46,11 +46,11 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
                     HasAggressiveInlining: true, //hasAggressiveInlining,
                     HasNotNullIfNotNull: true);//hasNotNullIfNotNull);
             });
-        var resourceFilesToGenerateSource = resourceFiles.Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation)).SelectMany(
+        IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles.Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation)).SelectMany(
             static (resourceFileAndOptions, cancellationToken) =>
             {
-                var (resourceFile, (optionsProvider, compilationInfo)) = resourceFileAndOptions;
-                var options = optionsProvider.GetOptions(resourceFile);
+                (AdditionalText resourceFile, (AnalyzerConfigOptionsProvider optionsProvider, CompilationInformation compilationInfo)) = resourceFileAndOptions;
+                AnalyzerConfigOptions options = optionsProvider.GetOptions(resourceFile);
 
                 // Use the GenerateSource property if provided. Otherwise, the value of GenerateSource defaults to
                 // true for resources without an explicit culture.
@@ -129,17 +129,14 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
                         Public: publicResource)
                 };
             });
-        var renameMapping = resourceFilesToGenerateSource
-            .Select(static (resourceFile, cancellationToken) =>
-            {
-                return (resourceFile.ResourceName, resourceFile.ResourceHintName);
-            })
+        IncrementalValueProvider<ImmutableDictionary<string, string>> renameMapping = resourceFilesToGenerateSource
+            .Select(static (resourceFile, cancellationToken) => (resourceFile.ResourceName, resourceFile.ResourceHintName))
             .Collect()
             .Select(static (resourceNames, cancellationToken) =>
             {
                 var names = new HashSet<string>();
-                var remappedNames = ImmutableDictionary<string, string>.Empty;
-                foreach (var (resourceName, resourceHintName) in resourceNames.OrderBy(x => x.ResourceName, StringComparer.Ordinal))
+                ImmutableDictionary<string, string> remappedNames = ImmutableDictionary<string, string>.Empty;
+                foreach ((var resourceName, var resourceHintName) in resourceNames.OrderBy(x => x.ResourceName, StringComparer.Ordinal))
                 {
                     for (var i = -1; true; i++)
                     {
@@ -163,10 +160,10 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
                 return remappedNames;
             })
             .WithComparer(ImmutableDictionaryEqualityComparer<string, string>.Instance);
-        var resourceFilesToGenerateSourceWithNames = resourceFilesToGenerateSource.Combine(renameMapping).Select(
+        IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSourceWithNames = resourceFilesToGenerateSource.Combine(renameMapping).Select(
             static (resourceFileAndRenameMapping, cancellationToken) =>
             {
-                var (resourceFile, renameMapping) = resourceFileAndRenameMapping;
+                (ResourceInformation resourceFile, ImmutableDictionary<string, string> renameMapping) = resourceFileAndRenameMapping;
                 if (renameMapping.TryGetValue(resourceFile.ResourceName, out var newHintName))
                 {
                     return resourceFile with { ResourceHintName = newHintName };
@@ -282,9 +279,9 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
             if (!Equals(x.ValueComparer, y.ValueComparer))
                 return false;
 
-            foreach (var pair in x)
+            foreach (KeyValuePair<TKey, TValue> pair in x)
             {
-                if (!y.TryGetValue(pair.Key, out var other)
+                if (!y.TryGetValue(pair.Key, out TValue? other)
                     || !x.ValueComparer.Equals(pair.Value, other))
                 {
                     return false;
@@ -294,27 +291,20 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
             return true;
         }
 
-        public int GetHashCode(ImmutableDictionary<TKey, TValue>? obj)
-        {
-            return obj?.Count ?? 0;
-        }
+        public int GetHashCode(ImmutableDictionary<TKey, TValue>? obj) => obj?.Count ?? 0;
     }
 
-    private sealed class Impl
+    private sealed class Impl(ResourceInformation resourceInformation)
     {
         private const int maxDocCommentLength = 256;
 
-        public Impl(ResourceInformation resourceInformation)
-        {
-            ResourceInformation = resourceInformation;
-            OutputText = SourceText.From("", Encoding.UTF8);
-        }
-
-        public ResourceInformation ResourceInformation { get; }
+        public ResourceInformation ResourceInformation { get; } = resourceInformation;
         public CompilationInformation CompilationInformation => ResourceInformation.CompilationInformation;
 
         public string? OutputTextHintName { get; private set; }
-        public SourceText OutputText { get; private set; }
+        public SourceText OutputText { get; private set; } = SourceText.From("", Encoding.UTF8);
+
+        private static readonly string[] separator = ["\r\n", "\r", "\n"];
 
         private enum Lang
         {
@@ -368,20 +358,15 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
                 return false;
             }
 
-            var resourceAccessName = string.IsNullOrEmpty(ResourceInformation.ResourceClassName)
+            var resourceAccessName = (string.IsNullOrEmpty(ResourceInformation.ResourceClassName)
                 ? ResourceInformation.ResourceName
-                : ResourceInformation.ResourceClassName;
-            if (resourceAccessName is null)
-            {
-                // TODO: Check whats wrong here
-                throw new NotImplementedException();
-            }
+                : ResourceInformation.ResourceClassName) ?? throw new NotImplementedException();
             SplitName(resourceAccessName, out var namespaceName, out var className);
 
             var classIndent = namespaceName == null ? "" : "    ";
             var memberIndent = classIndent + "    ";
 
-            var text = ResourceInformation.ResourceFile.GetText(cancellationToken);
+            SourceText? text = ResourceInformation.ResourceFile.GetText(cancellationToken);
             if (text is null)
             {
                 LogError(language, "ResourceFile was null");
@@ -389,7 +374,7 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
             }
 
             var strings = new StringBuilder();
-            foreach (var node in XDocument.Load(new SourceTextReader(text)).Descendants("data"))
+            foreach (XElement? node in XDocument.Load(new SourceTextReader(text)).Descendants("data"))
             {
                 var name = node.Attribute("name")?.Value;
                 if (name == null)
@@ -411,7 +396,7 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
                     return false;
                 }
 
-                var docCommentString = value.Length > maxDocCommentLength ? value.Substring(0, maxDocCommentLength) + " ..." : value;
+                var docCommentString = value.Length > maxDocCommentLength ? value[..maxDocCommentLength] + " ..." : value;
 
                 RenderDocComment(language, memberIndent, strings, docCommentString);
 
@@ -618,11 +603,9 @@ End Namespace";
             // The ResourceManager property being initialized lazily is an important optimization that lets .NETNative
             // completely remove the ResourceManager class if the disk space saving optimization to strip resources
             // (/DisableExceptionMessages) is turned on in the compiler.
-            string result;
-            switch (language)
+            var result = language switch
             {
-                case Lang.CSharp:
-                    result = $@"// <auto-generated/>
+                Lang.CSharp => $@"// <auto-generated/>
 
 {(CompilationInformation.SupportsNullable ? "#nullable enable" : "")}
 using System.Reflection;
@@ -637,11 +620,8 @@ using System.Reflection;
 {strings}
 {classIndent}}}
 {namespaceEnd}
-";
-                    break;
-
-                case Lang.VisualBasic:
-                    result = $@"' <auto-generated/>
+",
+                Lang.VisualBasic => $@"' <auto-generated/>
 
 Imports System.Reflection
 
@@ -664,13 +644,9 @@ Imports System.Reflection
 {strings}
 {classIndent}End Class
 {namespaceEnd}
-";
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
-            }
-
+",
+                _ => throw new InvalidOperationException(),
+            };
             OutputText = SourceText.From(result, Encoding.UTF8, SourceHashAlgorithm.Sha256);
             return true;
         }
@@ -702,7 +678,7 @@ Imports System.Reflection
 
             static bool IsIdentifierPartCharacter(char ch)
             {
-                var cat = CharUnicodeInfo.GetUnicodeCategory(ch);
+                UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(ch);
                 return IsLetterChar(cat)
                        || cat == UnicodeCategory.DecimalDigitNumber
                        || cat == UnicodeCategory.ConnectorPunctuation
@@ -722,6 +698,56 @@ Imports System.Reflection
                     case UnicodeCategory.OtherLetter:
                     case UnicodeCategory.LetterNumber:
                         return true;
+                    case UnicodeCategory.ClosePunctuation:
+                        break;
+                    case UnicodeCategory.ConnectorPunctuation:
+                        break;
+                    case UnicodeCategory.Control:
+                        break;
+                    case UnicodeCategory.CurrencySymbol:
+                        break;
+                    case UnicodeCategory.DashPunctuation:
+                        break;
+                    case UnicodeCategory.DecimalDigitNumber:
+                        break;
+                    case UnicodeCategory.EnclosingMark:
+                        break;
+                    case UnicodeCategory.FinalQuotePunctuation:
+                        break;
+                    case UnicodeCategory.Format:
+                        break;
+                    case UnicodeCategory.InitialQuotePunctuation:
+                        break;
+                    case UnicodeCategory.LineSeparator:
+                        break;
+                    case UnicodeCategory.MathSymbol:
+                        break;
+                    case UnicodeCategory.ModifierSymbol:
+                        break;
+                    case UnicodeCategory.NonSpacingMark:
+                        break;
+                    case UnicodeCategory.OpenPunctuation:
+                        break;
+                    case UnicodeCategory.OtherNotAssigned:
+                        break;
+                    case UnicodeCategory.OtherNumber:
+                        break;
+                    case UnicodeCategory.OtherPunctuation:
+                        break;
+                    case UnicodeCategory.OtherSymbol:
+                        break;
+                    case UnicodeCategory.ParagraphSeparator:
+                        break;
+                    case UnicodeCategory.PrivateUse:
+                        break;
+                    case UnicodeCategory.SpaceSeparator:
+                        break;
+                    case UnicodeCategory.SpacingCombiningMark:
+                        break;
+                    case UnicodeCategory.Surrogate:
+                        break;
+                    default:
+                        break;
                 }
 
                 return false;
@@ -736,7 +762,7 @@ Imports System.Reflection
 
             var escapedTrimmedValue = new XElement("summary", value).ToString();
 
-            foreach (var line in escapedTrimmedValue.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
+            foreach (var line in escapedTrimmedValue.Split(separator, StringSplitOptions.None))
             {
                 strings.Append(memberIndent).Append(docCommentStart).Append(' ');
                 strings.AppendLine(line);
@@ -778,8 +804,8 @@ Imports System.Reflection
             }
             else
             {
-                namespaceName = fullName.Substring(0, lastDot);
-                className = fullName.Substring(lastDot + 1);
+                namespaceName = fullName[..lastDot];
+                className = fullName[(lastDot + 1)..];
             }
         }
 
@@ -798,7 +824,7 @@ Imports System.Reflection
             strings.AppendLine();
         }
 
-        private class ResourceString
+        private sealed class ResourceString
         {
             private static readonly Regex _namedParameterMatcher = new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             private static readonly Regex _numberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
@@ -809,7 +835,7 @@ Imports System.Reflection
                 Name = name;
                 Value = value;
 
-                var match = _namedParameterMatcher.Matches(value);
+                MatchCollection match = _namedParameterMatcher.Matches(value);
                 UsingNamedArgs = match.Count > 0;
 
                 if (!UsingNamedArgs)
@@ -817,7 +843,7 @@ Imports System.Reflection
                     match = _numberParameterMatcher.Matches(value);
                 }
 
-                var arguments = match.Cast<Match>()
+                IEnumerable<string> arguments = match.Cast<Match>()
                     .Select(m => m.Groups[1].Value)
                     .Distinct();
                 if (!UsingNamedArgs)
@@ -842,30 +868,22 @@ Imports System.Reflection
 
             public string GetMethodParameters(Lang language, bool supportsNullable)
             {
-                switch (language)
+                return language switch
                 {
-                    case Lang.CSharp:
-                        return string.Join(", ", _arguments.Select(a => $"object{(supportsNullable ? "?" : "")} " + GetArgName(a)));
-                    case Lang.VisualBasic:
-                        return string.Join(", ", _arguments.Select(GetArgName));
-                    default:
-                        throw new NotImplementedException();
-                }
+                    Lang.CSharp => string.Join(", ", _arguments.Select(a => $"object{(supportsNullable ? "?" : "")} " + GetArgName(a))),
+                    Lang.VisualBasic => string.Join(", ", _arguments.Select(GetArgName)),
+                    _ => throw new NotImplementedException(),
+                };
             }
 
             private string GetArgName(string name) => UsingNamedArgs ? name : 'p' + name;
         }
     }
 
-    private sealed class SourceTextReader : TextReader
+    private sealed class SourceTextReader(SourceText text) : TextReader
     {
-        private readonly SourceText _text;
+        private readonly SourceText _text = text;
         private int _position;
-
-        public SourceTextReader(SourceText text)
-        {
-            _text = text;
-        }
 
         public override int Read(char[] buffer, int index, int count)
         {

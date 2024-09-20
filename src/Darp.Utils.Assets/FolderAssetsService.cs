@@ -6,18 +6,13 @@ using Darp.Utils.Assets.Abstractions;
 public interface IFolderAssetsService : IAssetsService;
 
 /// <inheritdoc />
-public class FolderAssetsService : IFolderAssetsService
+/// <summary> Instantiate a new <see cref="FolderAssetsService"/> with a given path relative to the <paramref name="folderPath"/> </summary>
+/// <param name="folderPath">The path to the folder </param>
+/// <param name="relativePath">The path relative to the <paramref name="folderPath"/></param>
+public class FolderAssetsService(string folderPath, string relativePath) : IFolderAssetsService
 {
     /// <inheritdoc />
-    public string BasePath { get; }
-
-    /// <summary> Instantiate a new <see cref="FolderAssetsService"/> with a given path relative to the <paramref name="folderPath"/> </summary>
-    /// <param name="folderPath">The path to the folder </param>
-    /// <param name="relativePath">The path relative to the <paramref name="folderPath"/></param>
-    public FolderAssetsService(string folderPath, string relativePath)
-    {
-        BasePath = Path.Join(folderPath, relativePath);
-    }
+    public string BasePath { get; } = Path.Join(folderPath, relativePath);
 
     /// <inheritdoc />
     public bool Exists(string? path) => Path.Exists(Path.Join(BasePath, path));

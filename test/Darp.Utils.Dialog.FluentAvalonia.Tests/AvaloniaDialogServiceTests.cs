@@ -1,4 +1,4 @@
-﻿namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
+namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
 
 using System.Reactive.Subjects;
 using Avalonia;
@@ -348,11 +348,7 @@ file static class Extensions
     /// <exception cref="ArgumentOutOfRangeException"> Thrown if transform between visuals could not be calculated </exception>
     public static Rect GetRelativeBounds(this Visual visual, Visual second)
     {
-        Matrix? transform = visual.TransformToVisual(second);
-        if (transform is null)
-        {
-            throw new ArgumentOutOfRangeException(null, "Could not calculate transformation from one visual to the other");
-        }
+        Matrix? transform = visual.TransformToVisual(second) ?? throw new ArgumentOutOfRangeException(null, "Could not calculate transformation from one visual to the other");
         return new Rect(visual.Bounds.Size).TransformToAABB(transform.Value);
     }
 

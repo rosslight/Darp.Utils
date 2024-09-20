@@ -9,17 +9,23 @@ using Assets;
 using Assets.Abstractions;
 
 /// <inheritdoc cref="IConfigurationService{TConfig}"/>
-public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfig>
+/// <summary> Instantiate a new Configuration service </summary>
+/// <param name="configFileName">The name of the config file</param>
+/// <param name="configurationAssetsService">The assets service to be read from or written to</param>
+/// <param name="typeInfo">Metadata about the type to convert.</param>
+public sealed class ConfigurationService<TConfig>(string configFileName,
+    IAssetsService configurationAssetsService,
+    JsonTypeInfo<TConfig> typeInfo) : IConfigurationService<TConfig>
     where TConfig : new()
 {
-    private readonly string _configFileName;
+    private readonly string _configFileName = configFileName;
     //private readonly IReadOnlyAssetsService _defaultAssetsService;
-    private readonly IAssetsService _configurationAssetsService;
+    private readonly IAssetsService _configurationAssetsService = configurationAssetsService;
     private TConfig _config = new();
     private bool _isLoaded;
     private bool _isDisposed;
     private readonly SemaphoreSlim _semaphore = new(1);
-    private readonly JsonTypeInfo<TConfig> _configTypeInfo;
+    private readonly JsonTypeInfo<TConfig> _configTypeInfo = typeInfo;
 
     /// <summary> Instantiate a new Configuration service </summary>
     /// <param name="configFileName">The name of the config file</param>
@@ -41,20 +47,6 @@ public sealed class ConfigurationService<TConfig> : IConfigurationService<TConfi
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
         return (JsonTypeInfo<TConfig>)options.GetTypeInfo(typeof(TConfig));
-    }
-
-    /// <summary> Instantiate a new Configuration service </summary>
-    /// <param name="configFileName">The name of the config file</param>
-    /// <param name="configurationAssetsService">The assets service to be read from or written to</param>
-    /// <param name="typeInfo">Metadata about the type to convert.</param>
-    public ConfigurationService(string configFileName,
-        IAssetsService configurationAssetsService,
-        JsonTypeInfo<TConfig> typeInfo)
-    {
-        _configFileName = configFileName;
-        //_defaultAssetsService = defaultAssetsService;
-        _configurationAssetsService = configurationAssetsService;
-        _configTypeInfo = typeInfo;
     }
 
     /// <summary> The JsonSerializerOptions used </summary>

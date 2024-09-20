@@ -13,12 +13,9 @@ public sealed class FolderDataAssetsServiceTests
         out string relativePath)
     {
         tempDirectory = Path.GetTempPath();
-        relativePath = $"DarpUtils_{Guid.NewGuid().ToString()}";
+        relativePath = $"DarpUtils_{Guid.NewGuid()}";
         folderAssetsService = new FolderAssetsService(tempDirectory, relativePath);
-        return Disposable.Create(folderAssetsService.BasePath, path =>
-        {
-            Directory.Delete(path, true);
-        });
+        return Disposable.Create(folderAssetsService.BasePath, path => Directory.Delete(path, true));
     }
 
     [Fact]

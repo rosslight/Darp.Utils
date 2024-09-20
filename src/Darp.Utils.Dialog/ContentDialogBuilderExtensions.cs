@@ -109,7 +109,7 @@ public static class ContentDialogBuilderExtensions
         this IContentDialogBuilder<InputDialogData> builder,
         string? watermark = null,
         bool? isPassword = null,
-        Func<string?,ValidationResult?>? validateInput = null)
+        Func<string?, ValidationResult?>? validateInput = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
         if (watermark is not null)

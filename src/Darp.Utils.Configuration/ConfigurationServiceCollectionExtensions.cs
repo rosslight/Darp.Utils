@@ -23,10 +23,7 @@ public static class ConfigurationServiceCollectionExtensions
         string configFileName,
         JsonTypeInfo<TConfig> typeInfo)
         where TAssetsService : IAssetsService where TConfig : new() => serviceCollection
-        .AddSingleton<IConfigurationService<TConfig>>(provider =>
-        {
-            return new ConfigurationService<TConfig>(configFileName, provider.GetRequiredService<TAssetsService>(), typeInfo);
-        });
+        .AddSingleton<IConfigurationService<TConfig>>(provider => new ConfigurationService<TConfig>(configFileName, provider.GetRequiredService<TAssetsService>(), typeInfo));
 
     /// <summary>
     /// Adds a new configuration file and registers a corresponding <see cref="IConfigurationService{TConfig}"/>.
@@ -43,8 +40,5 @@ public static class ConfigurationServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         string configFileName)
         where TAssetsService : IAssetsService where TConfig : new() => serviceCollection
-        .AddSingleton<IConfigurationService<TConfig>>(provider =>
-        {
-            return new ConfigurationService<TConfig>(configFileName, provider.GetRequiredService<TAssetsService>());
-        });
+        .AddSingleton<IConfigurationService<TConfig>>(provider => new ConfigurationService<TConfig>(configFileName, provider.GetRequiredService<TAssetsService>()));
 }
