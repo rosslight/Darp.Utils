@@ -26,7 +26,7 @@ using Microsoft.CodeAnalysis.Text;
 
 internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 {
-    protected bool SupportsNullable(Compilation compilation) => true;
+    protected static bool SupportsNullable(Compilation compilation) => true;
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Standard practice for diagnosing source generator failures.")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -648,7 +648,7 @@ Imports System.Reflection
 ",
                 _ => throw new InvalidOperationException(),
             };
-            OutputText = SourceText.From(result, Encoding.UTF8, SourceHashAlgorithm.Sha256);
+            OutputText = SourceText.From(result.Replace("\r\n", "\n"), Encoding.UTF8, SourceHashAlgorithm.Sha256);
             return true;
         }
 
