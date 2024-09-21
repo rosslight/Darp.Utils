@@ -85,13 +85,6 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 
                 options.TryGetValue("build_metadata.AdditionalFiles.ClassName", out var resourceClassName);
 
-                if (!options.TryGetValue("build_metadata.AdditionalFiles.OmitGetResourceString",
-                        out var omitGetResourceStringText)
-                    || !bool.TryParse(omitGetResourceStringText, out var omitGetResourceString))
-                {
-                    omitGetResourceString = false;
-                }
-
                 if (!options.TryGetValue("build_metadata.AdditionalFiles.EmitFormatMethods",
                         out var emitFormatMethodsText)
                     || !bool.TryParse(emitFormatMethodsText, out var emitFormatMethods))
@@ -113,7 +106,6 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                         ResourceName: string.Join(".", rootNamespace, resourceName),
                         ResourceHintName: resourceHintName,
                         ResourceClassName: resourceClassName,
-                        OmitGetResourceString: omitGetResourceString,
                         EmitFormatMethods: emitFormatMethods,
                         Public: publicResource),
                 ];

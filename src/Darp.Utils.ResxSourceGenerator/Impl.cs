@@ -90,29 +90,22 @@ internal sealed class Impl(ResourceInformation resourceInformation)
             RenderFormatMethod(memberIndent, strings, resourceString);
         }
 
-        string? getStringMethod;
-        if (ResourceInformation.OmitGetResourceString)
+        var getResourceStringAttributes = new List<string>();
+        if (CompilationInformation.HasAggressiveInlining)
         {
-            getStringMethod = null;
+            getResourceStringAttributes.Add("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
         }
-        else
-        {
-            var getResourceStringAttributes = new List<string>();
-            if (CompilationInformation.HasAggressiveInlining)
-            {
-                getResourceStringAttributes.Add("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
-            }
 
-            getStringMethod = $"""
+        var getStringMethod = $"""
 {memberIndent}/// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
 {memberIndent}/// <param name="resourceName">The name of the resource to get</param>
 {memberIndent}/// <returns>Returns the resource value as a string or the <paramref name="resourceName"/> if it could not be found</returns>
 {string.Join(Environment.NewLine, getResourceStringAttributes.Select(attr => memberIndent + attr))}
 {memberIndent}public string GetResourceString(string resourceName) => ResourceManager.GetString(resourceName, Culture) ?? resourceName;
 """;
-            if (ResourceInformation.EmitFormatMethods)
-            {
-                getStringMethod += $@"
+        if (ResourceInformation.EmitFormatMethods)
+        {
+            getStringMethod += $@"
 
 {memberIndent}private static string GetResourceString(string resourceKey, string[]? formatterNames)
 {memberIndent}{{
@@ -127,7 +120,6 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 {memberIndent}   return value;
 {memberIndent}}}
 ";
-            }
         }
 
         string? namespaceStart, namespaceEnd;

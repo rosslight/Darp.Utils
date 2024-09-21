@@ -231,47 +231,6 @@ build_metadata.AdditionalFiles.ClassName = {className}
 
     [Theory]
     [CombinatorialData]
-    public async Task SingleString_OmitGetResourceStringCSharpAsync(bool omitGetResourceString)
-    {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
-        var customGetResourceString = @"#nullable enable
-
-namespace TestProject
-{
-    internal static partial class Resources
-    {
-        internal static string? GetResourceString(string resourceKey, string? defaultValue = null) => throw null!;
-    }
-}
-";
-
-        await new VerifyCS.Test(identifier: omitGetResourceString.ToString())
-        {
-            TestState =
-            {
-                Sources = { omitGetResourceString ? customGetResourceString : "" },
-                AdditionalFiles = { ("/0/Resources.resx", code) },
-                AnalyzerConfigFiles =
-                {
-                    ("/.globalconfig", $@"
-is_global = true
-
-[/0/Resources.resx]
-build_metadata.AdditionalFiles.OmitGetResourceString = {(omitGetResourceString ? "true" : "false")}
-"),
-                },
-            },
-        }.AddGeneratedSources().RunAsync();
-    }
-
-    [Theory]
-    [CombinatorialData]
     public async Task SingleString_EmitFormatMethodsCSharpAsync(
         [CombinatorialValues("0", "x", "replacement")] string placeholder,
         bool emitFormatMethods)
