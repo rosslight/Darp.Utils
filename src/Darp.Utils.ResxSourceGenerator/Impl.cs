@@ -23,7 +23,7 @@ internal sealed class Impl(ResourceInformation resourceInformation)
     [MemberNotNullWhen(true, nameof(OutputTextHintName), nameof(OutputText))]
     public bool Execute(CancellationToken cancellationToken)
     {
-        OutputTextHintName = ResourceInformation.ResourceHintName + $".Designer.cs";
+        OutputTextHintName = $"{ResourceInformation.ResourceHintName}.Designer.cs";
 
         if (string.IsNullOrEmpty(ResourceInformation.ResourceName))
         {
@@ -144,7 +144,8 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 
         string resourceTypeName;
         string? resourceTypeDefinition;
-        if (string.IsNullOrEmpty(ResourceInformation.ResourceClassName) || ResourceInformation.ResourceName == ResourceInformation.ResourceClassName)
+        if (string.IsNullOrEmpty(ResourceInformation.ResourceClassName)
+            || ResourceInformation.ResourceName == ResourceInformation.ResourceClassName)
         {
             // resource name is same as accessor, no need for a second type.
             resourceTypeName = className;
@@ -156,22 +157,23 @@ internal sealed class Impl(ResourceInformation resourceInformation)
             // this empty type must remain as it is required by the .NETNative toolchain for locating resources
             // once assemblies have been merged into the application
             resourceTypeName = ResourceInformation.ResourceName;
-
-            SplitName(resourceTypeName, out var resourceNamespaceName, out var resourceClassName);
-            var resourceClassIndent = resourceNamespaceName == null ? "" : "    ";
-
-            resourceTypeDefinition = $"{resourceClassIndent}internal static class {resourceClassName} {{ }}";
-            if (resourceNamespaceName != null)
+            var hasNamespace = SplitName(resourceTypeName, out var resourceNamespaceName, out var resourceClassName);
+            if (!hasNamespace || resourceNamespaceName is null)
             {
-                resourceTypeDefinition = $@"namespace {resourceNamespaceName}
-{{
-{resourceTypeDefinition}
-}}";
+                LogError($"No namespace for resource type name '{resourceTypeName}' provided. That should not happen");
+                return false;
             }
+            resourceTypeDefinition = $$"""
+
+namespace {{resourceNamespaceName}}
+{
+    internal static class {{resourceClassName}} { }
+}
+""";
         }
 
         var namesClass = $$"""
-{{memberIndent}}/// <summary>All keys contained in <see cref="Resources"/></summary>
+{{memberIndent}}/// <summary>All keys contained in <see cref="{{className}}"/></summary>
 {{memberIndent}}public static class Keys
 {{memberIndent}}{
 {{string.Join(Environment.NewLine, resourceNames.Select(x => $"{memberIndent}    public const string @{x.Identifier} = @\"{x.Name}\";"))}}
@@ -267,19 +269,20 @@ using System.Reflection;
         }
     }
 
-    private static void SplitName(string fullName, out string? namespaceName, out string className)
+    private static bool SplitName(string fullName,
+        [NotNullWhen(true)] out string? namespaceName,
+        out string className)
     {
         var lastDot = fullName.LastIndexOf('.');
         if (lastDot == -1)
         {
             namespaceName = null;
             className = fullName;
+            return false;
         }
-        else
-        {
-            namespaceName = fullName[..lastDot];
-            className = fullName[(lastDot + 1)..];
-        }
+        namespaceName = fullName[..lastDot];
+        className = fullName[(lastDot + 1)..];
+        return true;
     }
 
     private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
