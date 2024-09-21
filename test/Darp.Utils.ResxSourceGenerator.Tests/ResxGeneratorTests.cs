@@ -3,8 +3,8 @@
 namespace Microsoft.CodeAnalysis.ResxSourceGenerator.Test;
 
 using Xunit;
-using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
-using VerifyCS = Microsoft.CodeAnalysis.ResxSourceGenerator.Test.CSharpSourceGeneratorVerifier<Darp.Utils.ResxSourceGenerator.CSharpResxSourceGenerator>;
+using CSharpLanguageVersion = CSharp.LanguageVersion;
+using VerifyCS = CSharpSourceGeneratorVerifier<Darp.Utils.ResxSourceGenerator.CSharpResxSourceGenerator>;
 
 public class ResxGeneratorTests
 {

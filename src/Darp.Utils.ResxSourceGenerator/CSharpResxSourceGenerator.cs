@@ -22,8 +22,7 @@ using Microsoft.CodeAnalysis.Text;
 
 internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 {
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
-        Justification = "Standard practice for diagnosing source generator failures.")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Standard practice for diagnosing source generator failures.")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<AdditionalText> resourceFiles =
@@ -42,153 +41,147 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                     HasNotNullIfNotNull: true); //hasNotNullIfNotNull);
             });
         IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles
-            .Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation)).SelectMany(
-                static (resourceFileAndOptions, _) =>
-                {
-                    (AdditionalText resourceFile,
-                            (AnalyzerConfigOptionsProvider optionsProvider, CompilationInformation compilationInfo)) =
-                        resourceFileAndOptions;
-                    AnalyzerConfigOptions options = optionsProvider.GetOptions(resourceFile);
+            .Combine(context.AnalyzerConfigOptionsProvider)
+            .Combine(compilationInformation)
+            .SelectMany(static (resourceFileAndOptions, _) =>
+            {
+                ((AdditionalText resourceFile, AnalyzerConfigOptionsProvider optionsProvider),
+                    CompilationInformation compilationInfo) = resourceFileAndOptions;
+                AnalyzerConfigOptions options = optionsProvider.GetOptions(resourceFile);
 
-                    // Use the GenerateSource property if provided. Otherwise, the value of GenerateSource defaults to
-                    // true for resources without an explicit culture.
-                    var explicitGenerateSource = IsGenerateSource(options);
-                    if (explicitGenerateSource == false)
+                // Use the GenerateSource property if provided. Otherwise, the value of GenerateSource defaults to
+                // true for resources without an explicit culture.
+                var explicitGenerateSource = IsGenerateSource(options);
+                if (explicitGenerateSource == false)
+                {
+                    // Source generation is explicitly disabled for this resource file
+                    return Array.Empty<ResourceInformation>();
+                }
+
+                if (explicitGenerateSource != true)
+                {
+                    var implicitGenerateSource = !IsExplicitWithCulture(options);
+                    if (!implicitGenerateSource)
                     {
-                        // Source generation is explicitly disabled for this resource file
+                        // Source generation is disabled for this resource file
                         return Array.Empty<ResourceInformation>();
                     }
-                    else if (explicitGenerateSource != true)
-                    {
-                        var implicitGenerateSource = !IsExplicitWithCulture(options);
-                        if (!implicitGenerateSource)
-                        {
-                            // Source generation is disabled for this resource file
-                            return Array.Empty<ResourceInformation>();
-                        }
-                    }
+                }
 
-                    if (!optionsProvider.GlobalOptions.TryGetValue("build_property.RootNamespace",
-                            out var rootNamespace))
-                    {
-                        rootNamespace = compilationInfo.AssemblyName;
-                    }
+                if (!optionsProvider.GlobalOptions.TryGetValue("build_property.RootNamespace",
+                        out var rootNamespace))
+                {
+                    rootNamespace = compilationInfo.AssemblyName;
+                }
 
-                    var resourceHintName = Path.GetFileNameWithoutExtension(resourceFile.Path);
-                    var resourceName = resourceHintName;
-                    if (options.TryGetValue("build_metadata.AdditionalFiles.RelativeDir", out var relativeDir))
-                    {
-                        resourceName =
-                            relativeDir.Replace(Path.DirectorySeparatorChar, '.')
-                                .Replace(Path.AltDirectorySeparatorChar, '.') + resourceName;
-                    }
+                var resourceHintName = Path.GetFileNameWithoutExtension(resourceFile.Path);
+                var resourceName = resourceHintName;
+                if (options.TryGetValue("build_metadata.AdditionalFiles.RelativeDir", out var relativeDir))
+                {
+                    relativeDir = relativeDir
+                        .Replace(Path.DirectorySeparatorChar, '.')
+                        .Replace(Path.AltDirectorySeparatorChar, '.');
+                    resourceName = relativeDir + resourceName;
+                }
 
-                    options.TryGetValue("build_metadata.AdditionalFiles.ClassName", out var resourceClassName);
+                options.TryGetValue("build_metadata.AdditionalFiles.ClassName", out var resourceClassName);
 
-                    if (!options.TryGetValue("build_metadata.AdditionalFiles.OmitGetResourceString",
-                            out var omitGetResourceStringText)
-                        || !bool.TryParse(omitGetResourceStringText, out var omitGetResourceString))
-                    {
-                        omitGetResourceString = false;
-                    }
+                if (!options.TryGetValue("build_metadata.AdditionalFiles.OmitGetResourceString",
+                        out var omitGetResourceStringText)
+                    || !bool.TryParse(omitGetResourceStringText, out var omitGetResourceString))
+                {
+                    omitGetResourceString = false;
+                }
 
-                    if (!options.TryGetValue("build_metadata.AdditionalFiles.EmitFormatMethods",
-                            out var emitFormatMethodsText)
-                        || !bool.TryParse(emitFormatMethodsText, out var emitFormatMethods))
-                    {
-                        emitFormatMethods = false;
-                    }
+                if (!options.TryGetValue("build_metadata.AdditionalFiles.EmitFormatMethods",
+                        out var emitFormatMethodsText)
+                    || !bool.TryParse(emitFormatMethodsText, out var emitFormatMethods))
+                {
+                    emitFormatMethods = false;
+                }
 
-                    if (!options.TryGetValue("build_metadata.AdditionalFiles.Public", out var publicText)
-                        || !bool.TryParse(publicText, out var publicResource))
-                    {
-                        publicResource = false;
-                    }
+                if (!options.TryGetValue("build_metadata.AdditionalFiles.Public", out var publicText)
+                    || !bool.TryParse(publicText, out var publicResource))
+                {
+                    publicResource = false;
+                }
 
-                    return
-                    [
-                        new ResourceInformation(
-                            CompilationInformation: compilationInfo,
-                            ResourceFile: resourceFile,
-                            ResourceName: string.Join(".", rootNamespace, resourceName),
-                            ResourceHintName: resourceHintName,
-                            ResourceClassName: resourceClassName,
-                            OmitGetResourceString: omitGetResourceString,
-                            EmitFormatMethods: emitFormatMethods,
-                            Public: publicResource),
-                    ];
-                });
+                return
+                [
+                    new ResourceInformation(
+                        CompilationInformation: compilationInfo,
+                        ResourceFile: resourceFile,
+                        ResourceName: string.Join(".", rootNamespace, resourceName),
+                        ResourceHintName: resourceHintName,
+                        ResourceClassName: resourceClassName,
+                        OmitGetResourceString: omitGetResourceString,
+                        EmitFormatMethods: emitFormatMethods,
+                        Public: publicResource),
+                ];
+            });
         IncrementalValueProvider<ImmutableDictionary<string, string>> renameMapping = resourceFilesToGenerateSource
-            .Select(static (resourceFile, _) =>
-                (resourceFile.ResourceName, resourceFile.ResourceHintName))
+            .Select(static (resourceFile, _) => (resourceFile.ResourceName, resourceFile.ResourceHintName))
             .Collect()
             .Select(static (resourceNames, _) =>
             {
                 var names = new HashSet<string>();
                 ImmutableDictionary<string, string> remappedNames = ImmutableDictionary<string, string>.Empty;
-                foreach ((var resourceName, var resourceHintName) in resourceNames.OrderBy(x => x.ResourceName,
-                             StringComparer.Ordinal))
+                foreach ((string resourceName, string resourceHintName) in resourceNames.OrderBy(x => x.ResourceName, StringComparer.Ordinal))
                 {
-                    for (var i = -1;; i++)
+                    for (var i = -1; ; i++)
                     {
                         if (i == -1)
                         {
                             if (names.Add(resourceHintName))
                                 break;
+                            continue;
                         }
-                        else
-                        {
-                            var candidateName = resourceHintName + i;
-                            if (names.Add(candidateName))
-                            {
-                                remappedNames = remappedNames.Add(resourceName, candidateName);
-                                break;
-                            }
-                        }
+                        var candidateName = resourceHintName + i;
+                        if (!names.Add(candidateName))
+                            continue;
+                        remappedNames = remappedNames.Add(resourceName, candidateName);
+                        break;
                     }
                 }
 
                 return remappedNames;
             })
             .WithComparer(ImmutableDictionaryEqualityComparer<string, string>.Instance);
-        IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSourceWithNames =
-            resourceFilesToGenerateSource.Combine(renameMapping).Select(
-                static (resourceFileAndRenameMapping, _) =>
-                {
-                    (ResourceInformation resourceFile, ImmutableDictionary<string, string> renameMapping) =
-                        resourceFileAndRenameMapping;
-                    if (renameMapping.TryGetValue(resourceFile.ResourceName, out var newHintName))
-                    {
-                        return resourceFile with { ResourceHintName = newHintName };
-                    }
-
-                    return resourceFile;
-                });
-
-        context.RegisterSourceOutput(
-            resourceFilesToGenerateSourceWithNames,
-            static (context, resourceInformation) =>
+        IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSourceWithNames = resourceFilesToGenerateSource
+            .Combine(renameMapping)
+            .Select(static (resourceFileAndRenameMapping, _) =>
             {
-                try
+                (ResourceInformation resourceFile, ImmutableDictionary<string, string> renameMapping) = resourceFileAndRenameMapping;
+                if (renameMapping.TryGetValue(resourceFile.ResourceName, out var newHintName))
                 {
-                    var impl = new Impl(resourceInformation);
-                    if (impl.Execute(context.CancellationToken))
-                    {
-                        context.AddSource(impl.OutputTextHintName, impl.OutputText);
-                    }
+                    return resourceFile with { ResourceHintName = newHintName };
                 }
-                catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    var exceptionLines = ex.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                    var text = string.Join("", exceptionLines.Select(line => "#error " + line + Environment.NewLine));
-                    var errorText = SourceText.From(text, Encoding.UTF8, SourceHashAlgorithm.Sha256);
-                    context.AddSource($"{resourceInformation.ResourceHintName}.Error", errorText);
-                }
+
+                return resourceFile;
             });
+
+        context.RegisterSourceOutput(resourceFilesToGenerateSourceWithNames, static (context, resourceInformation) =>
+        {
+            try
+            {
+                var impl = new Impl(resourceInformation);
+                if (impl.Execute(context.CancellationToken))
+                {
+                    context.AddSource(impl.OutputTextHintName, impl.OutputText);
+                }
+            }
+            catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var exceptionLines = ex.ToString().Split([Environment.NewLine], StringSplitOptions.None);
+                var text = string.Join("", exceptionLines.Select(line => "#error " + line + Environment.NewLine));
+                var errorText = SourceText.From(text, Encoding.UTF8, SourceHashAlgorithm.Sha256);
+                context.AddSource($"{resourceInformation.ResourceHintName}.Error", errorText);
+            }
+        });
     }
 
     private static bool? IsGenerateSource(AnalyzerConfigOptions options)

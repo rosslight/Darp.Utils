@@ -1,7 +1,6 @@
 namespace Darp.Utils.ResxSourceGenerator;
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -19,10 +18,7 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 
     private static readonly string[] Separator = ["\r\n", "\r", "\n"];
 
-    private void LogError(string message)
-    {
-        OutputText = SourceText.From($"#error {message}", Encoding.UTF8, SourceHashAlgorithm.Sha256);
-    }
+    private void LogError(string message) => OutputText = SourceText.From($"#error {message}", Encoding.UTF8, SourceHashAlgorithm.Sha256);
 
     [MemberNotNullWhen(true, nameof(OutputTextHintName), nameof(OutputText))]
     public bool Execute(CancellationToken cancellationToken)
@@ -200,105 +196,25 @@ using System.Reflection;
 
     private static string GetIdentifierFromResourceName(string name)
     {
-        if (name.All(IsIdentifierPartCharacter))
+        if (name.All(CharExtensions.IsIdentifierPartCharacter))
         {
-            return IsIdentifierStartCharacter(name[0]) ? name : "_" + name;
+            return name[0].IsIdentifierStartCharacter() ? name : "_" + name;
         }
 
         var builder = new StringBuilder(name.Length);
 
         var f = name[0];
-        if (IsIdentifierPartCharacter(f) && !IsIdentifierStartCharacter(f))
+        if (f.IsIdentifierPartCharacter() && !f.IsIdentifierStartCharacter())
         {
             builder.Append('_');
         }
 
         foreach (var c in name)
         {
-            builder.Append(IsIdentifierPartCharacter(c) ? c : '_');
+            builder.Append(c.IsIdentifierPartCharacter() ? c : '_');
         }
 
         return builder.ToString();
-
-        static bool IsIdentifierStartCharacter(char ch)
-            => ch == '_' || IsLetterChar(CharUnicodeInfo.GetUnicodeCategory(ch));
-
-        static bool IsIdentifierPartCharacter(char ch)
-        {
-            UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(ch);
-            return IsLetterChar(cat)
-                   || cat == UnicodeCategory.DecimalDigitNumber
-                   || cat == UnicodeCategory.ConnectorPunctuation
-                   || cat == UnicodeCategory.Format
-                   || cat == UnicodeCategory.NonSpacingMark
-                   || cat == UnicodeCategory.SpacingCombiningMark;
-        }
-
-        static bool IsLetterChar(UnicodeCategory cat)
-        {
-            switch (cat)
-            {
-                case UnicodeCategory.UppercaseLetter:
-                case UnicodeCategory.LowercaseLetter:
-                case UnicodeCategory.TitlecaseLetter:
-                case UnicodeCategory.ModifierLetter:
-                case UnicodeCategory.OtherLetter:
-                case UnicodeCategory.LetterNumber:
-                    return true;
-                case UnicodeCategory.ClosePunctuation:
-                    break;
-                case UnicodeCategory.ConnectorPunctuation:
-                    break;
-                case UnicodeCategory.Control:
-                    break;
-                case UnicodeCategory.CurrencySymbol:
-                    break;
-                case UnicodeCategory.DashPunctuation:
-                    break;
-                case UnicodeCategory.DecimalDigitNumber:
-                    break;
-                case UnicodeCategory.EnclosingMark:
-                    break;
-                case UnicodeCategory.FinalQuotePunctuation:
-                    break;
-                case UnicodeCategory.Format:
-                    break;
-                case UnicodeCategory.InitialQuotePunctuation:
-                    break;
-                case UnicodeCategory.LineSeparator:
-                    break;
-                case UnicodeCategory.MathSymbol:
-                    break;
-                case UnicodeCategory.ModifierSymbol:
-                    break;
-                case UnicodeCategory.NonSpacingMark:
-                    break;
-                case UnicodeCategory.OpenPunctuation:
-                    break;
-                case UnicodeCategory.OtherNotAssigned:
-                    break;
-                case UnicodeCategory.OtherNumber:
-                    break;
-                case UnicodeCategory.OtherPunctuation:
-                    break;
-                case UnicodeCategory.OtherSymbol:
-                    break;
-                case UnicodeCategory.ParagraphSeparator:
-                    break;
-                case UnicodeCategory.PrivateUse:
-                    break;
-                case UnicodeCategory.SpaceSeparator:
-                    break;
-                case UnicodeCategory.SpacingCombiningMark:
-                    break;
-                case UnicodeCategory.Surrogate:
-                    break;
-                default:
-                    break;
-            }
-
-            return false;
-        }
     }
 
     private static void RenderDocComment(string memberIndent, StringBuilder strings, string value)
@@ -386,10 +302,7 @@ using System.Reflection;
 
         public string GetArguments() => string.Join(", ", _arguments.Select(GetArgName));
 
-        public string GetMethodParameters()
-        {
-            return string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a)));
-        }
+        public string GetMethodParameters() => string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a)));
 
         private string GetArgName(string name) => UsingNamedArgs ? name : 'p' + name;
     }
