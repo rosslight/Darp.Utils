@@ -13,4 +13,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Darp.Utils.ResxSourceGenerator.Tests" />
+  </ItemGroup>
 </Project>

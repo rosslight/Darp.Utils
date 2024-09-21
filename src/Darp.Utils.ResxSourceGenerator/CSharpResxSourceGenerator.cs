@@ -24,9 +24,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
-internal abstract class AbstractResxGenerator : IIncrementalGenerator
+internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 {
-    protected abstract bool SupportsNullable(Compilation compilation);
+    protected bool SupportsNullable(Compilation compilation) => true;
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Standard practice for diagnosing source generator failures.")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -537,7 +537,8 @@ internal abstract class AbstractResxGenerator : IIncrementalGenerator
                 switch (language)
                 {
                     case Lang.CSharp:
-                        namespaceStart = $@"namespace {namespaceName}{Environment.NewLine}{{";
+                        namespaceStart = $@"namespace {namespaceName}
+{{";
                         namespaceEnd = "}";
                         break;
 
