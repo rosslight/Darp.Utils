@@ -6,24 +6,30 @@ internal sealed class SimpleSubject<T> : IObservable<T>
 
     public void OnNext(T next)
     {
-        foreach (IObserver<T> observer in _observers)
+        // Use reversed for loop to account for the fact that observers might be removed on next
+        for (var index = _observers.Count - 1; index >= 0; index--)
         {
+            IObserver<T> observer = _observers[index];
             observer.OnNext(next);
         }
     }
 
     public void OnError(Exception error)
     {
-        foreach (IObserver<T> observer in _observers)
+        // Use reversed for loop to account for the fact that observers might be removed on error
+        for (var index = _observers.Count - 1; index >= 0; index--)
         {
+            IObserver<T> observer = _observers[index];
             observer.OnError(error);
         }
     }
 
     public void OnCompleted()
     {
-        foreach (IObserver<T> observer in _observers)
+        // Use reversed for loop to account for the fact that observers might be removed on completion
+        for (var index = _observers.Count - 1; index >= 0; index--)
         {
+            IObserver<T> observer = _observers[index];
             observer.OnCompleted();
         }
     }
