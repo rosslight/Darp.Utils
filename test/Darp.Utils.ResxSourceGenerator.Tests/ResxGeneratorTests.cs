@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-namespace Microsoft.CodeAnalysis.ResxSourceGenerator.Test;
+namespace Darp.Utils.ResxSourceGenerator.Tests;
 
 using Xunit;
-using CSharpLanguageVersion = CSharp.LanguageVersion;
-using VerifyCS = CSharpSourceGeneratorVerifier<Darp.Utils.ResxSourceGenerator.CSharpResxSourceGenerator>;
+using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
+using VerifyCS = Verifiers.CSharpSourceGeneratorVerifier<ResxSourceGenerator.CSharpResxSourceGenerator>;
 
 public class ResxGeneratorTests
 {
@@ -73,11 +73,11 @@ public class ResxGeneratorTests
 </root>";
 
     [Theory]
-    [InlineData(CSharpLanguageVersion.CSharp5, Skip = "Expression-bodied members are not supported in C# 5")]
-    [InlineData(CSharpLanguageVersion.CSharp6, Skip = "Nullable is not supported in C# 5")]
-    [InlineData(CSharpLanguageVersion.CSharp7, Skip = "Nullable is not supported in C# 5")]
     [InlineData(CSharpLanguageVersion.CSharp8)]
     [InlineData(CSharpLanguageVersion.CSharp9)]
+//    [InlineData(CSharpLanguageVersion.CSharp10)]
+//    [InlineData(CSharpLanguageVersion.CSharp11)]
+//    [InlineData(CSharpLanguageVersion.CSharp12)]
     public async Task SingleString_DefaultCSharpAsync(CSharpLanguageVersion languageVersion)
     {
         var code = ResxHeader

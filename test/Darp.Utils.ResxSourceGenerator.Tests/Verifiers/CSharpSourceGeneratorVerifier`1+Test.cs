@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 
-namespace Microsoft.CodeAnalysis.ResxSourceGenerator.Test;
+namespace Darp.Utils.ResxSourceGenerator.Tests.Verifiers;
 
 // Uncomment the following line to write expected files to disk
 ////#define WRITE_EXPECTED
@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;

@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 
-namespace Microsoft.CodeAnalysis.ResxSourceGenerator.Test;
+namespace Darp.Utils.ResxSourceGenerator.Tests.Verifiers;
 
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 internal static class CSharpVerifierHelper
