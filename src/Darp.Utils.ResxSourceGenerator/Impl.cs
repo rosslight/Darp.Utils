@@ -31,9 +31,10 @@ internal sealed class Impl(ResourceInformation resourceInformation)
             return false;
         }
 
-        var resourceAccessName = (string.IsNullOrEmpty(ResourceInformation.ResourceClassName)
+        var resourceClazzName = ResourceInformation.ResourceClassName;
+        var resourceAccessName = resourceClazzName is null || string.IsNullOrEmpty(resourceClazzName)
             ? ResourceInformation.ResourceName
-            : ResourceInformation.ResourceClassName) ?? throw new NotImplementedException();
+            : resourceClazzName;
         SplitName(resourceAccessName, out var namespaceName, out var className);
 
         var classIndent = namespaceName == null ? "" : "    ";
@@ -47,6 +48,7 @@ internal sealed class Impl(ResourceInformation resourceInformation)
         }
 
         var strings = new StringBuilder();
+        List< (string Identifier, string Name)> resourceNames = [];
         using var sourceTextReader = new SourceTextReader(text);
         foreach (XElement? node in XDocument.Load(sourceTextReader).Descendants("data"))
         {
@@ -70,24 +72,22 @@ internal sealed class Impl(ResourceInformation resourceInformation)
                 return false;
             }
 
-            var docCommentString = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
 
-            RenderDocComment(memberIndent, strings, docCommentString);
+            var propertyIdentifier = GetIdentifierFromResourceName(name);
+            resourceNames.Add((propertyIdentifier, name));
+            var trimmedValue = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
 
-            var identifier = GetIdentifierFromResourceName(name);
-
-            strings.AppendLine($"{memberIndent}public static string @{identifier} => GetResourceString(\"{name}\")!;");
-
-            if (ResourceInformation.EmitFormatMethods)
-            {
-                var resourceString = new ResourceString(name, value);
-
-                if (resourceString.HasArguments)
-                {
-                    RenderDocComment(memberIndent, strings, docCommentString);
-                    RenderFormatMethod(memberIndent, strings, resourceString);
-                }
-            }
+            var propertyString = $"""
+{memberIndent}/// <summary>Get the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
+{memberIndent}/// <value>{trimmedValue}</value>
+{memberIndent}public string @{propertyIdentifier} => GetResourceString(Keys.@{propertyIdentifier});
+""";
+            strings.AppendLine(propertyString);
+            if (!ResourceInformation.EmitFormatMethods) continue;
+            var resourceString = new ResourceString(name, value);
+            if (!resourceString.HasArguments) continue;
+            RenderDocCommentSummary(memberIndent, strings, trimmedValue);
+            RenderFormatMethod(memberIndent, strings, resourceString);
         }
 
         string? getStringMethod;
@@ -103,14 +103,13 @@ internal sealed class Impl(ResourceInformation resourceInformation)
                 getResourceStringAttributes.Add("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
             }
 
-            if (CompilationInformation.HasNotNullIfNotNull)
-            {
-                getResourceStringAttributes.Add("[return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(\"defaultValue\")]");
-            }
-
-            getStringMethod = $@"{memberIndent}public static global::System.Globalization.CultureInfo? Culture {{ get; set; }}
+            getStringMethod = $"""
+{memberIndent}/// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
+{memberIndent}/// <param name="resourceName">The name of the resource to get</param>
+{memberIndent}/// <returns>Returns the resource value as a string or the <paramref name="resourceName"/> if it could not be found</returns>
 {string.Join(Environment.NewLine, getResourceStringAttributes.Select(attr => memberIndent + attr))}
-{memberIndent}internal static string? GetResourceString(string resourceKey, string? defaultValue = null) =>  ResourceManager.GetString(resourceKey, Culture) ?? defaultValue;";
+{memberIndent}public string GetResourceString(string resourceName) => ResourceManager.GetString(resourceName, Culture) ?? resourceName;
+""";
             if (ResourceInformation.EmitFormatMethods)
             {
                 getStringMethod += $@"
@@ -171,25 +170,61 @@ internal sealed class Impl(ResourceInformation resourceInformation)
             }
         }
 
+        var namesClass = $$"""
+{{memberIndent}}/// <summary>All keys contained in <see cref="Resources"/></summary>
+{{memberIndent}}public static class Keys
+{{memberIndent}}{
+{{string.Join(Environment.NewLine, resourceNames.Select(x => $"{memberIndent}    public const string @{x.Identifier} = @\"{x.Name}\";"))}}
+{{memberIndent}}}
+""";
+
         // The ResourceManager property being initialized lazily is an important optimization that lets .NETNative
         // completely remove the ResourceManager class if the disk space saving optimization to strip resources
         // (/DisableExceptionMessages) is turned on in the compiler.
-        var result = $@"// <auto-generated/>
+        var result = $$"""
+// <auto-generated/>
 
 #nullable enable
 using System.Reflection;
+{{resourceTypeDefinition}}
+{{namespaceStart}}
+{{classIndent}}/// <summary>A strongly typed resource class for '{{ResourceInformation.ResourceFile.Path}}'</summary>
+{{classIndent}}{{(ResourceInformation.Public ? "public" : "internal")}} sealed partial class {{className}}
+{{classIndent}}{
+{{memberIndent}}private static {{className}}? _default;
+{{memberIndent}}/// <summary>The Default implementation of <see cref="{{className}}"/></summary>
+{{memberIndent}}public static {{className}} Default => _default ??= new {{className}}();
 
-{resourceTypeDefinition}
-{namespaceStart}
-{classIndent}{(ResourceInformation.Public ? "public" : "internal")} static partial class {className}
-{classIndent}{{
-{memberIndent}private static global::System.Resources.ResourceManager? s_resourceManager;
-{memberIndent}public static global::System.Resources.ResourceManager ResourceManager => s_resourceManager ?? (s_resourceManager = new global::System.Resources.ResourceManager(typeof({resourceTypeName})));
-{getStringMethod}
-{strings}
-{classIndent}}}
-{namespaceEnd}
-";
+{{memberIndent}}public delegate void CultureUpdateDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
+{{memberIndent}}/// <summary>Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture</summary>
+{{memberIndent}}public event CultureUpdateDelegate? CultureUpdated;
+
+{{memberIndent}}private global::System.Globalization.CultureInfo? _culture;
+{{memberIndent}}/// <summary>Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class.</summary>
+{{memberIndent}}public System.Globalization.CultureInfo? Culture
+{{memberIndent}}{
+{{memberIndent}}    get => _culture;
+{{memberIndent}}    set
+{{memberIndent}}    {
+{{memberIndent}}        System.Globalization.CultureInfo? oldCulture = _culture;
+{{memberIndent}}        _culture = value;
+{{memberIndent}}        if (!System.Collections.Generic.EqualityComparer<System.Globalization.CultureInfo>.Default.Equals(oldCulture, value))
+{{memberIndent}}            CultureUpdated?.Invoke(oldCulture, value);
+{{memberIndent}}    }
+{{memberIndent}}}
+
+{{memberIndent}}///<summary>Returns the cached ResourceManager instance used by this class.</summary>
+{{memberIndent}}[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+{{memberIndent}}public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager(typeof({{resourceTypeName}}));
+
+{{getStringMethod}}
+
+{{strings}}
+{{namesClass}}
+{{classIndent}}}
+{{namespaceEnd}}
+
+""";
         OutputText = SourceText.From(result.Replace("\r\n", "\n"), Encoding.UTF8, SourceHashAlgorithm.Sha256);
         return true;
     }
@@ -217,9 +252,11 @@ using System.Reflection;
         return builder.ToString();
     }
 
-    private static void RenderDocComment(string memberIndent, StringBuilder strings, string value)
+    private static void RenderDocCommentSummary(string memberIndent, StringBuilder strings, string value) =>
+        RenderDocComment(memberIndent, strings, "summary", value);
+    private static void RenderDocComment(string memberIndent, StringBuilder strings, string element, string value)
     {
-        var escapedTrimmedValue = new XElement("summary", value).ToString();
+        var escapedTrimmedValue = new XElement(element, value).ToString();
 
         foreach (var line in escapedTrimmedValue.Split(Separator, StringSplitOptions.None))
         {

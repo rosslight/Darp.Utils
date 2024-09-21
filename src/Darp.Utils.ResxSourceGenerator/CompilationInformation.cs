@@ -6,5 +6,4 @@ namespace Darp.Utils.ResxSourceGenerator;
 /// <param name="AssemblyName"></param>
 internal sealed record CompilationInformation(
     string? AssemblyName,
-    bool HasAggressiveInlining,
-    bool HasNotNullIfNotNull);
+    bool HasAggressiveInlining);

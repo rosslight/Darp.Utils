@@ -37,8 +37,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 
                 return new CompilationInformation(
                     AssemblyName: compilation.AssemblyName,
-                    HasAggressiveInlining: true, //hasAggressiveInlining,
-                    HasNotNullIfNotNull: true); //hasNotNullIfNotNull);
+                    HasAggressiveInlining: true); //hasAggressiveInlining);
             });
         IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles
             .Combine(context.AnalyzerConfigOptionsProvider)

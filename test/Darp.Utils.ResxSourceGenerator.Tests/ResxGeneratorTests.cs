@@ -73,6 +73,7 @@ public class ResxGeneratorTests
 </root>";
 
     [Theory]
+    [InlineData(CSharpLanguageVersion.CSharp7, Skip = "Not supported (Missing nullable features)")]
     [InlineData(CSharpLanguageVersion.CSharp8)]
     [InlineData(CSharpLanguageVersion.CSharp9)]
 //    [InlineData(CSharpLanguageVersion.CSharp10)]
