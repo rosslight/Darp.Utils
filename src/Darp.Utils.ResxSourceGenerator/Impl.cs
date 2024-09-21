@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Text;
 
 internal sealed class Impl(ResourceInformation resourceInformation)
 {
-    private const int maxDocCommentLength = 256;
+    private const int MaxDocCommentLength = 256;
 
     public ResourceInformation ResourceInformation { get; } = resourceInformation;
     public CompilationInformation CompilationInformation => ResourceInformation.CompilationInformation;
@@ -18,7 +18,7 @@ internal sealed class Impl(ResourceInformation resourceInformation)
     public string? OutputTextHintName { get; private set; }
     public SourceText OutputText { get; private set; } = SourceText.From("", Encoding.UTF8);
 
-    private static readonly string[] separator = ["\r\n", "\r", "\n"];
+    private static readonly string[] Separator = ["\r\n", "\r", "\n"];
 
     private enum Lang
     {
@@ -88,7 +88,8 @@ internal sealed class Impl(ResourceInformation resourceInformation)
         }
 
         var strings = new StringBuilder();
-        foreach (XElement? node in XDocument.Load(new SourceTextReader(text)).Descendants("data"))
+        using var sourceTextReader = new SourceTextReader(text);
+        foreach (XElement? node in XDocument.Load(sourceTextReader).Descendants("data"))
         {
             var name = node.Attribute("name")?.Value;
             if (name == null)
@@ -110,29 +111,16 @@ internal sealed class Impl(ResourceInformation resourceInformation)
                 return false;
             }
 
-            var docCommentString = value.Length > maxDocCommentLength ? value[..maxDocCommentLength] + " ..." : value;
+            var docCommentString = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
 
             RenderDocComment(language, memberIndent, strings, docCommentString);
 
             var identifier = GetIdentifierFromResourceName(name);
 
-            var defaultValue = ResourceInformation.IncludeDefaultValues ? ", " + CreateStringLiteral(value, language) : string.Empty;
-
             switch (language)
             {
                 case Lang.CSharp:
-                    if (ResourceInformation.AsConstants)
-                    {
-                        strings.AppendLine($"{memberIndent}public const string @{identifier} = \"{name}\";");
-                    }
-                    else
-                    {
-                        // We need a suppression unless default values are included and the NotNullIfNotNull
-                        // attribute has been applied to eliminate the need for a suppression
-                        var needSuppression = !ResourceInformation.IncludeDefaultValues || !CompilationInformation.HasNotNullIfNotNull;
-
-                        strings.AppendLine($"{memberIndent}public static string @{identifier} => GetResourceString(\"{name}\"{defaultValue}){(needSuppression ? "!" : "")};");
-                    }
+                    strings.AppendLine($"{memberIndent}public static string @{identifier} => GetResourceString(\"{name}\")!;");
 
                     if (ResourceInformation.EmitFormatMethods)
                     {
@@ -148,18 +136,11 @@ internal sealed class Impl(ResourceInformation resourceInformation)
                     break;
 
                 case Lang.VisualBasic:
-                    if (ResourceInformation.AsConstants)
-                    {
-                        strings.AppendLine($"{memberIndent}Public Const [{identifier}] As String = \"{name}\"");
-                    }
-                    else
-                    {
-                        strings.AppendLine($"{memberIndent}Public Shared ReadOnly Property [{identifier}] As String");
-                        strings.AppendLine($"{memberIndent}  Get");
-                        strings.AppendLine($"{memberIndent}    Return GetResourceString(\"{name}\"{defaultValue})");
-                        strings.AppendLine($"{memberIndent}  End Get");
-                        strings.AppendLine($"{memberIndent}End Property");
-                    }
+                    strings.AppendLine($"{memberIndent}Public Shared ReadOnly Property [{identifier}] As String");
+                    strings.AppendLine($"{memberIndent}  Get");
+                    strings.AppendLine($"{memberIndent}    Return GetResourceString(\"{name}\")");
+                    strings.AppendLine($"{memberIndent}  End Get");
+                    strings.AppendLine($"{memberIndent}End Property");
 
                     if (ResourceInformation.EmitFormatMethods)
                     {
@@ -361,7 +342,7 @@ Imports System.Reflection
         return true;
     }
 
-    internal static string GetIdentifierFromResourceName(string name)
+    private static string GetIdentifierFromResourceName(string name)
     {
         if (name.All(IsIdentifierPartCharacter))
         {
@@ -472,7 +453,7 @@ Imports System.Reflection
 
         var escapedTrimmedValue = new XElement("summary", value).ToString();
 
-        foreach (var line in escapedTrimmedValue.Split(separator, StringSplitOptions.None))
+        foreach (var line in escapedTrimmedValue.Split(Separator, StringSplitOptions.None))
         {
             strings.Append(memberIndent).Append(docCommentStart).Append(' ');
             strings.AppendLine(line);
@@ -536,8 +517,8 @@ Imports System.Reflection
 
     private sealed class ResourceString
     {
-        private static readonly Regex _namedParameterMatcher = new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex _numberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
+        private static readonly Regex NamedParameterMatcher = new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex NumberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
         private readonly IReadOnlyList<string> _arguments;
 
         public ResourceString(string name, string value)
@@ -545,12 +526,12 @@ Imports System.Reflection
             Name = name;
             Value = value;
 
-            MatchCollection match = _namedParameterMatcher.Matches(value);
+            MatchCollection match = NamedParameterMatcher.Matches(value);
             UsingNamedArgs = match.Count > 0;
 
             if (!UsingNamedArgs)
             {
-                match = _numberParameterMatcher.Matches(value);
+                match = NumberParameterMatcher.Matches(value);
             }
 
             IEnumerable<string> arguments = match.Cast<Match>()

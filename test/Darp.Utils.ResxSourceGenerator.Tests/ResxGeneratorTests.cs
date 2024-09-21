@@ -271,64 +271,6 @@ build_metadata.AdditionalFiles.OmitGetResourceString = {(omitGetResourceString ?
 
     [Theory]
     [CombinatorialData]
-    public async Task SingleString_AsConstantsCSharpAsync(bool asConstants)
-    {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
-        await new VerifyCS.Test(identifier: asConstants.ToString())
-        {
-            TestState =
-            {
-                AdditionalFiles = { ("/0/Resources.resx", code) },
-                AnalyzerConfigFiles =
-                {
-                    ("/.globalconfig", $@"
-is_global = true
-
-[/0/Resources.resx]
-build_metadata.AdditionalFiles.AsConstants = {(asConstants ? "true" : "false")}
-"),
-                },
-            },
-        }.AddGeneratedSources().RunAsync();
-    }
-
-    [Theory]
-    [CombinatorialData]
-    public async Task SingleString_IncludeDefaultValuesCSharpAsync(bool includeDefaultValues)
-    {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
-        await new VerifyCS.Test(identifier: includeDefaultValues.ToString())
-        {
-            TestState =
-            {
-                AdditionalFiles = { ("/0/Resources.resx", code) },
-                AnalyzerConfigFiles =
-                {
-                    ("/.globalconfig", $@"
-is_global = true
-
-[/0/Resources.resx]
-build_metadata.AdditionalFiles.IncludeDefaultValues = {(includeDefaultValues ? "true" : "false")}
-"),
-                },
-            },
-        }.AddGeneratedSources().RunAsync();
-    }
-
-    [Theory]
-    [CombinatorialData]
     public async Task SingleString_EmitFormatMethodsCSharpAsync(
         [CombinatorialValues("0", "x", "replacement")] string placeholder,
         bool emitFormatMethods)

@@ -93,19 +93,6 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                         omitGetResourceString = false;
                     }
 
-                    if (!options.TryGetValue("build_metadata.AdditionalFiles.AsConstants", out var asConstantsText)
-                        || !bool.TryParse(asConstantsText, out var asConstants))
-                    {
-                        asConstants = false;
-                    }
-
-                    if (!options.TryGetValue("build_metadata.AdditionalFiles.IncludeDefaultValues",
-                            out var includeDefaultValuesText)
-                        || !bool.TryParse(includeDefaultValuesText, out var includeDefaultValues))
-                    {
-                        includeDefaultValues = false;
-                    }
-
                     if (!options.TryGetValue("build_metadata.AdditionalFiles.EmitFormatMethods",
                             out var emitFormatMethodsText)
                         || !bool.TryParse(emitFormatMethodsText, out var emitFormatMethods))
@@ -119,8 +106,8 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                         publicResource = false;
                     }
 
-                    return new[]
-                    {
+                    return
+                    [
                         new ResourceInformation(
                             CompilationInformation: compilationInfo,
                             ResourceFile: resourceFile,
@@ -128,11 +115,9 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                             ResourceHintName: resourceHintName,
                             ResourceClassName: resourceClassName,
                             OmitGetResourceString: omitGetResourceString,
-                            AsConstants: asConstants,
-                            IncludeDefaultValues: includeDefaultValues,
                             EmitFormatMethods: emitFormatMethods,
-                            Public: publicResource)
-                    };
+                            Public: publicResource),
+                    ];
                 });
         IncrementalValueProvider<ImmutableDictionary<string, string>> renameMapping = resourceFilesToGenerateSource
             .Select(static (resourceFile, _) =>
