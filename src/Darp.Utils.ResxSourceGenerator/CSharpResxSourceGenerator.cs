@@ -22,8 +22,6 @@ using Microsoft.CodeAnalysis.Text;
 
 internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 {
-    private static bool SupportsNullable(Compilation compilation) => true;
-
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Standard practice for diagnosing source generator failures.")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -32,7 +30,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             context.AdditionalTextsProvider.Where(static file =>
                 file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
         IncrementalValueProvider<CompilationInformation> compilationInformation = context.CompilationProvider.Select(
-            (compilation, cancellationToken) =>
+            (compilation, _) =>
             {
                 //var methodImplOptions = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesMethodImplOptions);
                 //var hasAggressiveInlining = methodImplOptions?.MemberNames.Contains(nameof(MethodImplOptions.AggressiveInlining)) ?? false;
@@ -41,13 +39,12 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 return new CompilationInformation(
                     AssemblyName: compilation.AssemblyName,
                     CodeLanguage: compilation.Language,
-                    SupportsNullable: SupportsNullable(compilation),
                     HasAggressiveInlining: true, //hasAggressiveInlining,
                     HasNotNullIfNotNull: true); //hasNotNullIfNotNull);
             });
         IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles
             .Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation)).SelectMany(
-                static (resourceFileAndOptions, cancellationToken) =>
+                static (resourceFileAndOptions, _) =>
                 {
                     (AdditionalText resourceFile,
                             (AnalyzerConfigOptionsProvider optionsProvider, CompilationInformation compilationInfo)) =
@@ -138,17 +135,17 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                     };
                 });
         IncrementalValueProvider<ImmutableDictionary<string, string>> renameMapping = resourceFilesToGenerateSource
-            .Select(static (resourceFile, cancellationToken) =>
+            .Select(static (resourceFile, _) =>
                 (resourceFile.ResourceName, resourceFile.ResourceHintName))
             .Collect()
-            .Select(static (resourceNames, cancellationToken) =>
+            .Select(static (resourceNames, _) =>
             {
                 var names = new HashSet<string>();
                 ImmutableDictionary<string, string> remappedNames = ImmutableDictionary<string, string>.Empty;
                 foreach ((var resourceName, var resourceHintName) in resourceNames.OrderBy(x => x.ResourceName,
                              StringComparer.Ordinal))
                 {
-                    for (var i = -1; true; i++)
+                    for (var i = -1;; i++)
                     {
                         if (i == -1)
                         {
@@ -172,7 +169,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             .WithComparer(ImmutableDictionaryEqualityComparer<string, string>.Instance);
         IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSourceWithNames =
             resourceFilesToGenerateSource.Combine(renameMapping).Select(
-                static (resourceFileAndRenameMapping, cancellationToken) =>
+                static (resourceFileAndRenameMapping, _) =>
                 {
                     (ResourceInformation resourceFile, ImmutableDictionary<string, string> renameMapping) =
                         resourceFileAndRenameMapping;
