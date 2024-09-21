@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 internal sealed class Impl(ResourceInformation resourceInformation)
@@ -20,55 +19,19 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 
     private static readonly string[] Separator = ["\r\n", "\r", "\n"];
 
-    private enum Lang
+    private void LogError(string message)
     {
-        CSharp,
-        VisualBasic,
-    }
-
-    private void LogError(Lang language, string message)
-    {
-        var result = language switch
-        {
-            Lang.CSharp => $"#error {message}",
-            Lang.VisualBasic => $"#Error \"{message}\"",
-            _ => message,
-        };
-
-        OutputText = SourceText.From(result, Encoding.UTF8, SourceHashAlgorithm.Sha256);
+        OutputText = SourceText.From($"#error {message}", Encoding.UTF8, SourceHashAlgorithm.Sha256);
     }
 
     [MemberNotNullWhen(true, nameof(OutputTextHintName), nameof(OutputText))]
     public bool Execute(CancellationToken cancellationToken)
     {
-        Lang language;
-        switch (CompilationInformation.CodeLanguage)
-        {
-            case LanguageNames.CSharp:
-                language = Lang.CSharp;
-                break;
-
-            case LanguageNames.VisualBasic:
-                language = Lang.VisualBasic;
-                break;
-
-            default:
-                LogError(Lang.CSharp, $"GenerateResxSource doesn't support language: '{CompilationInformation.CodeLanguage}'");
-                return false;
-        }
-
-        var extension = language switch
-        {
-            Lang.CSharp => "cs",
-            Lang.VisualBasic => "vb",
-            _ => "cs",
-        };
-
-        OutputTextHintName = ResourceInformation.ResourceHintName + $".Designer.{extension}";
+        OutputTextHintName = ResourceInformation.ResourceHintName + $".Designer.cs";
 
         if (string.IsNullOrEmpty(ResourceInformation.ResourceName))
         {
-            LogError(language, "ResourceName not specified");
+            LogError("ResourceName not specified");
             return false;
         }
 
@@ -83,7 +46,7 @@ internal sealed class Impl(ResourceInformation resourceInformation)
         SourceText? text = ResourceInformation.ResourceFile.GetText(cancellationToken);
         if (text is null)
         {
-            LogError(language, "ResourceFile was null");
+            LogError("ResourceFile was null");
             return false;
         }
 
@@ -94,63 +57,40 @@ internal sealed class Impl(ResourceInformation resourceInformation)
             var name = node.Attribute("name")?.Value;
             if (name == null)
             {
-                LogError(language, "Missing resource name");
+                LogError("Missing resource name");
                 return false;
             }
 
             var value = node.Elements("value").FirstOrDefault()?.Value.Trim();
             if (value == null)
             {
-                LogError(language, $"Missing resource value: '{name}'");
+                LogError($"Missing resource value: '{name}'");
                 return false;
             }
 
             if (name.Length == 0)
             {
-                LogError(language, $"Empty resource name");
+                LogError("Empty resource name");
                 return false;
             }
 
             var docCommentString = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
 
-            RenderDocComment(language, memberIndent, strings, docCommentString);
+            RenderDocComment(memberIndent, strings, docCommentString);
 
             var identifier = GetIdentifierFromResourceName(name);
 
-            switch (language)
+            strings.AppendLine($"{memberIndent}public static string @{identifier} => GetResourceString(\"{name}\")!;");
+
+            if (ResourceInformation.EmitFormatMethods)
             {
-                case Lang.CSharp:
-                    strings.AppendLine($"{memberIndent}public static string @{identifier} => GetResourceString(\"{name}\")!;");
+                var resourceString = new ResourceString(name, value);
 
-                    if (ResourceInformation.EmitFormatMethods)
-                    {
-                        var resourceString = new ResourceString(name, value);
-
-                        if (resourceString.HasArguments)
-                        {
-                            RenderDocComment(language, memberIndent, strings, docCommentString);
-                            RenderFormatMethod(memberIndent, language, strings, resourceString);
-                        }
-                    }
-
-                    break;
-
-                case Lang.VisualBasic:
-                    strings.AppendLine($"{memberIndent}Public Shared ReadOnly Property [{identifier}] As String");
-                    strings.AppendLine($"{memberIndent}  Get");
-                    strings.AppendLine($"{memberIndent}    Return GetResourceString(\"{name}\")");
-                    strings.AppendLine($"{memberIndent}  End Get");
-                    strings.AppendLine($"{memberIndent}End Property");
-
-                    if (ResourceInformation.EmitFormatMethods)
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
+                if (resourceString.HasArguments)
+                {
+                    RenderDocComment(memberIndent, strings, docCommentString);
+                    RenderFormatMethod(memberIndent, strings, resourceString);
+                }
             }
         }
 
@@ -161,26 +101,23 @@ internal sealed class Impl(ResourceInformation resourceInformation)
         }
         else
         {
-            switch (language)
+            var getResourceStringAttributes = new List<string>();
+            if (CompilationInformation.HasAggressiveInlining)
             {
-                case Lang.CSharp:
-                    var getResourceStringAttributes = new List<string>();
-                    if (CompilationInformation.HasAggressiveInlining)
-                    {
-                        getResourceStringAttributes.Add("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
-                    }
+                getResourceStringAttributes.Add("[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
+            }
 
-                    if (CompilationInformation.HasNotNullIfNotNull)
-                    {
-                        getResourceStringAttributes.Add("[return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(\"defaultValue\")]");
-                    }
+            if (CompilationInformation.HasNotNullIfNotNull)
+            {
+                getResourceStringAttributes.Add("[return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(\"defaultValue\")]");
+            }
 
-                    getStringMethod = $@"{memberIndent}public static global::System.Globalization.CultureInfo? Culture {{ get; set; }}
+            getStringMethod = $@"{memberIndent}public static global::System.Globalization.CultureInfo? Culture {{ get; set; }}
 {string.Join(Environment.NewLine, getResourceStringAttributes.Select(attr => memberIndent + attr))}
 {memberIndent}internal static string? GetResourceString(string resourceKey, string? defaultValue = null) =>  ResourceManager.GetString(resourceKey, Culture) ?? defaultValue;";
-                    if (ResourceInformation.EmitFormatMethods)
-                    {
-                        getStringMethod += $@"
+            if (ResourceInformation.EmitFormatMethods)
+            {
+                getStringMethod += $@"
 
 {memberIndent}private static string GetResourceString(string resourceKey, string[]? formatterNames)
 {memberIndent}{{
@@ -195,25 +132,6 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 {memberIndent}   return value;
 {memberIndent}}}
 ";
-                    }
-
-                    break;
-
-                case Lang.VisualBasic:
-                    getStringMethod = $@"{memberIndent}Public Shared Property Culture As Global.System.Globalization.CultureInfo
-{memberIndent}<Global.System.Runtime.CompilerServices.MethodImpl(Global.System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)>
-{memberIndent}Friend Shared Function GetResourceString(ByVal resourceKey As String, Optional ByVal defaultValue As String = Nothing) As String
-{memberIndent}    Return ResourceManager.GetString(resourceKey, Culture)
-{memberIndent}End Function";
-                    if (ResourceInformation.EmitFormatMethods)
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
             }
         }
 
@@ -224,22 +142,9 @@ internal sealed class Impl(ResourceInformation resourceInformation)
         }
         else
         {
-            switch (language)
-            {
-                case Lang.CSharp:
-                    namespaceStart = $@"namespace {namespaceName}
+            namespaceStart = $@"namespace {namespaceName}
 {{";
-                    namespaceEnd = "}";
-                    break;
-
-                case Lang.VisualBasic:
-                    namespaceStart = $"Namespace Global.{namespaceName}";
-                    namespaceEnd = "End Namespace";
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
-            }
+            namespaceEnd = "}";
         }
 
         string resourceTypeName;
@@ -260,43 +165,20 @@ internal sealed class Impl(ResourceInformation resourceInformation)
             SplitName(resourceTypeName, out var resourceNamespaceName, out var resourceClassName);
             var resourceClassIndent = resourceNamespaceName == null ? "" : "    ";
 
-            switch (language)
+            resourceTypeDefinition = $"{resourceClassIndent}internal static class {resourceClassName} {{ }}";
+            if (resourceNamespaceName != null)
             {
-                case Lang.CSharp:
-                    resourceTypeDefinition = $"{resourceClassIndent}internal static class {resourceClassName} {{ }}";
-                    if (resourceNamespaceName != null)
-                    {
-                        resourceTypeDefinition = $@"namespace {resourceNamespaceName}
+                resourceTypeDefinition = $@"namespace {resourceNamespaceName}
 {{
 {resourceTypeDefinition}
 }}";
-                    }
-
-                    break;
-
-                case Lang.VisualBasic:
-                    resourceTypeDefinition = $@"{resourceClassIndent}Friend Class {resourceClassName}
-{resourceClassIndent}End Class";
-                    if (resourceNamespaceName != null)
-                    {
-                        resourceTypeDefinition = $@"Namespace {resourceNamespaceName}
-{resourceTypeDefinition}
-End Namespace";
-                    }
-
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
             }
         }
 
         // The ResourceManager property being initialized lazily is an important optimization that lets .NETNative
         // completely remove the ResourceManager class if the disk space saving optimization to strip resources
         // (/DisableExceptionMessages) is turned on in the compiler.
-        var result = language switch
-        {
-            Lang.CSharp => $@"// <auto-generated/>
+        var result = $@"// <auto-generated/>
 
 #nullable enable
 using System.Reflection;
@@ -311,33 +193,7 @@ using System.Reflection;
 {strings}
 {classIndent}}}
 {namespaceEnd}
-",
-            Lang.VisualBasic => $@"' <auto-generated/>
-
-Imports System.Reflection
-
-{resourceTypeDefinition}
-{namespaceStart}
-{classIndent}{(ResourceInformation.Public ? "Public" : "Friend")} Partial Class {className}
-{memberIndent}Private Sub New
-{memberIndent}End Sub
-{memberIndent}
-{memberIndent}Private Shared s_resourceManager As Global.System.Resources.ResourceManager
-{memberIndent}Public Shared ReadOnly Property ResourceManager As Global.System.Resources.ResourceManager
-{memberIndent}    Get
-{memberIndent}        If s_resourceManager Is Nothing Then
-{memberIndent}            s_resourceManager = New Global.System.Resources.ResourceManager(GetType({resourceTypeName}))
-{memberIndent}        End If
-{memberIndent}        Return s_resourceManager
-{memberIndent}    End Get
-{memberIndent}End Property
-{getStringMethod}
-{strings}
-{classIndent}End Class
-{namespaceEnd}
-",
-            _ => throw new InvalidOperationException(),
-        };
+";
         OutputText = SourceText.From(result.Replace("\r\n", "\n"), Encoding.UTF8, SourceHashAlgorithm.Sha256);
         return true;
     }
@@ -445,44 +301,17 @@ Imports System.Reflection
         }
     }
 
-    private static void RenderDocComment(Lang language, string memberIndent, StringBuilder strings, string value)
+    private static void RenderDocComment(string memberIndent, StringBuilder strings, string value)
     {
-        var docCommentStart = language == Lang.CSharp
-            ? "///"
-            : "'''";
-
         var escapedTrimmedValue = new XElement("summary", value).ToString();
 
         foreach (var line in escapedTrimmedValue.Split(Separator, StringSplitOptions.None))
         {
-            strings.Append(memberIndent).Append(docCommentStart).Append(' ');
-            strings.AppendLine(line);
+            strings.Append(memberIndent)
+                .Append("///")
+                .Append(' ')
+                .AppendLine(line);
         }
-    }
-
-    private static string CreateStringLiteral(string original, Lang lang)
-    {
-        var stringLiteral = new StringBuilder(original.Length + 3);
-        if (lang == Lang.CSharp)
-        {
-            stringLiteral.Append('@');
-        }
-
-        stringLiteral.Append('\"');
-        for (var i = 0; i < original.Length; i++)
-        {
-            // duplicate '"' for VB and C#
-            if (original[i] == '\"')
-            {
-                stringLiteral.Append('"');
-            }
-
-            stringLiteral.Append(original[i]);
-        }
-
-        stringLiteral.Append('\"');
-
-        return stringLiteral.ToString();
     }
 
     private static void SplitName(string fullName, out string? namespaceName, out string className)
@@ -500,9 +329,9 @@ Imports System.Reflection
         }
     }
 
-    private static void RenderFormatMethod(string indent, Lang language, StringBuilder strings, ResourceString resourceString)
+    private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
     {
-        strings.AppendLine($"{indent}internal static string Format{resourceString.Name}({resourceString.GetMethodParameters(language)})");
+        strings.AppendLine($"{indent}internal static string Format{resourceString.Name}({resourceString.GetMethodParameters()})");
         if (resourceString.UsingNamedArgs)
         {
             strings.AppendLine($@"{indent}   => string.Format(Culture, GetResourceString(""{resourceString.Name}"", new[] {{ {resourceString.GetArgumentNames()} }}), {resourceString.GetArguments()});");
@@ -557,14 +386,9 @@ Imports System.Reflection
 
         public string GetArguments() => string.Join(", ", _arguments.Select(GetArgName));
 
-        public string GetMethodParameters(Lang language)
+        public string GetMethodParameters()
         {
-            return language switch
-            {
-                Lang.CSharp => string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a))),
-                Lang.VisualBasic => string.Join(", ", _arguments.Select(GetArgName)),
-                _ => throw new NotImplementedException(),
-            };
+            return string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a)));
         }
 
         private string GetArgName(string name) => UsingNamedArgs ? name : 'p' + name;

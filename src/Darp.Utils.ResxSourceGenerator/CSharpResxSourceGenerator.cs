@@ -38,7 +38,6 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 
                 return new CompilationInformation(
                     AssemblyName: compilation.AssemblyName,
-                    CodeLanguage: compilation.Language,
                     HasAggressiveInlining: true, //hasAggressiveInlining,
                     HasNotNullIfNotNull: true); //hasNotNullIfNotNull);
             });
