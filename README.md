@@ -78,4 +78,26 @@ await _dialogService.CreateContentDialog("Title", viewModel)
 ## Darp.Utils.ResxSourceGenerator
 
 A source generator for generating strongly typed singleton resource classes from .resx files.
-Based on the [microsoft.CodeAnalysis.ResxSourceGenerator](https://www.nuget.org/packages/Microsoft.CodeAnalysis.ResxSourceGenerator).
+Based on the [Microsoft.CodeAnalysis.ResxSourceGenerator](https://www.nuget.org/packages/Microsoft.CodeAnalysis.ResxSourceGenerator).
+
+### Usage
+YourProject.csproj
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="Darp.Utils.ResxSourceGenerator" Version="X.Y.Z" PrivateAssets="all"/>
+    </ItemGroup>
+    <ItemGroup>
+        <!-- Minimal configuration -->
+        <AdditionalFiles Include="Localization\Resources1.resx"/>
+        <!-- Default configuration -->
+        <AdditionalFiles Include="Localization\Resources2.resx"
+                         GenerateSource="true"
+                         RelativeDir=""
+                         ClassName=""
+                         EmitFormatMethods="false"
+                         EmitObserveMethods="false"
+                         Public="false"/>
+    </ItemGroup>
+</Project>
+```
