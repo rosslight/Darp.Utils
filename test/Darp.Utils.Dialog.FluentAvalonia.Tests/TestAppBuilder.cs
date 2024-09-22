@@ -15,7 +15,7 @@ public class TestApp : Application
 
 public class TestAppBuilder
 {
-    public static Avalonia.AppBuilder BuildAvaloniaApp() => Avalonia.AppBuilder.Configure<TestApp>()
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<TestApp>()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions());
 }
 

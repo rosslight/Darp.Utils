@@ -8,7 +8,7 @@ using Avalonia.Input;
 using Avalonia.LogicalTree;
 using DialogData;
 using global::FluentAvalonia.Core;
-using ContentDialogButton = Dialog.ContentDialogButton;
+using ContentDialogButton = ContentDialogButton;
 using FluentContentDialog = global::FluentAvalonia.UI.Controls.ContentDialog;
 using FluentContentDialogButton = global::FluentAvalonia.UI.Controls.ContentDialogButton;
 
@@ -71,7 +71,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
 
         if (onClick is not null)
         {
-            Dialog.CloseButtonClick += (_,args) =>
+            Dialog.CloseButtonClick += (_, args) =>
             {
                 var shouldClose = onClick(Content);
                 args.Cancel = !shouldClose;
@@ -97,7 +97,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
 
         if (onClick is not null)
         {
-            Dialog.PrimaryButtonClick += async (_,args) =>
+            Dialog.PrimaryButtonClick += async (_, args) =>
             {
                 Deferral? deferral = null;
                 try
@@ -134,7 +134,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
 
         if (onClick is not null)
         {
-            Dialog.SecondaryButtonClick += async (_,args) =>
+            Dialog.SecondaryButtonClick += async (_, args) =>
             {
                 Deferral? deferral = null;
                 try
@@ -160,7 +160,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         try
         {
             _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var result = (ContentDialogResult) await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+            var result = (ContentDialogResult)await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
             return new ContentDialogResult<TContent>(result, Content);
         }
         finally

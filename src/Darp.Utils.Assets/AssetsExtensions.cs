@@ -58,7 +58,7 @@ public static class AssetsExtensions
     /// <param name="options">Options to control serialization behavior</param>
     /// <param name="cancellationToken">A token that may be used to cancel the read operation.</param>
     /// <typeparam name="TValue">The target type of the JSON value.</typeparam>
-    /// <exception cref="System.NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
     /// <returns>A task that represents the asynchronous copy operation.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
@@ -80,7 +80,7 @@ public static class AssetsExtensions
     /// <param name="typeInfo">Metadata about the type to convert.</param>
     /// <param name="cancellationToken">A token that may be used to cancel the read operation.</param>
     /// <typeparam name="TValue">The target type of the JSON value.</typeparam>
-    /// <exception cref="System.NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
+    /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
     /// <returns>A task that represents the asynchronous copy operation.</returns>
     public static async Task SerializeJsonAsync<TValue>(this IWriteOnlyAssetsService targetAssetsService,
         string path,

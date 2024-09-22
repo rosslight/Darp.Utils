@@ -9,7 +9,7 @@ using Utils.Assets.Abstractions;
 
 public sealed class AssetsExtensionTests
 {
-    private static readonly byte[] TestConfig = """
+    private static readonly byte[] TestConfig = /*lang=json,strict*/ """
                                                 {
                                                    "Name":"Test"
                                                 }

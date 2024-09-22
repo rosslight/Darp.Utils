@@ -12,6 +12,6 @@ public static class TestExtensions
                 break;
             }
         }
-        return buffer[..(i+1)];
+        return buffer[..(i + 1)];
     }
 }

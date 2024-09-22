@@ -1,6 +1,5 @@
 namespace Darp.Utils.Dialog.Tests;
 
-using System.Reactive.Subjects;
 using Darp.Utils.Dialog.Helper;
 using FluentAssertions;
 using FluentAssertions.Reactive;

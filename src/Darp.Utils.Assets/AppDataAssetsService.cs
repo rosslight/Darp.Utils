@@ -6,12 +6,8 @@ using Darp.Utils.Assets.Abstractions;
 public interface IAppDataAssetsService : IAssetsService;
 
 /// <inheritdoc cref="IAppDataAssetsService"/>
-public sealed class AppDataAssetsService : FolderAssetsService, IAppDataAssetsService
-{
-    /// <summary> Instantiate a new AppDataAssetsService with a given path relative to the <see cref="Environment.SpecialFolder.ApplicationData"/> folder </summary>
-    /// <param name="relativePath">The path relative to the <see cref="Environment.SpecialFolder.ApplicationData"/></param>
-    public AppDataAssetsService(string relativePath)
-        : base(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), relativePath)
-    {
-    }
-}
+/// <summary> Instantiate a new AppDataAssetsService with a given path relative to the <see cref="Environment.SpecialFolder.ApplicationData"/> folder </summary>
+/// <param name="relativePath">The path relative to the <see cref="Environment.SpecialFolder.ApplicationData"/></param>
+public sealed class AppDataAssetsService(string relativePath)
+    : FolderAssetsService(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), relativePath),
+        IAppDataAssetsService;

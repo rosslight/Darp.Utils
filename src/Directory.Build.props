@@ -4,7 +4,8 @@
   <PropertyGroup>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsAotCompatible>true</IsAotCompatible>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
+    <IsPackable>true</IsPackable>
 
     <Authors>rosslight GmbH</Authors>
     <PackageProjectUrl>https://github.com/rosslight/Darp.Utils</PackageProjectUrl>

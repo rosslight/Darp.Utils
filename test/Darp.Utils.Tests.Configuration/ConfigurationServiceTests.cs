@@ -24,7 +24,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     private const string BasePath = "some/path";
     private readonly ILogger _logger = new LoggerConfiguration()
         .WriteTo
-        .TestOutput(outputHelper, formatProvider:CultureInfo.InvariantCulture)
+        .TestOutput(outputHelper, formatProvider: CultureInfo.InvariantCulture)
         .CreateLogger();
 
     private static void CreateServices(out IAssetsService assetsService,

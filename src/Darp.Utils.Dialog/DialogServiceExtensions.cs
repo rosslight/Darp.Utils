@@ -1,8 +1,8 @@
 namespace Darp.Utils.Dialog;
 
 using System.Diagnostics.CodeAnalysis;
-using DialogData;
 using Darp.Utils.Dialog.Helper;
+using DialogData;
 
 /// <summary> Extensions which add additional behavior to the <see cref="IDialogService"/> </summary>
 public static class DialogServiceExtensions

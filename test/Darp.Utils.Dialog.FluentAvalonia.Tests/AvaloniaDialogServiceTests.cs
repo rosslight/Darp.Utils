@@ -1,4 +1,4 @@
-﻿namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
+namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
 
 using System.Reactive.Subjects;
 using Avalonia;
@@ -72,7 +72,8 @@ public class AvaloniaDialogServiceTests
     {
         // Arrange
         var service = new AvaloniaDialogService();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42);
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
 
         // Act
         IContentDialogBuilder<int> returnedBuilder = builder.SetDefaultButton(button);
@@ -88,7 +89,8 @@ public class AvaloniaDialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42);
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
 
         // Act
         IContentDialogBuilder<int> returnedBuilder = builder.SetCloseButton(buttonText);
@@ -106,7 +108,8 @@ public class AvaloniaDialogServiceTests
         const int content = 42;
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window);
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window));
 
         // Act
         window.Show();
@@ -139,7 +142,8 @@ public class AvaloniaDialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42);
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
 
         // Act
         IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(buttonText);
@@ -348,11 +352,7 @@ file static class Extensions
     /// <exception cref="ArgumentOutOfRangeException"> Thrown if transform between visuals could not be calculated </exception>
     public static Rect GetRelativeBounds(this Visual visual, Visual second)
     {
-        Matrix? transform = visual.TransformToVisual(second);
-        if (transform is null)
-        {
-            throw new ArgumentOutOfRangeException(null, "Could not calculate transformation from one visual to the other");
-        }
+        Matrix? transform = visual.TransformToVisual(second) ?? throw new ArgumentOutOfRangeException(null, "Could not calculate transformation from one visual to the other");
         return new Rect(visual.Bounds.Size).TransformToAABB(transform.Value);
     }
 
