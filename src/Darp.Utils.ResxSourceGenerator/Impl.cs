@@ -16,8 +16,6 @@ internal sealed class Impl(ResourceInformation resourceInformation)
     public string? OutputTextHintName { get; private set; }
     public SourceText OutputText { get; private set; } = SourceText.From("", Encoding.UTF8);
 
-    private static readonly string[] Separator = ["\r\n", "\r", "\n"];
-
     private void LogError(string message) => OutputText = SourceText.From($"#error {message}", Encoding.UTF8, SourceHashAlgorithm.Sha256);
 
     [MemberNotNullWhen(true, nameof(OutputTextHintName), nameof(OutputText))]
@@ -48,7 +46,7 @@ internal sealed class Impl(ResourceInformation resourceInformation)
         }
 
         var strings = new StringBuilder();
-        List< (string Identifier, string Name)> resourceNames = [];
+        List<(string Identifier, string Name)> resourceNames = [];
         using var sourceTextReader = new SourceTextReader(text);
         foreach (XElement? node in XDocument.Load(sourceTextReader).Descendants("data"))
         {
@@ -82,10 +80,12 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 {memberIndent}public string @{propertyIdentifier} => GetResourceString(Keys.@{propertyIdentifier});
 """);
 
-            if (!ResourceInformation.EmitFormatMethods) continue;
+            if (!ResourceInformation.EmitFormatMethods)
+                continue;
 
             var resourceString = new ResourceString(name, value);
-            if (!resourceString.HasArguments) continue;
+            if (!resourceString.HasArguments)
+                continue;
             RenderFormatMethod(memberIndent, strings, resourceString, trimmedValue);
         }
 
@@ -99,7 +99,7 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 {memberIndent}/// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
 {memberIndent}/// <param name="resourceKey">The name of the resource to get</param>
 {memberIndent}/// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
-{string.Join(Environment.NewLine, getResourceStringAttributes.Select(attr => memberIndent + attr))}
+{string.Join("\n", getResourceStringAttributes.Select(attr => memberIndent + attr))}
 {memberIndent}public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
 """;
         if (ResourceInformation.EmitFormatMethods)
@@ -167,7 +167,7 @@ namespace {{resourceNamespaceName}}
 {{memberIndent}}/// <summary>All keys contained in <see cref="{{className}}"/></summary>
 {{memberIndent}}public static class Keys
 {{memberIndent}}{
-{{string.Join(Environment.NewLine, resourceNames.Select(x => $"{memberIndent}    public const string @{x.Identifier} = @\"{x.Name}\";"))}}
+{{string.Join("\n", resourceNames.Select(x => $"{memberIndent}    public const string @{x.Identifier} = @\"{x.Name}\";"))}}
 {{memberIndent}}}
 """;
 
@@ -245,10 +245,7 @@ using System.Reflection;
         return builder.ToString();
     }
 
-    private static string GetValueDocComment(string value)
-    {
-        return new XElement("value", value).ToString();
-    }
+    private static string GetValueDocComment(string value) => new XElement("value", value).ToString();
 
     private static bool SplitName(string fullName,
         [NotNullWhen(true)] out string? namespaceName,
@@ -275,7 +272,7 @@ using System.Reflection;
         var argumentNames = resourceString.UsingNamedArgs
             ? $"GetResourceString(@{name}, new[] {{ {resourceString.GetArgumentNames()} }})"
             : $"@{name}";
-        var paramDocs = string.Join(Environment.NewLine, resourceString.GetArguments().Select((x, i) =>
+        var paramDocs = string.Join("\n", resourceString.GetArguments().Select((x, i) =>
             $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"));
 
         strings.AppendLine($$"""

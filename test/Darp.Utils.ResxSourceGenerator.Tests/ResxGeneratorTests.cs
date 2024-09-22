@@ -76,9 +76,9 @@ public class ResxGeneratorTests
     [InlineData(CSharpLanguageVersion.CSharp7, Skip = "Not supported (Missing nullable features)")]
     [InlineData(CSharpLanguageVersion.CSharp8)]
     [InlineData(CSharpLanguageVersion.CSharp9)]
-//    [InlineData(CSharpLanguageVersion.CSharp10)]
-//    [InlineData(CSharpLanguageVersion.CSharp11)]
-//    [InlineData(CSharpLanguageVersion.CSharp12)]
+    //    [InlineData(CSharpLanguageVersion.CSharp10)]
+    //    [InlineData(CSharpLanguageVersion.CSharp11)]
+    //    [InlineData(CSharpLanguageVersion.CSharp12)]
     public async Task SingleString_DefaultCSharpAsync(CSharpLanguageVersion languageVersion)
     {
         var code = ResxHeader

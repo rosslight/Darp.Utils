@@ -12,6 +12,7 @@ namespace Darp.Utils.ResxSourceGenerator;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -20,14 +21,17 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
+[Generator]
 internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 {
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Standard practice for diagnosing source generator failures.")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<AdditionalText> resourceFiles =
-            context.AdditionalTextsProvider.Where(static file =>
-                file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
+        // if (!Debugger.IsAttached)
+        //     Debugger.Launch();
+        IncrementalValuesProvider<AdditionalText> resourceFiles = context
+            .AdditionalTextsProvider
+            .Where(static file => file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
         IncrementalValueProvider<CompilationInformation> compilationInformation = context.CompilationProvider.Select(
             (compilation, _) =>
             {
@@ -40,12 +44,10 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                     HasAggressiveInlining: true); //hasAggressiveInlining);
             });
         IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles
-            .Combine(context.AnalyzerConfigOptionsProvider)
-            .Combine(compilationInformation)
+            .Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation))
             .SelectMany(static (resourceFileAndOptions, _) =>
             {
-                ((AdditionalText resourceFile, AnalyzerConfigOptionsProvider optionsProvider),
-                    CompilationInformation compilationInfo) = resourceFileAndOptions;
+                (AdditionalText resourceFile, (AnalyzerConfigOptionsProvider optionsProvider, CompilationInformation compilationInfo)) = resourceFileAndOptions;
                 AnalyzerConfigOptions options = optionsProvider.GetOptions(resourceFile);
 
                 // Use the GenerateSource property if provided. Otherwise, the value of GenerateSource defaults to
@@ -117,7 +119,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             {
                 var names = new HashSet<string>();
                 ImmutableDictionary<string, string> remappedNames = ImmutableDictionary<string, string>.Empty;
-                foreach ((string resourceName, string resourceHintName) in resourceNames.OrderBy(x => x.ResourceName, StringComparer.Ordinal))
+                foreach ((var resourceName, var resourceHintName) in resourceNames.OrderBy(x => x.ResourceName, StringComparer.Ordinal))
                 {
                     for (var i = -1; ; i++)
                     {
@@ -167,8 +169,8 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             }
             catch (Exception ex)
             {
-                var exceptionLines = ex.ToString().Split([Environment.NewLine], StringSplitOptions.None);
-                var text = string.Join("", exceptionLines.Select(line => "#error " + line + Environment.NewLine));
+                var exceptionLines = ex.ToString().Split(['\n'], StringSplitOptions.None);
+                var text = string.Join("", exceptionLines.Select(line => "#error " + line + "\n"));
                 var errorText = SourceText.From(text, Encoding.UTF8, SourceHashAlgorithm.Sha256);
                 context.AddSource($"{resourceInformation.ResourceHintName}.Error", errorText);
             }
