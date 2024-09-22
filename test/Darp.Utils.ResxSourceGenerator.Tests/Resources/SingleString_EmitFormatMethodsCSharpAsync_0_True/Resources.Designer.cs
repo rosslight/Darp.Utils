@@ -3,37 +3,66 @@
 #nullable enable
 using System.Reflection;
 
-
 namespace TestProject
 {
-    internal static partial class Resources
+    /// <summary>A strongly typed resource class for '/0/Resources.resx'</summary>
+    internal sealed partial class Resources
     {
-        private static global::System.Resources.ResourceManager? s_resourceManager;
-        public static global::System.Resources.ResourceManager ResourceManager => s_resourceManager ?? (s_resourceManager = new global::System.Resources.ResourceManager(typeof(Resources)));
-        public static global::System.Globalization.CultureInfo? Culture { get; set; }
-        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull("defaultValue")]
-        internal static string? GetResourceString(string resourceKey, string? defaultValue = null) =>  ResourceManager.GetString(resourceKey, Culture) ?? defaultValue;
+        private static Resources? _default;
+        /// <summary>The Default implementation of <see cref="Resources"/></summary>
+        public static Resources Default => _default ??= new Resources();
 
-        private static string GetResourceString(string resourceKey, string[]? formatterNames)
+        public delegate void CultureUpdateDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
+        /// <summary>Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture</summary>
+        public event CultureUpdateDelegate? CultureUpdated;
+
+        private global::System.Globalization.CultureInfo? _culture;
+        /// <summary>Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class.</summary>
+        public System.Globalization.CultureInfo? Culture
         {
-           var value = GetResourceString(resourceKey) ?? "";
-           if (formatterNames != null)
-           {
-               for (var i = 0; i < formatterNames.Length; i++)
-               {
-                   value = value.Replace("{" + formatterNames[i] + "}", "{" + i + "}");
-               }
-           }
-           return value;
+            get => _culture;
+            set
+            {
+                System.Globalization.CultureInfo? oldCulture = _culture;
+                _culture = value;
+                if (!System.Collections.Generic.EqualityComparer<System.Globalization.CultureInfo>.Default.Equals(oldCulture, value))
+                    CultureUpdated?.Invoke(oldCulture, value);
+            }
         }
 
-        /// <summary>value {0}</summary>
-        public static string @Name => GetResourceString("Name")!;
-        /// <summary>value {0}</summary>
-        internal static string FormatName(object? p0)
-           => string.Format(Culture, GetResourceString("Name") ?? "", p0);
+        ///<summary>Returns the cached ResourceManager instance used by this class.</summary>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager(typeof(Resources));
 
+        /// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
+        /// <param name="resourceKey">The name of the resource to get</param>
+        /// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
+        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
+        private string GetResourceString(string resourceKey, string[]? formatterNames)
+        {
+            var value = GetResourceString(resourceKey);
+            if (formatterNames == null) return value;
+            for (var i = 0; i < formatterNames.Length; i++)
+            {
+                value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
+            }
+            return value;
+        }
 
+        /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
+        /// <value>value {0}</value>
+        public string @Name => GetResourceString(Keys.@Name);
+        /// <summary>Format the resource of <see cref="Keys.@Name"/></summary>
+        /// <value>value {0}</value>
+        /// <param name="p0">The parameter to be used at position {0}</param>
+        /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
+        public string @FormatName(object? p0) => string.Format(Culture, @Name, p0);
+
+        /// <summary>All keys contained in <see cref="Resources"/></summary>
+        public static class Keys
+        {
+            public const string @Name = @"Name";
+        }
     }
 }

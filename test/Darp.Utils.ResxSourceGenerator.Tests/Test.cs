@@ -5,28 +5,19 @@ using System.Reflection;
 
 namespace TestProject
 {
-    using System.Runtime.CompilerServices;
-
-    /// <summary>
-    /// A strongly typed resource class for 'Resources.resx'
-    /// </summary>
+    /// <summary>A strongly typed resource class for '/0/Resources.resx'</summary>
     internal sealed partial class Resources
     {
         private static Resources? _default;
-        /// <summary> The Default implementation of <see cref="Resources"/> </summary>
+        /// <summary>The Default implementation of <see cref="Resources"/></summary>
         public static Resources Default => _default ??= new Resources();
 
         public delegate void CultureUpdateDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
-        /// <summary> Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture </summary>
+        /// <summary>Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture</summary>
         public event CultureUpdateDelegate? CultureUpdated;
 
-        /// <summary> Returns the cached ResourceManager instance used by this class. </summary>
-        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager(typeof(Resources));
-
         private global::System.Globalization.CultureInfo? _culture;
-        /// <summary> Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class. </summary>
-        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        /// <summary>Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class.</summary>
         public System.Globalization.CultureInfo? Culture
         {
             get => _culture;
@@ -38,18 +29,38 @@ namespace TestProject
                     CultureUpdated?.Invoke(oldCulture, value);
             }
         }
+
+        ///<summary>Returns the cached ResourceManager instance used by this class.</summary>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager(typeof(Resources));
+
         /// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
-        /// <param name="resourceName">The name of the resource to get</param>
-        /// <returns>Returns the resource value as a string or the <paramref name="resourceName"/> if it could not be found</returns>
-        public string GetResourceString(string resourceName) => ResourceManager.GetString(resourceName, Culture) ?? resourceName;
+        /// <param name="resourceKey">The name of the resource to get</param>
+        /// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
+        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
+        private string GetResourceString(string resourceKey, string[]? formatterNames)
+        {
+            var value = GetResourceString(resourceKey);
+            if (formatterNames == null) return value;
+            for (var i = 0; i < formatterNames.Length; i++)
+            {
+                value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
+            }
+            return value;
+        }
 
-        /// <summary>
-        /// Get the resource of <see cref="Names.@Name"/>
-        /// </summary>
-        public string @Name => GetResourceString(Names.Name);
+        /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
+        /// <value>value {0}</value>
+        public string @Name => GetResourceString(Keys.@Name);
 
-        /// <summary> All keys contained in <see cref="Resources"/> </summary>
-        public static class Names
+        /// <summary>Format the resource of <see cref="Keys.@Name"/> with the configured <see cref="Culture"/></summary>
+        /// <value>value {0}</value>
+        /// <param name="p0">The parameter to be used at position {0}</param>
+        /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
+        public string @FormatName(object? p0) => string.Format(Culture, @Name, p0);
+        /// <summary>All keys contained in <see cref="Resources"/></summary>
+        public static class Keys
         {
             public const string @Name = @"Name";
         }

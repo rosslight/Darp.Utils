@@ -76,18 +76,17 @@ internal sealed class Impl(ResourceInformation resourceInformation)
             var propertyIdentifier = GetIdentifierFromResourceName(name);
             resourceNames.Add((propertyIdentifier, name));
             var trimmedValue = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
-
-            var propertyString = $"""
+            strings.AppendLine($"""
 {memberIndent}/// <summary>Get the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
-{memberIndent}/// <value>{trimmedValue}</value>
+{memberIndent}/// {GetValueDocComment(trimmedValue)}
 {memberIndent}public string @{propertyIdentifier} => GetResourceString(Keys.@{propertyIdentifier});
-""";
-            strings.AppendLine(propertyString);
+""");
+
             if (!ResourceInformation.EmitFormatMethods) continue;
+
             var resourceString = new ResourceString(name, value);
             if (!resourceString.HasArguments) continue;
-            RenderDocCommentSummary(memberIndent, strings, trimmedValue);
-            RenderFormatMethod(memberIndent, strings, resourceString);
+            RenderFormatMethod(memberIndent, strings, resourceString, trimmedValue);
         }
 
         var getResourceStringAttributes = new List<string>();
@@ -98,28 +97,26 @@ internal sealed class Impl(ResourceInformation resourceInformation)
 
         var getStringMethod = $"""
 {memberIndent}/// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
-{memberIndent}/// <param name="resourceName">The name of the resource to get</param>
-{memberIndent}/// <returns>Returns the resource value as a string or the <paramref name="resourceName"/> if it could not be found</returns>
+{memberIndent}/// <param name="resourceKey">The name of the resource to get</param>
+{memberIndent}/// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
 {string.Join(Environment.NewLine, getResourceStringAttributes.Select(attr => memberIndent + attr))}
-{memberIndent}public string GetResourceString(string resourceName) => ResourceManager.GetString(resourceName, Culture) ?? resourceName;
+{memberIndent}public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
 """;
         if (ResourceInformation.EmitFormatMethods)
         {
-            getStringMethod += $@"
+            getStringMethod += $$$$"""
 
-{memberIndent}private static string GetResourceString(string resourceKey, string[]? formatterNames)
-{memberIndent}{{
-{memberIndent}   var value = GetResourceString(resourceKey) ?? """";
-{memberIndent}   if (formatterNames != null)
-{memberIndent}   {{
-{memberIndent}       for (var i = 0; i < formatterNames.Length; i++)
-{memberIndent}       {{
-{memberIndent}           value = value.Replace(""{{"" + formatterNames[i] + ""}}"", ""{{"" + i + ""}}"");
-{memberIndent}       }}
-{memberIndent}   }}
-{memberIndent}   return value;
-{memberIndent}}}
-";
+{{{{memberIndent}}}}private string GetResourceString(string resourceKey, string[]? formatterNames)
+{{{{memberIndent}}}}{
+{{{{memberIndent}}}}    var value = GetResourceString(resourceKey);
+{{{{memberIndent}}}}    if (formatterNames == null) return value;
+{{{{memberIndent}}}}    for (var i = 0; i < formatterNames.Length; i++)
+{{{{memberIndent}}}}    {
+{{{{memberIndent}}}}        value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
+{{{{memberIndent}}}}    }
+{{{{memberIndent}}}}    return value;
+{{{{memberIndent}}}}}
+""";
         }
 
         string? namespaceStart, namespaceEnd;
@@ -129,8 +126,10 @@ internal sealed class Impl(ResourceInformation resourceInformation)
         }
         else
         {
-            namespaceStart = $@"namespace {namespaceName}
-{{";
+            namespaceStart = $$"""
+namespace {{namespaceName}}
+{
+""";
             namespaceEnd = "}";
         }
 
@@ -246,19 +245,9 @@ using System.Reflection;
         return builder.ToString();
     }
 
-    private static void RenderDocCommentSummary(string memberIndent, StringBuilder strings, string value) =>
-        RenderDocComment(memberIndent, strings, "summary", value);
-    private static void RenderDocComment(string memberIndent, StringBuilder strings, string element, string value)
+    private static string GetValueDocComment(string value)
     {
-        var escapedTrimmedValue = new XElement(element, value).ToString();
-
-        foreach (var line in escapedTrimmedValue.Split(Separator, StringSplitOptions.None))
-        {
-            strings.Append(memberIndent)
-                .Append("///")
-                .Append(' ')
-                .AppendLine(line);
-        }
+        return new XElement("value", value).ToString();
     }
 
     private static bool SplitName(string fullName,
@@ -277,19 +266,25 @@ using System.Reflection;
         return true;
     }
 
-    private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
+    private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString,
+        string value)
     {
-        strings.AppendLine($"{indent}internal static string Format{resourceString.Name}({resourceString.GetMethodParameters()})");
-        if (resourceString.UsingNamedArgs)
-        {
-            strings.AppendLine($@"{indent}   => string.Format(Culture, GetResourceString(""{resourceString.Name}"", new[] {{ {resourceString.GetArgumentNames()} }}), {resourceString.GetArguments()});");
-        }
-        else
-        {
-            strings.AppendLine($@"{indent}   => string.Format(Culture, GetResourceString(""{resourceString.Name}"") ?? """", {resourceString.GetArguments()});");
-        }
+        var name = resourceString.Name;
+        var methodParameters = resourceString.GetMethodParameters();
+        var arguments = resourceString.GetJoinedArguments();
+        var argumentNames = resourceString.UsingNamedArgs
+            ? $"GetResourceString(@{name}, new[] {{ {resourceString.GetArgumentNames()} }})"
+            : $"@{name}";
+        var paramDocs = string.Join(Environment.NewLine, resourceString.GetArguments().Select((x, i) =>
+            $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"));
 
-        strings.AppendLine();
+        strings.AppendLine($$"""
+{{indent}}/// <summary>Format the resource of <see cref="Keys.@{{name}}"/></summary>
+{{indent}}/// {{GetValueDocComment(value)}}
+{{paramDocs}}
+{{indent}}/// <returns>The formatted <see cref="Keys.@{{name}}"/> string</returns>
+{{indent}}public string @Format{{name}}({{methodParameters}}) => string.Format(Culture, {{argumentNames}}, {{arguments}});
+""");
     }
 
     private sealed class ResourceString
@@ -332,7 +327,8 @@ using System.Reflection;
 
         public string GetArgumentNames() => string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
 
-        public string GetArguments() => string.Join(", ", _arguments.Select(GetArgName));
+        public IEnumerable<string> GetArguments() => _arguments.Select(GetArgName);
+        public string GetJoinedArguments() => string.Join(", ", GetArguments());
 
         public string GetMethodParameters() => string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a)));
 

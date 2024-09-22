@@ -38,10 +38,10 @@ internal sealed partial class NS
     public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager(typeof(TestProject.Resources));
 
     /// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
-    /// <param name="resourceName">The name of the resource to get</param>
-    /// <returns>Returns the resource value as a string or the <paramref name="resourceName"/> if it could not be found</returns>
+    /// <param name="resourceKey">The name of the resource to get</param>
+    /// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public string GetResourceString(string resourceName) => ResourceManager.GetString(resourceName, Culture) ?? resourceName;
+    public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
 
     /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
     /// <value>value</value>

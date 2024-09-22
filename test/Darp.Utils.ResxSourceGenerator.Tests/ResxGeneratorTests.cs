@@ -4,7 +4,7 @@ namespace Darp.Utils.ResxSourceGenerator.Tests;
 
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
-using VerifyCS = Verifiers.CSharpSourceGeneratorVerifier<ResxSourceGenerator.CSharpResxSourceGenerator>;
+using VerifyCS = Verifiers.CSharpSourceGeneratorVerifier<CSharpResxSourceGenerator>;
 
 public class ResxGeneratorTests
 {
@@ -109,7 +109,7 @@ public class ResxGeneratorTests
   </data>"
             + ResxFooter;
 
-        await new VerifyCS.Test()
+        await new VerifyCS.Test
         {
             TestState =
             {
@@ -121,7 +121,7 @@ public class ResxGeneratorTests
                 },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", $@"
+                    ("/.globalconfig", @"
 is_global = true
 
 build_property.RootNamespace = TestProject
