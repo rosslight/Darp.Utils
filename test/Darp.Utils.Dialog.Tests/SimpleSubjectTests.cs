@@ -37,7 +37,7 @@ public class SimpleSubjectTests
         x.OnError(error);
 
         // Assert
-        observedSequence.Error.Should().Be(error);
+        observedSequence.Should().Throw<ArgumentException>();
     }
 
     [Fact]
