@@ -1,0 +1,16 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AvaloniaApp.App"
+             xmlns:styling="clr-namespace:FluentAvalonia.Styling;assembly=FluentAvalonia"
+             xmlns:avaloniaApp="clr-namespace:AvaloniaApp"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <avaloniaApp:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <styling:FluentAvaloniaTheme PreferSystemTheme="True" PreferUserAccentColor="True" />
+    </Application.Styles>
+</Application>
