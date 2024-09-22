@@ -74,3 +74,8 @@ await _dialogService.CreateContentDialog("Title", viewModel)
     .SetPrimaryButton("Ok", onClick: model => model.IsModelValid)
     .ShowAsync();
 ```
+
+## Darp.Utils.ResxSourceGenerator
+
+A source generator for generating strongly typed singleton resource classes from .resx files.
+Based on the [microsoft.CodeAnalysis.ResxSourceGenerator](https://www.nuget.org/packages/Microsoft.CodeAnalysis.ResxSourceGenerator).
