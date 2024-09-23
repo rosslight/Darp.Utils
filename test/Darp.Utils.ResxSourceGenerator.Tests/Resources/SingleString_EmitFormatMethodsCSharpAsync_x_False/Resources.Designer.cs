@@ -12,9 +12,9 @@ namespace TestProject
         /// <summary>The Default implementation of <see cref="Resources"/></summary>
         public static Resources Default => _default ??= new Resources();
 
-        public delegate void CultureUpdateDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
+        public delegate void CultureChangedDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
         /// <summary>Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture</summary>
-        public event CultureUpdateDelegate? CultureChanged;
+        public event CultureChangedDelegate? CultureChanged;
 
         private global::System.Globalization.CultureInfo? _culture;
         /// <summary>Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class.</summary>

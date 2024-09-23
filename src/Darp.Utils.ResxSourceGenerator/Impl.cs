@@ -188,9 +188,9 @@ using System.Reflection;
 {{memberIndent}}/// <summary>The Default implementation of <see cref="{{className}}"/></summary>
 {{memberIndent}}public static {{className}} Default => _default ??= new {{className}}();
 
-{{memberIndent}}public delegate void CultureUpdateDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
+{{memberIndent}}public delegate void CultureChangedDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
 {{memberIndent}}/// <summary>Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture</summary>
-{{memberIndent}}public event CultureUpdateDelegate? CultureChanged;
+{{memberIndent}}public event CultureChangedDelegate? CultureChanged;
 
 {{memberIndent}}private global::System.Globalization.CultureInfo? _culture;
 {{memberIndent}}/// <summary>Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class.</summary>
