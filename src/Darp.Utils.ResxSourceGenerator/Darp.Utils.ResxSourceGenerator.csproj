@@ -5,10 +5,16 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
         <IncludeBuildOutput>false</IncludeBuildOutput> <!-- Do not include the generator as a lib dependency -->
+        <IncludeSymbols>false</IncludeSymbols>
         <IsRoslynComponent>true</IsRoslynComponent>
 
         <Description>A SourceGenerator generating a singleton resource class for .resx files</Description>
     </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="buildTransitive\**" Pack="true" PackagePath="buildTransitive"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
@@ -25,10 +31,5 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Darp.Utils.ResxSourceGenerator.Tests" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="ResxSourceGenerator.props" Pack="true" PackagePath="buildTransitive" Visible="false" />
   </ItemGroup>
 </Project>

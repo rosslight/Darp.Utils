@@ -6,6 +6,7 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <SkipShowResxFilesInHierarchy>false</SkipShowResxFilesInHierarchy>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,20 +23,13 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**"/>
-    <AdditionalFiles Include="Localization\Resources.resx" EmitFormatMethods="true"/>
+    <AdditionalFiles Include="Localization\Resources.resx" EmitFormatMethods="true" Public="true"/>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj"
                       OutputItemType="Analyzer"/>
   </ItemGroup>
-  <!-- Workaround to include build properties. Automatically passed along with .props file in nuget package-->
-  <ItemGroup>
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="WithCulture" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateSource" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativeDir" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ClassName" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EmitFormatMethods" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Public" />
-  </ItemGroup>
+  <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.props" />
+  <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.targets" />
 </Project>

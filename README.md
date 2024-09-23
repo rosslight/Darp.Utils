@@ -81,9 +81,13 @@ A source generator for generating strongly typed singleton resource classes from
 Based on the [Microsoft.CodeAnalysis.ResxSourceGenerator](https://www.nuget.org/packages/Microsoft.CodeAnalysis.ResxSourceGenerator).
 
 ### Usage
+
 YourProject.csproj
 ```xml
 <Project>
+    <PropertyGroup>
+        <SkipShowResxFilesInHierarchy>false</SkipShowResxFilesInHierarchy>
+    </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Darp.Utils.ResxSourceGenerator" Version="X.Y.Z" PrivateAssets="all"/>
     </ItemGroup>
