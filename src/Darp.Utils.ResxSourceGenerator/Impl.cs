@@ -190,7 +190,7 @@ using System.Reflection;
 
 {{memberIndent}}public delegate void CultureUpdateDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
 {{memberIndent}}/// <summary>Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture</summary>
-{{memberIndent}}public event CultureUpdateDelegate? CultureUpdated;
+{{memberIndent}}public event CultureUpdateDelegate? CultureChanged;
 
 {{memberIndent}}private global::System.Globalization.CultureInfo? _culture;
 {{memberIndent}}/// <summary>Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class.</summary>
@@ -202,7 +202,7 @@ using System.Reflection;
 {{memberIndent}}        System.Globalization.CultureInfo? oldCulture = _culture;
 {{memberIndent}}        _culture = value;
 {{memberIndent}}        if (!System.Collections.Generic.EqualityComparer<System.Globalization.CultureInfo>.Default.Equals(oldCulture, value))
-{{memberIndent}}            CultureUpdated?.Invoke(oldCulture, value);
+{{memberIndent}}            CultureChanged?.Invoke(oldCulture, value);
 {{memberIndent}}    }
 {{memberIndent}}}
 

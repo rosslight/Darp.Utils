@@ -27,8 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj"
-                      OutputItemType="Analyzer"/>
+    <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj" OutputItemType="Analyzer"/>
   </ItemGroup>
   <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.props" />
   <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.targets" />

@@ -17,7 +17,7 @@ internal sealed partial class NS
 
     public delegate void CultureUpdateDelegate(global::System.Globalization.CultureInfo? oldCulture, global::System.Globalization.CultureInfo? newCulture);
     /// <summary>Called after the <see cref="Culture"/> was updated. Provides previous culture and the newly set culture</summary>
-    public event CultureUpdateDelegate? CultureUpdated;
+    public event CultureUpdateDelegate? CultureChanged;
 
     private global::System.Globalization.CultureInfo? _culture;
     /// <summary>Get or set the Culture to be used for all resource lookups issued by this strongly typed resource class.</summary>
@@ -29,7 +29,7 @@ internal sealed partial class NS
             System.Globalization.CultureInfo? oldCulture = _culture;
             _culture = value;
             if (!System.Collections.Generic.EqualityComparer<System.Globalization.CultureInfo>.Default.Equals(oldCulture, value))
-                CultureUpdated?.Invoke(oldCulture, value);
+                CultureChanged?.Invoke(oldCulture, value);
         }
     }
 
