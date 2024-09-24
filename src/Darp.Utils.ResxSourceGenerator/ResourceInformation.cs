@@ -1,6 +1,7 @@
 namespace Darp.Utils.ResxSourceGenerator;
 
 using System.Collections.Immutable;
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 
 /// <summary>
@@ -15,7 +16,7 @@ internal readonly record struct ResourceInformation(
     ConfigurationSettings Settings);
 
 internal readonly record struct ResourceCollection(ResourceInformation BaseInformation,
-    ImmutableArray<AdditionalText> OtherLanguages,
+    ImmutableDictionary<CultureInfo, AdditionalText> OtherLanguages,
     string FileHintName);
 
 /// <param name="ResourceName">Name of the embedded resources to generate accessor class for.</param>

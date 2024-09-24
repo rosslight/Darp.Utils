@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**"/>
-    <AdditionalFiles Include="Localization\Resources.resx" EmitFormatMethods="true" Public="true"/>
+    <AdditionalFiles Include="Localization\Resources*.resx" EmitFormatMethods="true" Public="true"/>
   </ItemGroup>
 
   <ItemGroup>

@@ -117,7 +117,9 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             .Where(x =>
             {
                 ((Resource resource, _), ImmutableArray<Resource> allFiles) = x;
-                return !BuildHelper.IsChildFile(resource.ResourcePathName, allFiles.Select(r => r.ResourcePathName));
+                return !BuildHelper.IsChildFile(resource.ResourcePathName,
+                    allFiles.Select(r => r.ResourcePathName),
+                    out _);
             })
             .Select(static (resourceFileAndRenameMapping, _) =>
             {
@@ -128,9 +130,17 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 return new ResourceCollection(resource.ResourceInformation,
                     allFiles
                         .Where(x => x != resource)
-                        .Where(x => BuildHelper.IsChildFile(x.ResourcePathName, allFiles.Select(r => r.ResourcePathName)))
-                        .Select(x => x.Item1.ResourceFile)
-                        .ToImmutableArray(),
+                        .Select(x =>
+                        {
+                            var isChildFile = BuildHelper.IsChildFile(x.ResourcePathName,
+                                allFiles.Select(r => r.ResourcePathName),
+                                out CultureInfo? cultureInfo);
+                            return !isChildFile
+                                ? ((CultureInfo?, AdditionalText)?)null
+                                : (cultureInfo, x.ResourceInformation.ResourceFile);
+                        })
+                        .Where(x => x is not null)
+                        .ToImmutableDictionary(x => x!.Value.Item1!, x => x!.Value.Item2),
                     fileHintName);
             });
 

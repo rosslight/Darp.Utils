@@ -2,18 +2,24 @@ namespace Darp.Utils.ResxSourceGenerator;
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 
 internal static class BuildHelper
 {
+    private const int MaxDocCommentLength = 256;
+
     public static bool TryGenerateSource(ResourceCollection resourceCollection,
         out IEnumerable<Diagnostic> diagnostics,
         out string fileHintName,
         [NotNullWhen(true)] out string? sourceCode,
         CancellationToken cancellationToken)
     {
-        (ResourceInformation resourceInformation, ImmutableArray<AdditionalText> others, fileHintName) = resourceCollection;
+        (ResourceInformation resourceInformation, ImmutableDictionary<CultureInfo, AdditionalText> others, fileHintName) = resourceCollection;
         diagnostics = [];
         if (!resourceInformation.TryComputeProperties(out ComputedProperties properties))
         {
@@ -26,12 +32,14 @@ internal static class BuildHelper
             out var classIndent,
             out var memberIndent,
             out var namespaceEnd);
-        if (!TryGenerateMembers(out var members))
+        if (!TryGenerateMembers(resourceCollection, memberIndent,
+                out var members,
+                out var keysMembers,
+                cancellationToken))
         {
             sourceCode = null;
             return false;
         }
-        var keysClass = GenerateKeysClass();
         var debugInformation = resourceCollection.GenerateDebugInformation(properties, classIndent);
         var defaultClass = $$"""
 {{classIndent}}/// <summary>A strongly typed resource class for '{{resourceInformation.ResourceFile.Path}}'</summary>
@@ -71,7 +79,11 @@ internal static class BuildHelper
 {{memberIndent}}public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
 
 {{members}}
-{{keysClass}}
+{{memberIndent}}/// <summary>All keys contained in <see cref="{{properties.ClassName}}"/></summary>
+{{memberIndent}}public static class Keys
+{{memberIndent}}{
+{{keysMembers}}
+{{memberIndent}}}
 {{classIndent}}}
 """;
         var result = $"""
@@ -97,7 +109,7 @@ using System.Reflection;
 {classIndent}/// <remarks>
 {classIndent}/// Files:
 {classIndent}/// FileHintName: {resourceCollection.FileHintName}
-{string.Join("\n", resourceCollection.OtherLanguages.Select(x => $"{classIndent}/// {x.Path}"))}
+{string.Join("\n", resourceCollection.OtherLanguages.Select(x => $"{classIndent}/// {x.Key}: {x.Value.Path}"))}
 {classIndent}/// Configuration:
 {classIndent}/// RootNamespace: {resourceInformation.Settings.RootNamespace}
 {classIndent}/// RelativeDir: {resourceInformation.Settings.RelativeDir}
@@ -115,15 +127,74 @@ using System.Reflection;
 """;
     }
 
-    private static string GenerateKeysClass()
+    private static bool TryGenerateMembers(ResourceCollection resourceCollection,
+        string memberIndent,
+        out string? members,
+        out string? keysMembers,
+        CancellationToken cancellationToken)
     {
-        return "";
+        ResourceInformation resourceInformation = resourceCollection.BaseInformation;
+        var membersBuilder = new StringBuilder();
+        var keysMembersBuilder = new StringBuilder();
+        var otherCulturesEntries = resourceCollection.OtherLanguages
+            .Select(x => (x.Key, x.Value.GetX(cancellationToken)))
+            .ToImmutableDictionary(x => x.Key, x => x.Item2);
+        foreach (KeyValuePair<string, string> x in resourceInformation.ResourceFile.GetX(cancellationToken))
+        {
+            var (name, value) = (x.Key, x.Value);
+            var propertyIdentifier = GetIdentifierFromResourceName(name);
+            membersBuilder.AppendLine($"""
+{memberIndent}/// <summary>Get the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
+{memberIndent}/// {GetTrimmedDocComment("value", value)}
+{memberIndent}public string @{propertyIdentifier} => GetResourceString(Keys.@{propertyIdentifier});
+""");
+            keysMembersBuilder.AppendLine($"""
+{memberIndent}    /// <summary> <list type="table">
+{memberIndent}    /// <item> <term><b>Default</b></term> {GetTrimmedDocComment("description", value)} </item>
+""");
+            foreach (KeyValuePair<CultureInfo, IReadOnlyDictionary<string, string>> entry in otherCulturesEntries)
+            {
+                if (!entry.Value.TryGetValue(name, out var otherValue))
+                    otherValue = "n/a";
+                keysMembersBuilder.AppendLine(
+                    $"{memberIndent}    /// <item> <term><b>{entry.Key}</b></term> {GetTrimmedDocComment("description", otherValue)} </item>");
+            }
+            keysMembersBuilder.AppendLine($"""
+{memberIndent}    /// </list> </summary>
+{memberIndent}    public const string @{propertyIdentifier} = @"{name}";
+""");
+        }
+        members = membersBuilder.ToString();
+        keysMembers = keysMembersBuilder.ToString().TrimEnd();
+        return true;
     }
 
-    private static bool TryGenerateMembers(out string strings)
+    private static IReadOnlyDictionary<string, string> GetX(this AdditionalText additionalText,
+        CancellationToken cancellationToken)
     {
-        strings = "";
-        return true;
+        SourceText? text = additionalText.GetText(cancellationToken);
+        if (text is null)
+        {
+            throw new Exception();
+        }
+        using var sourceTextReader = new SourceTextReader(text);
+        Dictionary<string, string> resourceNames = [];
+        foreach (XElement node in XDocument.Load(sourceTextReader).Descendants("data"))
+        {
+            var name = node.Attribute("name")?.Value;
+            if (name is null || string.IsNullOrWhiteSpace(name))
+            {
+                throw new Exception();
+            }
+            var value = node.Elements("value").FirstOrDefault()?.Value.Trim();
+            resourceNames[name] = value ?? throw new Exception();
+        }
+        return resourceNames;
+    }
+    private static string GetTrimmedDocComment(string elementName, string value)
+    {
+        var trimmedValue = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
+        return new XElement(elementName, trimmedValue).ToString();
     }
 
     private static void GenerateNamespaceStartAndEnd(string? namespaceName,
@@ -215,11 +286,14 @@ namespace {{namespaceName}}
         return true;
     }
 
-    internal static bool IsChildFile(string fileToCheck, IEnumerable<string> availableFiles)
+    internal static bool IsChildFile(string fileToCheck,
+        IEnumerable<string> availableFiles,
+        [NotNullWhen(true)] out CultureInfo? cultureInfo)
     {
         SplitName(fileToCheck, out var parentFileName, out var languageExtension);
         if (!availableFiles.Contains(parentFileName))
         {
+            cultureInfo = null;
             return false;
         }
         var lastNumberOfCodes = 0;
@@ -229,6 +303,7 @@ namespace {{namespaceName}}
             switch (character)
             {
                 case '-' when lastNumberOfCodes < 2 || sections > 1:
+                    cultureInfo = null;
                     return false;
                 case '-':
                     lastNumberOfCodes = 0;
@@ -239,6 +314,44 @@ namespace {{namespaceName}}
                     break;
             }
         }
-        return lastNumberOfCodes is not (> 4 or < 2);
+        if (lastNumberOfCodes is > 4 or < 2)
+        {
+            cultureInfo = null;
+            return false;
+        }
+
+        try
+        {
+            cultureInfo = CultureInfo.GetCultureInfoByIetfLanguageTag(languageExtension);
+        }
+        catch (CultureNotFoundException)
+        {
+            cultureInfo = null;
+            return false;
+        }
+        return true;
+    }
+
+    public static string GetIdentifierFromResourceName(string name)
+    {
+        if (name.All(CharExtensions.IsIdentifierPartCharacter))
+        {
+            return name[0].IsIdentifierStartCharacter() ? name : "_" + name;
+        }
+
+        var builder = new StringBuilder(name.Length);
+
+        var f = name[0];
+        if (f.IsIdentifierPartCharacter() && !f.IsIdentifierStartCharacter())
+        {
+            builder.Append('_');
+        }
+
+        foreach (var c in name)
+        {
+            builder.Append(c.IsIdentifierPartCharacter() ? c : '_');
+        }
+
+        return builder.ToString();
     }
 }

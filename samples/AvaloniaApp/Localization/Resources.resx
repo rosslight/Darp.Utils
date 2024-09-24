@@ -19,12 +19,12 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
   <data name="Asd" xml:space="preserve">
-    <value>Asd3</value>
+    <value>Asd3s</value>
   </data>
-    <data name="Asd_F" xml:space="preserve">
+    <data name="Asd.F" xml:space="preserve">
         <value>Asd {0}</value>
     </data>
-    <data name="Asd_Ff" xml:space="preserve">
+    <data name="Asd.Ff" xml:space="preserve">
         <value>Asd {f} {ff}</value>
     </data>
 </root>

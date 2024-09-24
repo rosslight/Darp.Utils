@@ -14,10 +14,10 @@
   <data name="Asd" xml:space="preserve">
     <value>DE: Asd3</value>
   </data>
-    <data name="Asd_F" xml:space="preserve">
+    <data name="Asd.F" xml:space="preserve">
         <value>DE: Asd {0}</value>
     </data>
-    <data name="Asd_Ff" xml:space="preserve">
+    <data name="Asd.Ff" xml:space="preserve">
         <value>DE: Asd {f} {ff}</value>
     </data>
 </root>

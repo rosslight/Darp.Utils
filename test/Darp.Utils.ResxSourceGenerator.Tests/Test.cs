@@ -62,6 +62,10 @@ namespace TestProject
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
         {
+            /// <summary> <list type="table">
+            /// <item> <term><b>Default</b></term> <description>value {0}</description> </item>
+            /// <item> <term><b>de-DE</b></term> <description>DE: value {0}</description> </item>
+            /// </list> </summary>
             public const string @Name = @"Name";
         }
     }
