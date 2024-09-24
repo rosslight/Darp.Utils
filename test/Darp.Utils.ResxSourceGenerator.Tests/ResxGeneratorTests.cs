@@ -2,6 +2,7 @@
 
 namespace Darp.Utils.ResxSourceGenerator.Tests;
 
+using FluentAssertions;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Verifiers.CSharpSourceGeneratorVerifier<CSharpResxSourceGenerator>;
@@ -287,5 +288,32 @@ build_metadata.AdditionalFiles.Public = {(publicResource ? "true" : "false")}
                 },
             },
         }.AddGeneratedSources().RunAsync();
+    }
+
+    [Theory]
+    [InlineData("Resources", false)]
+    [InlineData("Localization.Resources", false)]
+    [InlineData("Localization.Resources.en", true)]
+    [InlineData("Localization.Resources.de-DE", true)]
+    [InlineData("Localization.Resources.d-DE", false)]
+    [InlineData("Localization.Resources.az-cyrl-az", true)]
+    [InlineData("Localization.Resources.es-419", true)]
+    [InlineData("Localization.Resources.sr-latn-ba", true)]
+    [InlineData("Localization.Resources.enen", true)]
+    [InlineData("Localization.Resources.ia-001", true)]
+    [InlineData("Localization.Resources.enen-en-en-en", false)]
+    [InlineData("Localization.Resources.Designer", false)]
+    [InlineData("Asd.Localization.Resources.en", false)]
+    [InlineData("Localization.0Resources.en", false)]
+    [InlineData("Localization0.Resources.en", false)]
+    [InlineData("Localization.Resources.e", false)]
+    [InlineData("Localization.Resources0.de-DE", false)]
+    [InlineData("Localization.Asd.Resources.en", false)]
+    [InlineData("Localization.Asd.Resources.en.en", false)]
+    public void TestX(string fileToCheck, bool expectChildFile)
+    {
+        string[] availableFiles = ["Localization.Resources", fileToCheck];
+        var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles);
+        isChildFile.Should().Be(expectChildFile);
     }
 }

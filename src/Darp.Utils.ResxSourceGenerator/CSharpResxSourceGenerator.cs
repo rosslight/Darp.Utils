@@ -14,12 +14,14 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Resource = (ResourceInformation ResourceInformation, string ResourcePathName);
 
 [Generator]
 internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
@@ -40,127 +42,113 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 //var hasNotNullIfNotNull = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsCodeAnalysisNotNullIfNotNullAttribute) is not null;
 
                 return new CompilationInformation(
-                    AssemblyName: compilation.AssemblyName,
-                    HasAggressiveInlining: true); //hasAggressiveInlining);
+                    AssemblyName: compilation.AssemblyName); //hasAggressiveInlining);
             });
-        IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles
+        IncrementalValuesProvider<Resource> resourceFilesToGenerateSource = resourceFiles
             .Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation))
             .SelectMany(static (resourceFileAndOptions, _) =>
             {
                 (AdditionalText resourceFile, (AnalyzerConfigOptionsProvider optionsProvider, CompilationInformation compilationInfo)) = resourceFileAndOptions;
+                AnalyzerConfigOptions globalOptions = optionsProvider.GlobalOptions;
                 AnalyzerConfigOptions options = optionsProvider.GetOptions(resourceFile);
 
-                // Use the GenerateSource property if provided. Otherwise, the value of GenerateSource defaults to
-                // true for resources without an explicit culture.
-                var explicitGenerateSource = IsGenerateSource(options);
-                if (explicitGenerateSource == false)
+                if (!(options.GetBoolValue("build_metadata.AdditionalFiles.GenerateSource") ?? true))
                 {
                     // Source generation is explicitly disabled for this resource file
-                    return Array.Empty<ResourceInformation>();
+                    return Array.Empty<(ResourceInformation, string)>();
                 }
 
-                if (explicitGenerateSource != true)
-                {
-                    var implicitGenerateSource = !IsExplicitWithCulture(options);
-                    if (!implicitGenerateSource)
-                    {
-                        // Source generation is disabled for this resource file
-                        return Array.Empty<ResourceInformation>();
-                    }
-                }
+                var rootNamespace = globalOptions.GetValue("build_property.RootNamespace")
+                                    ?? compilationInfo.AssemblyName;
 
-                if (!optionsProvider.GlobalOptions.TryGetValue("build_property.RootNamespace",
-                        out var rootNamespace))
-                {
-                    rootNamespace = compilationInfo.AssemblyName;
-                }
+                var relativeDir = options.GetValue("build_metadata.AdditionalFiles.RelativeDir");
+                var className = options.GetValue("build_metadata.AdditionalFiles.ClassName");
+                var emitFormatMethods = options.GetBoolValue("build_metadata.AdditionalFiles.EmitFormatMethods")
+                                        ?? false;
+                var publicResource = options.GetBoolValue("build_metadata.AdditionalFiles.Public")
+                                     ?? false;
 
-                var resourceHintName = Path.GetFileNameWithoutExtension(resourceFile.Path);
-                var resourceName = resourceHintName;
-                if (options.TryGetValue("build_metadata.AdditionalFiles.RelativeDir", out var relativeDir))
-                {
-                    relativeDir = relativeDir
-                        .Replace(Path.DirectorySeparatorChar, '.')
-                        .Replace(Path.AltDirectorySeparatorChar, '.');
-                    resourceName = relativeDir + resourceName;
-                }
-
-                options.TryGetValue("build_metadata.AdditionalFiles.ClassName", out var resourceClassName);
-
-                if (!options.TryGetValue("build_metadata.AdditionalFiles.EmitFormatMethods",
-                        out var emitFormatMethodsText)
-                    || !bool.TryParse(emitFormatMethodsText, out var emitFormatMethods))
-                {
-                    emitFormatMethods = false;
-                }
-
-                if (!options.TryGetValue("build_metadata.AdditionalFiles.Public", out var publicText)
-                    || !bool.TryParse(publicText, out var publicResource))
-                {
-                    publicResource = false;
-                }
-
-                return
-                [
-                    new ResourceInformation(
-                        CompilationInformation: compilationInfo,
-                        ResourceFile: resourceFile,
-                        ResourceName: string.Join(".", rootNamespace, resourceName),
-                        ResourceHintName: resourceHintName,
-                        ResourceClassName: resourceClassName,
+                var info = new ResourceInformation(
+                    CompilationInformation: compilationInfo,
+                    ResourceFile: resourceFile,
+                    Settings: new ConfigurationSettings(
+                        RootNamespace: rootNamespace,
+                        RelativeDir: relativeDir,
+                        ClassName: className,
                         EmitFormatMethods: emitFormatMethods,
-                        Public: publicResource),
-                ];
+                        Public: publicResource));
+                return [(info, Path.GetFileNameWithoutExtension(resourceFile.Path))];
             });
-        IncrementalValueProvider<ImmutableDictionary<string, string>> renameMapping = resourceFilesToGenerateSource
-            .Select(static (resourceFile, _) => (resourceFile.ResourceName, resourceFile.ResourceHintName))
+        IncrementalValueProvider<ImmutableDictionary<ResourceInformation, string>> renameMapping = resourceFilesToGenerateSource
             .Collect()
-            .Select(static (resourceNames, _) =>
+            .Select(static (resource, _) =>
             {
                 var names = new HashSet<string>();
-                ImmutableDictionary<string, string> remappedNames = ImmutableDictionary<string, string>.Empty;
-                foreach ((var resourceName, var resourceHintName) in resourceNames.OrderBy(x => x.ResourceName, StringComparer.Ordinal))
+                ImmutableDictionary<ResourceInformation, string> remappedNames = ImmutableDictionary<ResourceInformation, string>.Empty;
+                foreach ((ResourceInformation resourceInformation, var resourceName) in resource
+                             .OrderBy(x => x.ResourcePathName, StringComparer.Ordinal))
                 {
-                    for (var i = -1; ; i++)
+                    for (var i = -1;; i++)
                     {
                         if (i == -1)
                         {
-                            if (names.Add(resourceHintName))
+                            if (names.Add(resourceName))
                                 break;
-                            continue;
                         }
-                        var candidateName = resourceHintName + i;
-                        if (!names.Add(candidateName))
-                            continue;
-                        remappedNames = remappedNames.Add(resourceName, candidateName);
-                        break;
+                        else
+                        {
+                            var candidateName = i.ToString(CultureInfo.InvariantCulture);
+                            if (!names.Add(candidateName)) continue;
+                            remappedNames = remappedNames.Add(resourceInformation, candidateName);
+                            break;
+                        }
                     }
                 }
 
                 return remappedNames;
             })
-            .WithComparer(ImmutableDictionaryEqualityComparer<string, string>.Instance);
-        IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSourceWithNames = resourceFilesToGenerateSource
+            .WithComparer(ImmutableDictionaryEqualityComparer<ResourceInformation, string>.Instance);
+        IncrementalValueProvider<ImmutableArray<Resource>> allFilesSource = resourceFilesToGenerateSource
+            .Collect();
+
+        IncrementalValuesProvider<ResourceCollection> resourceFilesToGenerateSourceWithNames = resourceFilesToGenerateSource
             .Combine(renameMapping)
+            .Combine(allFilesSource)
+            .Where(x =>
+            {
+                ((Resource resource, _), ImmutableArray<Resource> allFiles) = x;
+                return !BuildHelper.IsChildFile(resource.ResourcePathName, allFiles.Select(r => r.ResourcePathName));
+            })
             .Select(static (resourceFileAndRenameMapping, _) =>
             {
-                (ResourceInformation resourceFile, ImmutableDictionary<string, string> renameMapping) = resourceFileAndRenameMapping;
-                if (renameMapping.TryGetValue(resourceFile.ResourceName, out var newHintName))
-                {
-                    return resourceFile with { ResourceHintName = newHintName };
-                }
-
-                return resourceFile;
+                var ((resource,  mappings), allFiles) = resourceFileAndRenameMapping;
+                var fileHintName = mappings.TryGetValue(resource.ResourceInformation, out var fileMapping)
+                    ? $"{resource.ResourcePathName}{fileMapping}.Designer.g.cs"
+                    : $"{resource.ResourcePathName}.Designer.g.cs";
+                return new ResourceCollection(resource.ResourceInformation,
+                    allFiles
+                        .Where(x => x != resource)
+                        .Where(x => BuildHelper.IsChildFile(x.ResourcePathName, allFiles.Select(r => r.ResourcePathName)))
+                        .Select(x => x.Item1.ResourceFile)
+                        .ToImmutableArray(),
+                    fileHintName);
             });
 
         context.RegisterSourceOutput(resourceFilesToGenerateSourceWithNames, static (context, resourceInformation) =>
         {
             try
             {
-                var impl = new Impl(resourceInformation);
-                if (impl.Execute(context.CancellationToken))
+                if (BuildHelper.TryGenerateSource(resourceInformation,
+                        out IEnumerable<Diagnostic> diagnostics,
+                        out var fileName,
+                        out var sourceText,
+                        context.CancellationToken))
                 {
-                    context.AddSource(impl.OutputTextHintName, impl.OutputText);
+                    context.AddSource(fileName, SourceText.From(sourceText, Encoding.UTF8, SourceHashAlgorithm.Sha256));
+                }
+                foreach (Diagnostic diagnostic in diagnostics)
+                {
+                    context.ReportDiagnostic(diagnostic);
                 }
             }
             catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
@@ -172,32 +160,8 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 var exceptionLines = ex.ToString().Split(['\n'], StringSplitOptions.None);
                 var text = string.Join("", exceptionLines.Select(line => "#error " + line + "\n"));
                 var errorText = SourceText.From(text, Encoding.UTF8, SourceHashAlgorithm.Sha256);
-                context.AddSource($"{resourceInformation.ResourceHintName}.Error", errorText);
+                context.AddSource($"Error", errorText);
             }
         });
-    }
-
-    private static bool? IsGenerateSource(AnalyzerConfigOptions options)
-    {
-        if (!options.TryGetValue("build_metadata.AdditionalFiles.GenerateSource", out var generateSourceText)
-            || !bool.TryParse(generateSourceText, out var generateSource))
-        {
-            // This resource did not explicitly set GenerateSource to true or false
-            return null;
-        }
-
-        return generateSource;
-    }
-
-    private static bool IsExplicitWithCulture(AnalyzerConfigOptions options)
-    {
-        if (!options.TryGetValue("build_metadata.AdditionalFiles.WithCulture", out var withCultureText)
-            || !bool.TryParse(withCultureText, out var withCulture))
-        {
-            // Assume the resource does not have a culture when there is no indication otherwise
-            return false;
-        }
-
-        return withCulture;
     }
 }
