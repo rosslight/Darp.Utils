@@ -194,7 +194,9 @@ using System.Reflection;
     private static string GetTrimmedDocComment(string elementName, string value)
     {
         var trimmedValue = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
-        return new XElement(elementName, trimmedValue).ToString();
+        var element = new XElement(elementName, trimmedValue).ToString();
+        var splits = element.Split('\n');
+        return string.Join("<br/>", splits);
     }
 
     private static void GenerateNamespaceStartAndEnd(string? namespaceName,
