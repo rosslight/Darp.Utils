@@ -304,7 +304,7 @@ build_metadata.AdditionalFiles.Public = {(publicResource ? "true" : "false")}
     [InlineData("Localization.Asd.Resources.en")]
     [InlineData("Localization.Asd.Resources.en.en")]
     [InlineData("Localization.Resources.d-DE")]
-    [InlineData("Localization.Resources.enen", "enen")]
+    [InlineData("Localization.Resources.enen")]
     public void IsChildFile_ShouldClassifyParentFilesCorrectly(string fileToCheck)
     {
         string[] availableFiles = ["Localization.Resources", fileToCheck];
@@ -333,9 +333,9 @@ build_metadata.AdditionalFiles.Public = {(publicResource ? "true" : "false")}
     [Theory]
     [InlineData("Asd", "Asd")]
     [InlineData("Asd.Asd", "Asd_Asd")]
-    public void TestXX(string resourceName, string expectedPropertyIdentifier)
+    public void GetIdentifierFromResourceName_ShouldGetExpectedIdentifiers(string resourceName, string expectedPropertyIdentifier)
     {
         var propertyIdentifier = BuildHelper.GetIdentifierFromResourceName(resourceName);
-        propertyIdentifier.Should().Be(propertyIdentifier);
+        propertyIdentifier.Should().Be(expectedPropertyIdentifier);
     }
 }

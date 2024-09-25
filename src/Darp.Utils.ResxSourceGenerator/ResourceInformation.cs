@@ -13,7 +13,10 @@ using Microsoft.CodeAnalysis;
 internal readonly record struct ResourceInformation(
     CompilationInformation CompilationInformation,
     AdditionalText ResourceFile,
-    ConfigurationSettings Settings);
+    ConfigurationSettings Settings,
+    string ResourceAccessName,
+    string? Namespace,
+    string ClassName);
 
 internal readonly record struct ResourceCollection(ResourceInformation BaseInformation,
     ImmutableDictionary<CultureInfo, AdditionalText> OtherLanguages,
@@ -28,9 +31,6 @@ internal readonly record struct ConfigurationSettings(
     string? RootNamespace,
     string? RelativeDir,
     string? ClassName,
+    bool EmitDebugInformation,
     bool EmitFormatMethods,
     bool Public);
-
-internal readonly record struct ComputedProperties(string ResourceName,
-    string? Namespace,
-    string ClassName);

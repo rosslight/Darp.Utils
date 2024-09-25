@@ -12,7 +12,6 @@ namespace Darp.Utils.ResxSourceGenerator;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -60,6 +59,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 
                 var rootNamespace = globalOptions.GetValue("build_property.RootNamespace")
                                     ?? compilationInfo.AssemblyName;
+                var emitDebugInformation = globalOptions.GetBoolValue("build_property.ResxSourceGenerator_EmitDebugInformation") ?? false;
 
                 var relativeDir = options.GetValue("build_metadata.AdditionalFiles.RelativeDir");
                 var className = options.GetValue("build_metadata.AdditionalFiles.ClassName");
@@ -68,6 +68,20 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 var publicResource = options.GetBoolValue("build_metadata.AdditionalFiles.Public")
                                      ?? false;
 
+                var resourcePathName = Path.GetFileNameWithoutExtension(resourceFile.Path);
+                var computedResourceName = resourcePathName;
+                if (relativeDir is not null)
+                {
+                    var replacedRelativeDir = relativeDir
+                        .Replace(Path.DirectorySeparatorChar, '.')
+                        .Replace(Path.AltDirectorySeparatorChar, '.');
+                    computedResourceName = replacedRelativeDir + computedResourceName;
+                }
+                var resourceAccessName = className is null || string.IsNullOrEmpty(className)
+                    ? string.Join(".", rootNamespace, computedResourceName)
+                    : className;
+                BuildHelper.SplitName(resourceAccessName, out var computedNamespaceName, out var computedClassName);
+
                 var info = new ResourceInformation(
                     CompilationInformation: compilationInfo,
                     ResourceFile: resourceFile,
@@ -75,8 +89,12 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                         RootNamespace: rootNamespace,
                         RelativeDir: relativeDir,
                         ClassName: className,
+                        EmitDebugInformation : emitDebugInformation,
                         EmitFormatMethods: emitFormatMethods,
-                        Public: publicResource));
+                        Public: publicResource),
+                    resourceAccessName,
+                    computedNamespaceName,
+                    computedClassName);
                 return [(info, Path.GetFileNameWithoutExtension(resourceFile.Path))];
             });
         IncrementalValueProvider<ImmutableDictionary<ResourceInformation, string>> renameMapping = resourceFilesToGenerateSource
@@ -85,14 +103,14 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             {
                 var names = new HashSet<string>();
                 ImmutableDictionary<ResourceInformation, string> remappedNames = ImmutableDictionary<ResourceInformation, string>.Empty;
-                foreach ((ResourceInformation resourceInformation, var resourceName) in resource
-                             .OrderBy(x => x.ResourcePathName, StringComparer.Ordinal))
+                foreach ((ResourceInformation resourceInformation, var resourcePathName) in resource
+                             .OrderBy(x => x.ResourceInformation.ResourceAccessName, StringComparer.Ordinal))
                 {
                     for (var i = -1;; i++)
                     {
                         if (i == -1)
                         {
-                            if (names.Add(resourceName))
+                            if (names.Add(resourcePathName))
                                 break;
                         }
                         else

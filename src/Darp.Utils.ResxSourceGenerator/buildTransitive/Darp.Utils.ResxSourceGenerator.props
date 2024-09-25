@@ -6,6 +6,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <CompilerVisibleProperty Include="ResxSourceGenerator_EmitDebugInformation" />
+
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="WithCulture" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateSource" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativeDir" />
