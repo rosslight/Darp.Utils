@@ -7,7 +7,7 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     public Resources I18N { get; } = Resources.Default;
 
-    public string Greeting => "";//I18N.FormatAsd_Ff("f", "ff");
+    public string Greeting => I18N.FormatAsd_Ff("f", "ff");
 
     public MainWindowViewModel()
     {

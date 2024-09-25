@@ -1,10 +1,4 @@
 <Project>
-  <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
-  <ItemGroup>
-    <!-- Localized embedded resources are just dependent on the parent RESX -->
-    <EmbeddedResource Update="**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))" />
-  </ItemGroup>
-
   <ItemGroup>
     <CompilerVisibleProperty Include="ResxSourceGenerator_EmitDebugInformation" />
 

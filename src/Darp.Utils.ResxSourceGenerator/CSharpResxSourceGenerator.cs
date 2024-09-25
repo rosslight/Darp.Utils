@@ -92,7 +92,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                         EmitDebugInformation : emitDebugInformation,
                         EmitFormatMethods: emitFormatMethods,
                         Public: publicResource),
-                    resourceAccessName,
+                    string.Join(".", rootNamespace, computedResourceName),
                     computedNamespaceName,
                     computedClassName);
                 return [(info, Path.GetFileNameWithoutExtension(resourceFile.Path))];
@@ -104,7 +104,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 var names = new HashSet<string>();
                 ImmutableDictionary<ResourceInformation, string> remappedNames = ImmutableDictionary<ResourceInformation, string>.Empty;
                 foreach ((ResourceInformation resourceInformation, var resourcePathName) in resource
-                             .OrderBy(x => x.ResourceInformation.ResourceAccessName, StringComparer.Ordinal))
+                             .OrderBy(x => x.ResourceInformation.ResourceName, StringComparer.Ordinal))
                 {
                     for (var i = -1;; i++)
                     {

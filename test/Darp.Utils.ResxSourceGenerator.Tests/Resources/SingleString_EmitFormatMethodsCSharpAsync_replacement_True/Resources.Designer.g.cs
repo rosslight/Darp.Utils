@@ -31,7 +31,7 @@ namespace TestProject
 
         ///<summary>Returns the cached ResourceManager instance used by this class.</summary>
         [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager(typeof(Resources));
+        public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager("TestProject.Resources", typeof(Resources).Assembly);
 
         /// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
         /// <param name="resourceKey">The name of the resource to get</param>
@@ -61,6 +61,9 @@ namespace TestProject
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
         {
+            /// <summary> <list type="table">
+            /// <item> <term><b>Default</b></term> <description>value {replacement}</description> </item>
+            /// </list> </summary>
             public const string @Name = @"Name";
         }
     }

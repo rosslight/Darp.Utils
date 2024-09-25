@@ -2,7 +2,6 @@
 
 #nullable enable
 
-
 namespace NS1
 {
     /// <summary>A strongly typed resource class for '/0/Resources.resx'</summary>

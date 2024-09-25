@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -36,6 +37,23 @@ internal static class BuildHelper
             return false;
         }
 
+        string? getStringMethod = null;
+        if (resourceInformation.Settings.EmitFormatMethods)
+        {
+            getStringMethod += $$$$"""
+{{{{memberIndent}}}}private string GetResourceString(string resourceKey, string[]? formatterNames)
+{{{{memberIndent}}}}{
+{{{{memberIndent}}}}    var value = GetResourceString(resourceKey);
+{{{{memberIndent}}}}    if (formatterNames == null) return value;
+{{{{memberIndent}}}}    for (var i = 0; i < formatterNames.Length; i++)
+{{{{memberIndent}}}}    {
+{{{{memberIndent}}}}        value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
+{{{{memberIndent}}}}    }
+{{{{memberIndent}}}}    return value;
+{{{{memberIndent}}}}}
+
+""";
+        }
         var defaultClass = $$"""
 {{classIndent}}/// <summary>A strongly typed resource class for '{{resourceInformation.ResourceFile.Path}}'</summary>
 {{classIndent}}{{(resourceInformation.Settings.Public ? "public" : "internal")}} sealed partial class {{resourceInformation.ClassName}}
@@ -64,14 +82,14 @@ internal static class BuildHelper
 
 {{memberIndent}}///<summary>Returns the cached ResourceManager instance used by this class.</summary>
 {{memberIndent}}[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-{{memberIndent}}public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager("{{resourceInformation.ResourceAccessName}}", typeof({{resourceInformation.ClassName}}).Assembly);
+{{memberIndent}}public global::System.Resources.ResourceManager ResourceManager { get; } = new global::System.Resources.ResourceManager("{{resourceInformation.ResourceName}}", typeof({{resourceInformation.ClassName}}).Assembly);
 
 {{memberIndent}}/// <summary>Get a resource of the <see cref="ResourceManager"/> with the configured <see cref="Culture"/> as a string</summary>
 {{memberIndent}}/// <param name="resourceKey">The name of the resource to get</param>
 {{memberIndent}}/// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
 {{memberIndent}}[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 {{memberIndent}}public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
-
+{{getStringMethod}}
 {{members}}
 {{memberIndent}}/// <summary>All keys contained in <see cref="{{resourceInformation.ClassName}}"/></summary>
 {{memberIndent}}public static class Keys
@@ -114,7 +132,7 @@ internal static class BuildHelper
 {classIndent}/// Compilation info:
 {classIndent}/// Assembly: {resourceInformation.CompilationInformation.AssemblyName}
 {classIndent}/// Computed properties:
-{classIndent}/// ResourceName: {resourceInformation.ResourceAccessName}
+{classIndent}/// ResourceName: {resourceInformation.ResourceName}
 {classIndent}/// ClassName: {resourceInformation.ClassName}
 {classIndent}/// Namespace: {resourceInformation.Namespace}
 {classIndent}/// </remarks>
@@ -146,6 +164,15 @@ internal static class BuildHelper
 {memberIndent}    /// <summary> <list type="table">
 {memberIndent}    /// <item> <term><b>Default</b></term> {GetTrimmedDocComment("description", value)} </item>
 """);
+            if (resourceInformation.Settings.EmitFormatMethods)
+            {
+                var resourceString = new ResourceString(propertyIdentifier, value);
+                if (resourceString.HasArguments)
+                {
+                    RenderFormatMethod(memberIndent, membersBuilder, resourceString);
+                }
+            }
+
             foreach (KeyValuePair<CultureInfo, IReadOnlyDictionary<string, string>> entry in otherCulturesEntries)
             {
                 if (!entry.Value.TryGetValue(name, out var otherValue))
@@ -161,6 +188,25 @@ internal static class BuildHelper
         members = membersBuilder.ToString();
         keysMembers = keysMembersBuilder.ToString().TrimEnd();
         return true;
+    }
+    private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
+    {
+        var propertyIdentifier = resourceString.Identifier;
+        var methodParameters = resourceString.GetMethodParameters();
+        var arguments = resourceString.GetJoinedArguments();
+        var argumentNames = resourceString.UsingNamedArgs
+            ? $"GetResourceString(@{propertyIdentifier}, new[] {{ {resourceString.GetArgumentNames()} }})"
+            : $"@{propertyIdentifier}";
+        var paramDocs = string.Join("\n", resourceString.GetArguments().Select((x, i) =>
+            $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"));
+
+        strings.AppendLine($"""
+{indent}/// <summary>Format the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
+{indent}/// {GetTrimmedDocComment("value", resourceString.Value)}
+{paramDocs}
+{indent}/// <returns>The formatted <see cref="Keys.@{propertyIdentifier}"/> string</returns>
+{indent}public string @Format{propertyIdentifier}({methodParameters}) => string.Format(Culture, {argumentNames}, {arguments});
+""");
     }
 
     private static IReadOnlyDictionary<string, string> GetX(this AdditionalText additionalText,
@@ -327,5 +373,61 @@ namespace {{namespaceName}}
         }
 
         return builder.ToString();
+    }
+
+    private readonly struct ResourceString
+    {
+        private static readonly Regex NamedParameterMatcher = new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex NumberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
+        private readonly IReadOnlyList<string> _arguments;
+
+        public ResourceString(string identifier, string value)
+        {
+            Identifier = identifier;
+            Value = value;
+
+            MatchCollection match = NamedParameterMatcher.Matches(value);
+            UsingNamedArgs = match.Count > 0;
+
+            if (!UsingNamedArgs)
+            {
+                match = NumberParameterMatcher.Matches(value);
+            }
+
+            IEnumerable<string> arguments = match.Cast<Match>()
+                .Select(m => m.Groups[1].Value)
+                .Distinct();
+            if (!UsingNamedArgs)
+            {
+                arguments = arguments.OrderBy(Convert.ToInt32);
+            }
+
+            _arguments = arguments.ToList();
+        }
+
+        public string Identifier { get; }
+        public string Value { get; }
+
+        public bool UsingNamedArgs { get; }
+
+        public bool HasArguments => _arguments.Count > 0;
+
+        public string GetArgumentNames() => string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
+
+        public IEnumerable<string> GetArguments()
+        {
+            var usingNamedArgs = UsingNamedArgs;
+            return _arguments.Select(s => GetArgName(s, usingNamedArgs));
+        }
+
+        public string GetJoinedArguments() => string.Join(", ", GetArguments());
+
+        public string GetMethodParameters()
+        {
+            var usingNamedArgs = UsingNamedArgs;
+            return string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a, usingNamedArgs)));
+        }
+
+        private static string GetArgName(string name, bool usingNamedArgs) => usingNamedArgs ? name : 'p' + name;
     }
 }

@@ -14,7 +14,7 @@ internal readonly record struct ResourceInformation(
     CompilationInformation CompilationInformation,
     AdditionalText ResourceFile,
     ConfigurationSettings Settings,
-    string ResourceAccessName,
+    string ResourceName,
     string? Namespace,
     string ClassName);
 
