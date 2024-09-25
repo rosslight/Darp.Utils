@@ -11,7 +11,7 @@
         x:Name="Window">
     <StackPanel>
         <TextBlock Text="{CompiledBinding Greeting}"/>
-        <TextBlock Text="{CompiledBinding I18N.Asd_Ff}"/>
+        <TextBlock Text="{CompiledBinding I18N.Asd}"/>
         <Button Content="English"
                 Command="{CompiledBinding SetLanguage}"
                 CommandParameter="en"

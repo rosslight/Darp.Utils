@@ -28,8 +28,6 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Standard practice for diagnosing source generator failures.")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // if (!Debugger.IsAttached)
-        //     Debugger.Launch();
         IncrementalValuesProvider<AdditionalText> resourceFiles = context
             .AdditionalTextsProvider
             .Where(static file => file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
@@ -51,7 +49,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 AnalyzerConfigOptions globalOptions = optionsProvider.GlobalOptions;
                 AnalyzerConfigOptions options = optionsProvider.GetOptions(resourceFile);
 
-                if (!(options.GetBoolValue("build_metadata.AdditionalFiles.GenerateSource") ?? true))
+                if (!(options.GetBoolValue("build_metadata.EmbeddedResource.GenerateSource") ?? true))
                 {
                     // Source generation is explicitly disabled for this resource file
                     return Array.Empty<(ResourceInformation, string)>();
@@ -61,11 +59,11 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                                     ?? compilationInfo.AssemblyName;
                 var emitDebugInformation = globalOptions.GetBoolValue("build_property.ResxSourceGenerator_EmitDebugInformation") ?? false;
 
-                var relativeDir = options.GetValue("build_metadata.AdditionalFiles.RelativeDir");
-                var className = options.GetValue("build_metadata.AdditionalFiles.ClassName");
-                var emitFormatMethods = options.GetBoolValue("build_metadata.AdditionalFiles.EmitFormatMethods")
+                var relativeDir = options.GetValue("build_metadata.EmbeddedResource.RelativeDir");
+                var className = options.GetValue("build_metadata.EmbeddedResource.ClassName");
+                var emitFormatMethods = options.GetBoolValue("build_metadata.EmbeddedResource.EmitFormatMethods")
                                         ?? false;
-                var publicResource = options.GetBoolValue("build_metadata.AdditionalFiles.Public")
+                var publicResource = options.GetBoolValue("build_metadata.EmbeddedResource.Public")
                                      ?? false;
 
                 var resourcePathName = Path.GetFileNameWithoutExtension(resourceFile.Path);
