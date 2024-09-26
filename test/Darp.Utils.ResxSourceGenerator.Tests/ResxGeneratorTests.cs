@@ -304,7 +304,7 @@ build_metadata.EmbeddedResource.Public = {(publicResource ? "true" : "false")}
     [InlineData("Localization.Asd.Resources.en")]
     [InlineData("Localization.Asd.Resources.en.en")]
     [InlineData("Localization.Resources.d-DE")]
-    [InlineData("Localization.Resources.enen", Skip = "Behaves differently between local PC and CI")]
+    [InlineData("Localization.Resources.enen")]
     public void IsChildFile_ShouldClassifyParentFilesCorrectly(string fileToCheck)
     {
         string[] availableFiles = ["Localization.Resources", fileToCheck];
@@ -322,7 +322,7 @@ build_metadata.EmbeddedResource.Public = {(publicResource ? "true" : "false")}
     [InlineData("Localization.Resources.ia-001", "ia-001")]
     public void IsChildFile_ShouldClassifyChildFilesCorrectly(string fileToCheck, string expectedCultureString)
     {
-        var expectedCulture = CultureInfo.GetCultureInfoByIetfLanguageTag(expectedCultureString);
+        var expectedCulture = CultureInfo.GetCultureInfo(expectedCultureString);
 
         string[] availableFiles = ["Localization.Resources", fileToCheck];
         var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);

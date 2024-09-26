@@ -342,7 +342,7 @@ namespace {{namespaceName}}
 
         try
         {
-            cultureInfo = CultureInfo.GetCultureInfoByIetfLanguageTag(languageExtension);
+            cultureInfo = CultureInfo.GetCultureInfo(languageExtension);
         }
         catch (CultureNotFoundException)
         {
