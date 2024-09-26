@@ -2,6 +2,8 @@
 
 namespace Darp.Utils.ResxSourceGenerator.Tests;
 
+using System.Globalization;
+using FluentAssertions;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Verifiers.CSharpSourceGeneratorVerifier<CSharpResxSourceGenerator>;
@@ -127,10 +129,10 @@ is_global = true
 build_property.RootNamespace = TestProject
 
 [/0/First/Resources.resx]
-build_metadata.AdditionalFiles.RelativeDir = First/
+build_metadata.EmbeddedResource.RelativeDir = First/
 
 [/0/Second/Resources.resx]
-build_metadata.AdditionalFiles.RelativeDir = Second/
+build_metadata.EmbeddedResource.RelativeDir = Second/
 "),
                 },
             },
@@ -191,7 +193,7 @@ build_property.RootNamespace = {rootNamespace}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.RelativeDir = {relativeDir}
+build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
 "),
                 },
             },
@@ -222,7 +224,7 @@ build_metadata.AdditionalFiles.RelativeDir = {relativeDir}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.ClassName = {className}
+build_metadata.EmbeddedResource.ClassName = {className}
 "),
                 },
             },
@@ -253,7 +255,7 @@ build_metadata.AdditionalFiles.ClassName = {className}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.EmitFormatMethods = {(emitFormatMethods ? "true" : "false")}
+build_metadata.EmbeddedResource.EmitFormatMethods = {(emitFormatMethods ? "true" : "false")}
 "),
                 },
             },
@@ -282,10 +284,58 @@ build_metadata.AdditionalFiles.EmitFormatMethods = {(emitFormatMethods ? "true" 
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.Public = {(publicResource ? "true" : "false")}
+build_metadata.EmbeddedResource.Public = {(publicResource ? "true" : "false")}
 "),
                 },
             },
         }.AddGeneratedSources().RunAsync();
+    }
+
+    [Theory]
+    [InlineData("Resources")]
+    [InlineData("Localization.Resources")]
+    [InlineData("Localization.Resources.enen-en-en-en")]
+    [InlineData("Localization.Resources.Designer")]
+    [InlineData("Asd.Localization.Resources.en")]
+    [InlineData("Localization.0Resources.en")]
+    [InlineData("Localization0.Resources.en")]
+    [InlineData("Localization.Resources.e")]
+    [InlineData("Localization.Resources0.de-DE")]
+    [InlineData("Localization.Asd.Resources.en")]
+    [InlineData("Localization.Asd.Resources.en.en")]
+    [InlineData("Localization.Resources.d-DE")]
+    [InlineData("Localization.Resources.enen", Skip = "Behaves differently between local PC and CI")]
+    public void IsChildFile_ShouldClassifyParentFilesCorrectly(string fileToCheck)
+    {
+        string[] availableFiles = ["Localization.Resources", fileToCheck];
+        var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
+        isChildFile.Should().BeFalse();
+        cultureInfo.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("Localization.Resources.en", "en")]
+    [InlineData("Localization.Resources.de-DE", "de-DE")]
+    [InlineData("Localization.Resources.az-cyrl-az", "az-cyrl-az")]
+    [InlineData("Localization.Resources.es-419", "es-419")]
+    [InlineData("Localization.Resources.sr-latn-ba", "sr-latn-ba")]
+    [InlineData("Localization.Resources.ia-001", "ia-001")]
+    public void IsChildFile_ShouldClassifyChildFilesCorrectly(string fileToCheck, string expectedCultureString)
+    {
+        var expectedCulture = CultureInfo.GetCultureInfo(expectedCultureString);
+
+        string[] availableFiles = ["Localization.Resources", fileToCheck];
+        var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
+        isChildFile.Should().BeTrue();
+        cultureInfo.Should().Be(expectedCulture);
+    }
+
+    [Theory]
+    [InlineData("Asd", "Asd")]
+    [InlineData("Asd.Asd", "Asd_Asd")]
+    public void GetIdentifierFromResourceName_ShouldGetExpectedIdentifiers(string resourceName, string expectedPropertyIdentifier)
+    {
+        var propertyIdentifier = BuildHelper.GetIdentifierFromResourceName(resourceName);
+        propertyIdentifier.Should().Be(expectedPropertyIdentifier);
     }
 }

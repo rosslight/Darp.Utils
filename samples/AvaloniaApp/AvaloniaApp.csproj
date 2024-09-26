@@ -6,7 +6,8 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <SkipShowResxFilesInHierarchy>false</SkipShowResxFilesInHierarchy>
+        <SkipShowResxFilesInHierarchy>true</SkipShowResxFilesInHierarchy>
+        <ResxSourceGenerator_EmitDebugInformation>false</ResxSourceGenerator_EmitDebugInformation>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,12 +24,11 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**"/>
-    <AdditionalFiles Include="Localization\Resources.resx" EmitFormatMethods="true" Public="true"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj"
-                      OutputItemType="Analyzer"/>
+    <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj" OutputItemType="Analyzer"/>
+    <EmbeddedResource Update="Localization\Resources.resx" EmitFormatMethods="true" Public="true" />
   </ItemGroup>
   <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.props" />
   <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.targets" />

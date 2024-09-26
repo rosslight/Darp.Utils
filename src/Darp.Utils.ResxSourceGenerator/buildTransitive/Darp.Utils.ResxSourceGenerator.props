@@ -1,16 +1,16 @@
 <Project>
-  <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
-  <ItemGroup>
-    <!-- Localized embedded resources are just dependent on the parent RESX -->
-    <EmbeddedResource Update="**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))" />
-  </ItemGroup>
+  <PropertyGroup>
+    <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
+  </PropertyGroup>
 
   <ItemGroup>
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="WithCulture" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateSource" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativeDir" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ClassName" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EmitFormatMethods" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Public" />
+    <CompilerVisibleProperty Include="ResxSourceGenerator_EmitDebugInformation" />
+
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="WithCulture" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="GenerateSource" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="RelativeDir" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="ClassName" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="EmitFormatMethods" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="Public" />
   </ItemGroup>
 </Project>

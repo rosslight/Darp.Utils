@@ -11,7 +11,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        I18N.CultureUpdated += (_,_ ) =>
+        I18N.CultureChanged += (_,_ ) =>
         {
             OnPropertyChanged(nameof(Greeting));
         };

@@ -48,6 +48,9 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
 
         public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.Default;
 
+        protected override string DefaultFileExt => "g.cs";
+
+
         private string ResourceName
         {
             get
