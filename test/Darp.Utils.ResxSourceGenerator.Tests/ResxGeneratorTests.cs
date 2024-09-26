@@ -129,10 +129,10 @@ is_global = true
 build_property.RootNamespace = TestProject
 
 [/0/First/Resources.resx]
-build_metadata.AdditionalFiles.RelativeDir = First/
+build_metadata.EmbeddedResource.RelativeDir = First/
 
 [/0/Second/Resources.resx]
-build_metadata.AdditionalFiles.RelativeDir = Second/
+build_metadata.EmbeddedResource.RelativeDir = Second/
 "),
                 },
             },
@@ -193,7 +193,7 @@ build_property.RootNamespace = {rootNamespace}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.RelativeDir = {relativeDir}
+build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
 "),
                 },
             },
@@ -224,7 +224,7 @@ build_metadata.AdditionalFiles.RelativeDir = {relativeDir}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.ClassName = {className}
+build_metadata.EmbeddedResource.ClassName = {className}
 "),
                 },
             },
@@ -255,7 +255,7 @@ build_metadata.AdditionalFiles.ClassName = {className}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.EmitFormatMethods = {(emitFormatMethods ? "true" : "false")}
+build_metadata.EmbeddedResource.EmitFormatMethods = {(emitFormatMethods ? "true" : "false")}
 "),
                 },
             },
@@ -284,7 +284,7 @@ build_metadata.AdditionalFiles.EmitFormatMethods = {(emitFormatMethods ? "true" 
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.AdditionalFiles.Public = {(publicResource ? "true" : "false")}
+build_metadata.EmbeddedResource.Public = {(publicResource ? "true" : "false")}
 "),
                 },
             },

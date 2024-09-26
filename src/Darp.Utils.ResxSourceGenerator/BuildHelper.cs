@@ -20,7 +20,7 @@ internal static class BuildHelper
         [NotNullWhen(true)] out string? sourceCode,
         CancellationToken cancellationToken)
     {
-        (ResourceInformation resourceInformation, ImmutableDictionary<CultureInfo, AdditionalText> others, fileHintName) = resourceCollection;
+        (ResourceInformation resourceInformation, _, fileHintName) = resourceCollection;
         diagnostics = [];
 
         GenerateNamespaceStartAndEnd(resourceInformation.Namespace,
@@ -149,9 +149,9 @@ internal static class BuildHelper
         var membersBuilder = new StringBuilder();
         var keysMembersBuilder = new StringBuilder();
         var otherCulturesEntries = resourceCollection.OtherLanguages
-            .Select(x => (x.Key, x.Value.GetX(cancellationToken)))
+            .Select(x => (x.Key, x.Value.GetResourceDataAndValues(cancellationToken)))
             .ToImmutableDictionary(x => x.Key, x => x.Item2);
-        foreach (KeyValuePair<string, string> x in resourceInformation.ResourceFile.GetX(cancellationToken))
+        foreach (KeyValuePair<string, string> x in resourceInformation.ResourceFile.GetResourceDataAndValues(cancellationToken))
         {
             var (name, value) = (x.Key, x.Value);
             var propertyIdentifier = GetIdentifierFromResourceName(name);
@@ -173,7 +173,7 @@ internal static class BuildHelper
                 }
             }
 
-            foreach (KeyValuePair<CultureInfo, IReadOnlyDictionary<string, string>> entry in otherCulturesEntries)
+            foreach (KeyValuePair<CultureInfo, Dictionary<string, string>> entry in otherCulturesEntries)
             {
                 if (!entry.Value.TryGetValue(name, out var otherValue))
                     otherValue = "n/a";
@@ -209,7 +209,7 @@ internal static class BuildHelper
 """);
     }
 
-    private static IReadOnlyDictionary<string, string> GetX(this AdditionalText additionalText,
+    private static Dictionary<string, string> GetResourceDataAndValues(this AdditionalText additionalText,
         CancellationToken cancellationToken)
     {
         SourceText? text = additionalText.GetText(cancellationToken);
