@@ -16,11 +16,10 @@ internal static class BuildHelper
 
     public static bool TryGenerateSource(ResourceCollection resourceCollection,
         out IEnumerable<Diagnostic> diagnostics,
-        out string fileHintName,
         [NotNullWhen(true)] out string? sourceCode,
         CancellationToken cancellationToken)
     {
-        (ResourceInformation resourceInformation, _, fileHintName) = resourceCollection;
+        ResourceInformation resourceInformation = resourceCollection.BaseInformation;
         diagnostics = [];
 
         GenerateNamespaceStartAndEnd(resourceInformation.Namespace,

@@ -4,41 +4,51 @@ using System.Collections.Immutable;
 using System.Globalization;
 using Microsoft.CodeAnalysis;
 
-/// <param name="CompilationInformation">Information about the compilation.</param>
-/// <param name="ResourceFile">Resources (resx) file.</param>
-/// <param name="Settings">Settings configured or their default value.</param>
-/// <param name="ResourceFileName"> The file name of the resource file ("Resources", for First/Resources.resx) </param>
-/// <param name="ResourceName"> The name of the resource file ("First.Resources", for First/Resources.resx) </param>
-/// <param name="Namespace"> The namespace of the resource file ("TestAssembly.First", for First/Resources.resx in assembly TestAssembly) </param>
-/// <param name="ClassName"> The className of the resource file ("Resources", for First/Resources.resx) </param>
-internal readonly record struct ResourceInformation(
-    CompilationInformation CompilationInformation,
-    AdditionalText ResourceFile,
-    ConfigurationSettings Settings,
-    string ResourceFileName,
-    string ResourceName,
-    string? Namespace,
-    string ClassName);
+internal readonly record struct ResourceInformation
+{
+    /// <summary>Information about the compilation.</summary>
+    public required CompilationInformation CompilationInformation { get; init; }
+    /// <summary>Resources (resx) file.</summary>
+    public required AdditionalText ResourceFile { get; init; }
+    /// <summary>Settings configured or their default value.</summary>
+    public required ConfigurationSettings Settings { get; init; }
+    /// <summary> The file name of the resource file ("Resources", for First/Resources.resx) </summary>
+    public required string ResourceFileName { get; init; }
+    /// <summary> The name of the resource file ("First.Resources", for First/Resources.resx) </summary>
+    public required string ResourceName { get; init; }
+    /// <summary> The namespace of the resource file ("TestAssembly.First", for First/Resources.resx in assembly TestAssembly) </summary>
+    public required string? Namespace { get; init; }
+    /// <summary> The className of the resource file ("Resources", for First/Resources.resx) </summary>
+    public required string ClassName { get; init; }
+}
 
-/// <param name="BaseInformation"> The resourceInformation about the default resource file </param>
-/// <param name="OtherLanguages"> Additional languages in respect to the default resource file </param>
-/// <param name="FileHintName"> The file name of the generated file (<see cref="ResourceInformation.ResourceFileName"/> or adjusted in case of duplication ("Resources.g.cs") </param>
-internal readonly record struct ResourceCollection(ResourceInformation BaseInformation,
-    ImmutableDictionary<CultureInfo, AdditionalText> OtherLanguages,
-    string FileHintName);
+internal readonly record struct ResourceCollection
+{
+    /// <summary> The resourceInformation about the default resource file </summary>
+    public required ResourceInformation BaseInformation { get; init; }
+    /// <summary> Additional languages in respect to the default resource file </summary>
+    public required ImmutableDictionary<CultureInfo, AdditionalText> OtherLanguages { get; init; }
+    /// <summary> The file name of the generated file (<see cref="ResourceInformation.ResourceFileName"/> or adjusted in case of duplication ("Resources.g.cs") </summary>
+    public required string FileHintName { get; init; }
+}
 
-/// <param name="RootNamespace">Optionally, a root namespace. Defaults to the Assembly name</param>
-/// <param name="RelativeDir">Optionally, a default directory</param>
-/// <param name="ClassName">Optionally, a <c>namespace.type</c> name for the generated Resources accessor class. </param>
-/// <param name="EmitDebugInformation">If set to <see langword="true"/>, the generated code will contain a section with debugging information</param>
-/// <param name="EmitFormatMethods">If set to <see langword="true"/>, the generated code will include <c>.FormatXYZ(...)</c> methods.</param>
-/// <param name="Public">If set to <see langword="true"/>, the generated class will be declared <see langword="public"/>; otherwise, it will be declared <see langword="internal"/>.</param>
-internal readonly record struct ConfigurationSettings(
-    string? RootNamespace,
-    string? RelativeDir,
-    string? ClassName,
-    bool EmitDebugInformation,
-    bool EmitFormatMethods,
-    bool Public);
+internal readonly record struct ConfigurationSettings
+{
+    /// <summary>Optionally, a root namespace. Defaults to the Assembly name</summary>
+    public required string? RootNamespace { get; init; }
+    /// <summary>Optionally, a default directory</summary>
+    public required string? RelativeDir { get; init; }
+    /// <summary>Optionally, a <c>namespace.type</c> name for the generated Resources accessor class. </summary>
+    public required string? ClassName { get; init; }
+    /// <summary>If set to <see langword="true"/>, the generated code will contain a section with debugging information</summary>
+    public required bool EmitDebugInformation { get; init; }
+    /// <summary>If set to <see langword="true"/>, the generated code will include <c>.FormatXYZ(...)</c> methods.</summary>
+    public required bool EmitFormatMethods { get; init; }
+    /// <summary>If set to <see langword="true"/>, the generated class will be declared <see langword="public"/>; otherwise, it will be declared <see langword="internal"/>.</summary>
+    public required bool Public { get; init; }
+}
 
-internal readonly record struct CompilationInformation(string? AssemblyName);
+internal readonly record struct CompilationInformation
+{
+    public required string? AssemblyName { get; init; }
+}

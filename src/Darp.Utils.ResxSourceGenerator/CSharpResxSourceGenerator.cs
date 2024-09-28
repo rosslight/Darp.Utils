@@ -32,7 +32,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             .Where(static file => file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
         IncrementalValueProvider<CompilationInformation> compilationInformation = context
             .CompilationProvider
-            .Select(static (compilation, _) => new CompilationInformation(compilation.AssemblyName));
+            .Select(static (compilation, _) => new CompilationInformation { AssemblyName = compilation.AssemblyName });
         IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles
             .Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation))
             .SelectMany(static (values, _) =>
@@ -65,11 +65,10 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             {
                 if (BuildHelper.TryGenerateSource(resourceInformation,
                         out IEnumerable<Diagnostic> diagnostics,
-                        out var fileName,
                         out var sourceText,
                         context.CancellationToken))
                 {
-                    context.AddSource(fileName, SourceText.From(sourceText, Encoding.UTF8, SourceHashAlgorithm.Sha256));
+                    context.AddSource(resourceInformation.FileHintName, SourceText.From(sourceText, Encoding.UTF8, SourceHashAlgorithm.Sha256));
                 }
                 foreach (Diagnostic diagnostic in diagnostics)
                 {
@@ -130,20 +129,22 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 
         return
         [
-            new ResourceInformation(
-                CompilationInformation: compilationInfo,
-                ResourceFile: resourceFile,
-                Settings: new ConfigurationSettings(
-                    RootNamespace: rootNamespace,
-                    RelativeDir: relativeDir,
-                    ClassName: className,
-                    EmitDebugInformation: emitDebugInformation,
-                    EmitFormatMethods: emitFormatMethods,
-                    Public: publicResource),
-                resourcePathName,
-                string.Join(".", rootNamespace, computedResourceName),
-                computedNamespaceName,
-                computedClassName),
+            new ResourceInformation{
+                CompilationInformation = compilationInfo,
+                ResourceFile = resourceFile,
+                Settings = new ConfigurationSettings{
+                    RootNamespace= rootNamespace,
+                    RelativeDir= relativeDir,
+                    ClassName= className,
+                    EmitDebugInformation= emitDebugInformation,
+                    EmitFormatMethods= emitFormatMethods,
+                    Public = publicResource,
+                },
+                ResourceFileName = resourcePathName,
+                ResourceName = string.Join(".", rootNamespace, computedResourceName),
+                Namespace = computedNamespaceName,
+                ClassName= computedClassName,
+            }
         ];
     }
 
@@ -179,8 +180,10 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
         var fileHintName = mappings.TryGetValue(resource, out var fileMapping)
             ? $"{resource.ResourceFileName}{fileMapping}.Designer.g.cs"
             : $"{resource.ResourceFileName}.Designer.g.cs";
-        return new ResourceCollection(resource,
-            allFiles
+        return new ResourceCollection
+        {
+            BaseInformation = resource,
+            OtherLanguages = allFiles
                 .Where(x => x != resource)
                 .Select(x =>
                 {
@@ -193,6 +196,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 })
                 .Where(x => x is not null)
                 .ToImmutableDictionary(x => x!.Value.Item1!, x => x!.Value.Item2),
-            fileHintName);
+            FileHintName = fileHintName
+        };
     }
 }
