@@ -118,14 +118,13 @@ internal static class BuildHelper
         if (!resourceInformation.Settings.EmitDebugInformation)
             return null;
         return $"""
-// <remarks>
 // Files:
 // FileHintName: {resourceCollection.FileHintName}
 {string.Join("\n", resourceCollection.OtherLanguages.Select(x => $"// {x.Key}: {x.Value.Path}"))}
 // Configuration:
-// RootNamespace: {resourceInformation.Settings.RootNamespace}
-// RelativeDir: {resourceInformation.Settings.RelativeDir}
-// ClassName: {resourceInformation.Settings.ClassName}
+// RootNamespace: {resourceInformation.Settings.RootNamespace ?? "<null>"}
+// RelativeDir: {resourceInformation.Settings.RelativeDir ?? "<null>"}
+// ClassName: {resourceInformation.Settings.ClassName ?? "<null>"}
 // Public: {resourceInformation.Settings.Public}
 // EmitFormatMethods: {resourceInformation.Settings.EmitFormatMethods}
 // Compilation info:
@@ -133,8 +132,7 @@ internal static class BuildHelper
 // Computed properties:
 // ResourceName: {resourceInformation.ResourceName}
 // ClassName: {resourceInformation.ClassName}
-// Namespace: {resourceInformation.Namespace}
-// </remarks>
+// Namespace: {resourceInformation.Namespace ?? "<null>"}
 """;
     }
 
@@ -172,7 +170,8 @@ internal static class BuildHelper
                 }
             }
 
-            foreach (KeyValuePair<CultureInfo, Dictionary<string, string>> entry in otherCulturesEntries)
+            foreach (KeyValuePair<CultureInfo, Dictionary<string, string>> entry in otherCulturesEntries
+                         .OrderBy(item => item.Key.ToString()))
             {
                 if (!entry.Value.TryGetValue(name, out var otherValue))
                     otherValue = "n/a";

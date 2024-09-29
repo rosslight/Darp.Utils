@@ -16,7 +16,7 @@ public class ResxGeneratorTests
     [InlineData(CSharpLanguageVersion.CSharp10)]
     [InlineData(CSharpLanguageVersion.CSharp11)]
     [InlineData(CSharpLanguageVersion.CSharp12)]
-    public async Task SingleString_DefaultCSharpAsync(CSharpLanguageVersion languageVersion)
+    public async Task SingleString_DefaultAsync(CSharpLanguageVersion languageVersion)
     {
         await new VerifyCS.Test
         {
@@ -29,7 +29,7 @@ public class ResxGeneratorTests
     }
 
     [Fact]
-    public async Task TwoResourcesSameName_DefaultCSharpAsync()
+    public async Task TwoResourcesSameName_DefaultAsync()
     {
         await new VerifyCS.Test
         {
@@ -62,7 +62,7 @@ build_metadata.EmbeddedResource.RelativeDir = Second/
     [InlineData("", Skip = "Empty root namespaces are not supported")]
     [InlineData("NS")]
     [InlineData("NS1.NS2")]
-    public async Task SingleString_RootNamespaceCSharpAsync(string rootNamespace)
+    public async Task SingleString_RootNamespaceAsync(string rootNamespace)
     {
         await new VerifyCS.Test(identifier: rootNamespace)
         {
@@ -85,7 +85,7 @@ build_property.RootNamespace = {rootNamespace}
     [InlineData("")]
     [InlineData("NS")]
     [InlineData("NS1.NS2")]
-    public async Task SingleString_RelativeDirCSharpAsync(string relativeDir)
+    public async Task SingleString_RelativeDirAsync(string relativeDir)
     {
         await new VerifyCS.Test(identifier: relativeDir)
         {
@@ -109,7 +109,7 @@ build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
     [InlineData("")]
     [InlineData("NS")]
     [InlineData("NS1.NS2")]
-    public async Task SingleString_ClassNameCSharpAsync(string className)
+    public async Task SingleString_ClassNameAsync(string className)
     {
         await new VerifyCS.Test(identifier: className)
         {
@@ -130,14 +130,15 @@ build_metadata.EmbeddedResource.ClassName = {className}
     }
 
     [Theory]
-    [InlineData("0")]
-    [InlineData("replacement")]
-    [InlineData("x")]
-    public async Task SingleString_EmitFormatMethodsCSharpAsync(string placeholder)
+    [InlineData("0", "value {0}")]
+    [InlineData("replacement", "value {replacement}")]
+    [InlineData("x", "value {x}")]
+    [InlineData("0_1_2", "value {0} {1} {2}")]
+    public async Task SingleString_EmitFormatMethodsAsync(string identifier, string value)
     {
-        var code = ResxValueWithPlaceholderDocument(placeholder);
+        var code = ResxDocument("Name", value);
 
-        await new VerifyCS.Test(identifier: placeholder)
+        await new VerifyCS.Test(identifier: identifier)
         {
             TestState =
             {
@@ -156,7 +157,30 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
     }
 
     [Fact]
-    public async Task SingleString_PublicCSharpAsync()
+    public async Task SingleString_DifferentLanguagesAsync()
+    {
+        var code = ResxDocument("Name", "value");
+        var codeDeDE = ResxDocument("Name", "DE: value");
+        var codeFr = ResxDocument("Name", "FR: value");
+        const string codeEs = ResxHeader + ResxFooter;
+
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                AdditionalFiles =
+                {
+                    ("/0/Resources.resx", code),
+                    ("/0/Resources.de-DE.resx", codeDeDE),
+                    ("/0/Resources.fr.resx", codeFr),
+                    ("/0/Resources.es.resx", codeEs),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
+    }
+
+    [Fact]
+    public async Task SingleString_PublicAsync()
     {
         await new VerifyCS.Test
         {
@@ -170,6 +194,26 @@ is_global = true
 
 [/0/Resources.resx]
 build_metadata.EmbeddedResource.Public = true
+"""),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
+    }
+
+    [Fact]
+    public async Task SingleString_DebugInformationAsync()
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
+                AnalyzerConfigFiles =
+                {
+                    ("/.globalconfig", """
+is_global = true
+
+build_property.ResxSourceGenerator_EmitDebugInformation = true
 """),
                 },
             },
