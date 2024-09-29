@@ -64,12 +64,14 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             try
             {
                 if (BuildHelper.TryGenerateSource(resourceInformation,
-                        out IEnumerable<Diagnostic> diagnostics,
+                        out IEnumerable<Diagnostic>? diagnostics,
                         out var sourceText,
                         context.CancellationToken))
                 {
                     context.AddSource(resourceInformation.FileHintName, SourceText.From(sourceText, Encoding.UTF8, SourceHashAlgorithm.Sha256));
                 }
+                if (diagnostics is null)
+                    return;
                 foreach (Diagnostic diagnostic in diagnostics)
                 {
                     context.ReportDiagnostic(diagnostic);
@@ -129,21 +131,23 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 
         return
         [
-            new ResourceInformation{
+            new ResourceInformation
+            {
                 CompilationInformation = compilationInfo,
                 ResourceFile = resourceFile,
-                Settings = new ConfigurationSettings{
-                    RootNamespace= rootNamespace,
-                    RelativeDir= relativeDir,
-                    ClassName= className,
-                    EmitDebugInformation= emitDebugInformation,
-                    EmitFormatMethods= emitFormatMethods,
+                Settings = new ConfigurationSettings
+                {
+                    RootNamespace = rootNamespace,
+                    RelativeDir = relativeDir,
+                    ClassName = className,
+                    EmitDebugInformation = emitDebugInformation,
+                    EmitFormatMethods = emitFormatMethods,
                     Public = publicResource,
                 },
                 ResourceFileName = resourcePathName,
                 ResourceName = string.Join(".", rootNamespace, computedResourceName),
                 Namespace = computedNamespaceName,
-                ClassName= computedClassName,
+                ClassName = computedClassName,
             }
         ];
     }
@@ -154,7 +158,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
         ImmutableDictionary<ResourceInformation, string> remappedNames = ImmutableDictionary<ResourceInformation, string>.Empty;
         foreach (ResourceInformation resourceInformation in resource.OrderBy(x => x.ResourceName, StringComparer.Ordinal))
         {
-            for (var i = -1;; i++)
+            for (var i = -1; ; i++)
             {
                 if (i == -1)
                 {
@@ -164,7 +168,8 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 else
                 {
                     var candidateName = i.ToString(CultureInfo.InvariantCulture);
-                    if (!names.Add(candidateName)) continue;
+                    if (!names.Add(candidateName))
+                        continue;
                     remappedNames = remappedNames.Add(resourceInformation, candidateName);
                     break;
                 }

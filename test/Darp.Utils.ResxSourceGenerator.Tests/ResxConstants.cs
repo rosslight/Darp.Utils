@@ -69,6 +69,7 @@ public static class ResxConstants
 """;
     public const string ResxFooter = "</root>";
 
+    public const string ResxEmptyDocument = ResxHeader + ResxFooter;
     public const string ResxValueDocument = $"""
 {ResxHeader}
   <data name="Name" xml:space="preserve">
@@ -95,7 +96,7 @@ public static class ResxConstants
     {
         var stringBuilder = new StringBuilder();
         stringBuilder.Append(ResxHeader);
-        foreach (var (key, value) in keyValues)
+        foreach ((var key, var value) in keyValues)
         {
 
             stringBuilder.Append(CultureInfo.InvariantCulture, $"""

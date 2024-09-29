@@ -14,8 +14,17 @@ internal static class BuildHelper
 {
     private const int MaxDocCommentLength = 256;
 
+    private static readonly DiagnosticDescriptor EmptyWarning = new(
+        id: "DarpResX001",
+        title: "Empty resource file",
+        messageFormat: "Resource file generated without any members",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true
+    );
+
     public static bool TryGenerateSource(ResourceCollection resourceCollection,
-        out IEnumerable<Diagnostic> diagnostics,
+        out IEnumerable<Diagnostic>? diagnostics,
         [NotNullWhen(true)] out string? sourceCode,
         CancellationToken cancellationToken)
     {
@@ -30,6 +39,7 @@ internal static class BuildHelper
         if (!TryGenerateMembers(resourceCollection, memberIndent,
                 out var members,
                 out var keysMembers,
+                out diagnostics,
                 cancellationToken))
         {
             sourceCode = null;
@@ -108,7 +118,7 @@ internal static class BuildHelper
 {namespaceEnd}
 
 """;
-        sourceCode =  result.Replace("\r\n", "\n");
+        sourceCode = result.Replace("\r\n", "\n");
         return true;
     }
 
@@ -138,8 +148,9 @@ internal static class BuildHelper
 
     private static bool TryGenerateMembers(ResourceCollection resourceCollection,
         string memberIndent,
-        out string? members,
-        out string? keysMembers,
+        [NotNullWhen(true)] out string? members,
+        [NotNullWhen(true)] out string? keysMembers,
+        [NotNullWhen(false)] out IEnumerable<Diagnostic>? diagnostics,
         CancellationToken cancellationToken)
     {
         ResourceInformation resourceInformation = resourceCollection.BaseInformation;
@@ -148,9 +159,21 @@ internal static class BuildHelper
         var otherCulturesEntries = resourceCollection.OtherLanguages
             .Select(x => (x.Key, x.Value.GetResourceDataAndValues(cancellationToken)))
             .ToImmutableDictionary(x => x.Key, x => x.Item2);
-        foreach (KeyValuePair<string, string> x in resourceInformation.ResourceFile.GetResourceDataAndValues(cancellationToken))
+        Dictionary<string, string> values = resourceInformation.ResourceFile.GetResourceDataAndValues(cancellationToken);
+        if (values.Count == 0)
         {
-            var (name, value) = (x.Key, x.Value);
+            members = keysMembers = null;
+            diagnostics =
+            [
+                Diagnostic.Create(descriptor: EmptyWarning,
+                    location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
+                    messageArgs: null),
+            ];
+            return false;
+        }
+        foreach (KeyValuePair<string, string> x in values)
+        {
+            (var name, var value) = (x.Key, x.Value);
             var propertyIdentifier = GetIdentifierFromResourceName(name);
             membersBuilder.AppendLine($"""
 {memberIndent}/// <summary>Get the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
@@ -185,6 +208,7 @@ internal static class BuildHelper
         }
         members = membersBuilder.ToString();
         keysMembers = keysMembersBuilder.ToString().TrimEnd();
+        diagnostics = null;
         return true;
     }
     private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
@@ -210,11 +234,7 @@ internal static class BuildHelper
     private static Dictionary<string, string> GetResourceDataAndValues(this AdditionalText additionalText,
         CancellationToken cancellationToken)
     {
-        SourceText? text = additionalText.GetText(cancellationToken);
-        if (text is null)
-        {
-            throw new Exception();
-        }
+        SourceText text = additionalText.GetText(cancellationToken) ?? throw new Exception();
         using var sourceTextReader = new SourceTextReader(text);
         Dictionary<string, string> resourceNames = [];
         foreach (XElement node in XDocument.Load(sourceTextReader).Descendants("data"))
@@ -299,10 +319,7 @@ namespace {{namespaceName}}
         return null;
     }
     public static string? GetValue(this AnalyzerConfigOptions options,
-        string key)
-    {
-        return options.TryGetValue(key, out var stringValue) ? stringValue : null;
-    }
+        string key) => options.TryGetValue(key, out var stringValue) ? stringValue : null;
 
     internal static bool IsChildFile(string fileToCheck,
         IEnumerable<string> availableFiles,
