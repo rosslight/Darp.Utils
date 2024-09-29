@@ -9,10 +9,7 @@ using Views;
 
 public partial class App : Application
 {
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -21,7 +18,7 @@ public partial class App : Application
             ServiceProvider provider = new ServiceCollection()
                 .AddTransient<MainWindowViewModel>()
                 .BuildServiceProvider();
-            var vm = provider.GetRequiredService<MainWindowViewModel>();
+            MainWindowViewModel vm = provider.GetRequiredService<MainWindowViewModel>();
             desktop.MainWindow = new MainWindow
             {
                 DataContext = vm,

@@ -7,26 +7,23 @@ using AvaloniaApp.ViewModels;
 
 public class ViewLocator : IDataTemplate
 {
-    public Control? Build(object? data)
+    public Control? Build(object? param)
     {
-        if (data is null)
+        if (param is null)
             return null;
 
-        var name = data.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
+        var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
         var type = Type.GetType(name);
 
         if (type != null)
         {
             var control = (Control)Activator.CreateInstance(type)!;
-            control.DataContext = data;
+            control.DataContext = param;
             return control;
         }
 
         return new TextBlock { Text = "Not Found: " + name };
     }
 
-    public bool Match(object? data)
-    {
-        return data is ViewModelBase;
-    }
+    public bool Match(object? data) => data is ViewModelBase;
 }
