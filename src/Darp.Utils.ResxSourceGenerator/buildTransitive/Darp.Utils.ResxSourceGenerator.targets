@@ -1,6 +1,6 @@
 <Project>
   <!-- Inspired by Microsoft.CodeAnalysis.ResxSourceGenerator targets file -->
-  <Target Name="ShowResxFilesInHierarchy" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="$(SkipShowResxFilesInHierarchy) != 'true'">
+  <Target Name="ShowResxFilesInHierarchy" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="$(ResxSourceGenerator_SkipShowResxFilesInHierarchy) != 'true'">
     <ItemGroup>
       <EmbeddedResource Update="**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))" />
     </ItemGroup>

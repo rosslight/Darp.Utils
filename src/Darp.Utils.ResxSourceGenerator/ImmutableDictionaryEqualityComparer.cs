@@ -21,6 +21,9 @@ internal sealed class ImmutableDictionaryEqualityComparer<TKey, TValue> : IEqual
         if (!Equals(x.ValueComparer, y.ValueComparer))
             return false;
 
+        if (x.Count != y.Count)
+            return false;
+
         foreach (KeyValuePair<TKey, TValue> pair in x)
         {
             if (!y.TryGetValue(pair.Key, out TValue? other)

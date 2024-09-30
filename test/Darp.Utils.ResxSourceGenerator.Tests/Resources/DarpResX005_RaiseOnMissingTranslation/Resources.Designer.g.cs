@@ -40,14 +40,17 @@ namespace TestProject
         public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
 
         /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
-        /// <value>value {replacement}</value>
+        /// <value>value</value>
         public string @Name => GetResourceString(Keys.@Name);
 
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
         {
             /// <summary> <list type="table">
-            /// <item> <term><b>Default</b></term> <description>value {replacement}</description> </item>
+            /// <item> <term><b>Default</b></term> <description>value</description> </item>
+            /// <item> <term><b>de-DE</b></term> <description>DE: value</description> </item>
+            /// <item> <term><b>es</b></term> <description>n/a</description> </item>
+            /// <item> <term><b>fr</b></term> <description>FR: value</description> </item>
             /// </list> </summary>
             public const string @Name = @"Name";
         }

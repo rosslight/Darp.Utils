@@ -1,4 +1,4 @@
-﻿namespace AvaloniaApp.ViewModels;
+namespace AvaloniaApp.ViewModels;
 
 using System.Globalization;
 using Localization;
@@ -11,16 +11,14 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        I18N.CultureChanged += (_,_ ) =>
-        {
-            OnPropertyChanged(nameof(Greeting));
-        };
+        I18N.CultureChanged += (_, _) => OnPropertyChanged(nameof(Greeting));
     }
 
 
     public void SetLanguage(string? langCode)
     {
-        if (langCode is null) return;
+        if (langCode is null)
+            return;
         I18N.Culture = CultureInfo.GetCultureInfo(langCode);
     }
 }

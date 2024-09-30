@@ -6,7 +6,7 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <SkipShowResxFilesInHierarchy>true</SkipShowResxFilesInHierarchy>
+        <ResxSourceGenerator_SkipShowResxFilesInHierarchy>true</ResxSourceGenerator_SkipShowResxFilesInHierarchy>
         <ResxSourceGenerator_EmitDebugInformation>false</ResxSourceGenerator_EmitDebugInformation>
     </PropertyGroup>
 

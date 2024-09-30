@@ -1,4 +1,4 @@
-﻿namespace AvaloniaApp;
+namespace AvaloniaApp;
 
 using System;
 using Avalonia;

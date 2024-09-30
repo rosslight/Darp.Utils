@@ -2,124 +2,45 @@
 
 namespace Darp.Utils.ResxSourceGenerator.Tests;
 
-using System.Globalization;
-using FluentAssertions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using static ResxConstants;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Verifiers.CSharpSourceGeneratorVerifier<CSharpResxSourceGenerator>;
 
 public class ResxGeneratorTests
 {
-    private const string ResxHeader = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<root>
-  <xsd:schema id=""root"" xmlns="""" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:msdata=""urn:schemas-microsoft-com:xml-msdata"">
-    <xsd:import namespace=""http://www.w3.org/XML/1998/namespace"" />
-    <xsd:element name=""root"" msdata:IsDataSet=""true"">
-      <xsd:complexType>
-        <xsd:choice maxOccurs=""unbounded"">
-          <xsd:element name=""metadata"">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name=""value"" type=""xsd:string"" minOccurs=""0"" />
-              </xsd:sequence>
-              <xsd:attribute name=""name"" use=""required"" type=""xsd:string"" />
-              <xsd:attribute name=""type"" type=""xsd:string"" />
-              <xsd:attribute name=""mimetype"" type=""xsd:string"" />
-              <xsd:attribute ref=""xml:space"" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name=""assembly"">
-            <xsd:complexType>
-              <xsd:attribute name=""alias"" type=""xsd:string"" />
-              <xsd:attribute name=""name"" type=""xsd:string"" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name=""data"">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name=""value"" type=""xsd:string"" minOccurs=""0"" msdata:Ordinal=""1"" />
-                <xsd:element name=""comment"" type=""xsd:string"" minOccurs=""0"" msdata:Ordinal=""2"" />
-              </xsd:sequence>
-              <xsd:attribute name=""name"" type=""xsd:string"" use=""required"" msdata:Ordinal=""1"" />
-              <xsd:attribute name=""type"" type=""xsd:string"" msdata:Ordinal=""3"" />
-              <xsd:attribute name=""mimetype"" type=""xsd:string"" msdata:Ordinal=""4"" />
-              <xsd:attribute ref=""xml:space"" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name=""resheader"">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name=""value"" type=""xsd:string"" minOccurs=""0"" msdata:Ordinal=""1"" />
-              </xsd:sequence>
-              <xsd:attribute name=""name"" type=""xsd:string"" use=""required"" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name=""resmimetype"">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name=""version"">
-    <value>2.0</value>
-  </resheader>
-  <resheader name=""reader"">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name=""writer"">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-";
-    private const string ResxFooter = @"
-</root>";
-
     [Theory]
     [InlineData(CSharpLanguageVersion.CSharp7, Skip = "Not supported (Missing nullable features)")]
     [InlineData(CSharpLanguageVersion.CSharp8)]
     [InlineData(CSharpLanguageVersion.CSharp9)]
-    //    [InlineData(CSharpLanguageVersion.CSharp10)]
-    //    [InlineData(CSharpLanguageVersion.CSharp11)]
-    //    [InlineData(CSharpLanguageVersion.CSharp12)]
-    public async Task SingleString_DefaultCSharpAsync(CSharpLanguageVersion languageVersion)
+    [InlineData(CSharpLanguageVersion.CSharp10)]
+    [InlineData(CSharpLanguageVersion.CSharp11)]
+    [InlineData(CSharpLanguageVersion.CSharp12)]
+    public async Task SingleString_DefaultAsync(CSharpLanguageVersion languageVersion)
     {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
-        await new VerifyCS.Test(identifier: languageVersion.ToString())
+        await new VerifyCS.Test
         {
             LanguageVersion = languageVersion,
             TestState =
             {
-                Sources = { "" },
-                AdditionalFiles = { ("/0/Resources.resx", code) },
+                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
             },
         }.AddGeneratedSources().RunAsync();
     }
 
     [Fact]
-    public async Task TwoResourcesSameName_DefaultCSharpAsync()
+    public async Task TwoResourcesSameName_DefaultAsync()
     {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
         await new VerifyCS.Test
         {
             TestState =
             {
-                Sources = { "" },
                 AdditionalFiles =
                 {
-                    ("/0/First/Resources.resx", code),
-                    ("/0/Second/Resources.resx", code),
+                    ("/0/First/Resources.resx", ResxValueDocument),
+                    ("/0/Second/Resources.resx", ResxValueDocument),
                 },
                 AnalyzerConfigFiles =
                 {
@@ -143,20 +64,13 @@ build_metadata.EmbeddedResource.RelativeDir = Second/
     [InlineData("", Skip = "Empty root namespaces are not supported")]
     [InlineData("NS")]
     [InlineData("NS1.NS2")]
-    public async Task SingleString_RootNamespaceCSharpAsync(string rootNamespace)
+    public async Task SingleString_RootNamespaceAsync(string rootNamespace)
     {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
         await new VerifyCS.Test(identifier: rootNamespace)
         {
             TestState =
             {
-                AdditionalFiles = { ("/0/Resources.resx", code) },
+                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
                     ("/.globalconfig", $@"
@@ -173,20 +87,13 @@ build_property.RootNamespace = {rootNamespace}
     [InlineData("")]
     [InlineData("NS")]
     [InlineData("NS1.NS2")]
-    public async Task SingleString_RelativeDirCSharpAsync(string relativeDir)
+    public async Task SingleString_RelativeDirAsync(string relativeDir)
     {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
         await new VerifyCS.Test(identifier: relativeDir)
         {
             TestState =
             {
-                AdditionalFiles = { ("/0/Resources.resx", code) },
+                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
                     ("/.globalconfig", $@"
@@ -204,138 +111,216 @@ build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
     [InlineData("")]
     [InlineData("NS")]
     [InlineData("NS1.NS2")]
-    public async Task SingleString_ClassNameCSharpAsync(string className)
+    public async Task SingleString_ClassNameAsync(string className)
     {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
         await new VerifyCS.Test(identifier: className)
         {
             TestState =
             {
-                AdditionalFiles = { ("/0/Resources.resx", code) },
+                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", $@"
+                    ("/.globalconfig", $"""
 is_global = true
 
 [/0/Resources.resx]
 build_metadata.EmbeddedResource.ClassName = {className}
-"),
+"""),
                 },
             },
         }.AddGeneratedSources().RunAsync();
     }
 
     [Theory]
-    [CombinatorialData]
-    public async Task SingleString_EmitFormatMethodsCSharpAsync(
-        [CombinatorialValues("0", "x", "replacement")] string placeholder,
-        bool emitFormatMethods)
+    [InlineData("0", "value {0}")]
+    [InlineData("replacement", "value {replacement}")]
+    [InlineData("x", "value {x}")]
+    [InlineData("0_1_2", "value {0} {1} {2}")]
+    public async Task SingleString_EmitFormatMethodsAsync(string identifier, string value)
     {
-        var code = ResxHeader
-            + $@"  <data name=""Name"" xml:space=""preserve"">
-    <value>value {{{placeholder}}}</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
+        var code = ResxDocument("Name", value);
 
-        await new VerifyCS.Test(identifier: $"{placeholder}_{emitFormatMethods}")
+        await new VerifyCS.Test(identifier: identifier)
         {
             TestState =
             {
                 AdditionalFiles = { ("/0/Resources.resx", code) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", $@"
+                    ("/.globalconfig", """
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.EmbeddedResource.EmitFormatMethods = {(emitFormatMethods ? "true" : "false")}
-"),
+build_metadata.EmbeddedResource.EmitFormatMethods = true
+"""),
                 },
             },
         }.AddGeneratedSources().RunAsync();
     }
 
-    [Theory]
-    [CombinatorialData]
-    public async Task SingleString_PublicCSharpAsync(bool publicResource)
+    [Fact]
+    public async Task SingleString_DifferentLanguagesAsync()
     {
-        var code = ResxHeader
-            + @"  <data name=""Name"" xml:space=""preserve"">
-    <value>value</value>
-    <comment>comment</comment>
-  </data>"
-            + ResxFooter;
-
-        await new VerifyCS.Test(identifier: publicResource.ToString())
+        await new VerifyCS.Test
         {
             TestState =
             {
-                AdditionalFiles = { ("/0/Resources.resx", code) },
-                AnalyzerConfigFiles =
+                AdditionalFiles =
                 {
-                    ("/.globalconfig", $@"
-is_global = true
-
-[/0/Resources.resx]
-build_metadata.EmbeddedResource.Public = {(publicResource ? "true" : "false")}
-"),
+                    ("/0/Resources.resx", ResxDocument("Name", "value")),
+                    ("/0/Resources.de-DE.resx", ResxDocument("Name", "DE: value")),
+                    ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
                 },
             },
         }.AddGeneratedSources().RunAsync();
     }
 
-    [Theory]
-    [InlineData("Resources")]
-    [InlineData("Localization.Resources")]
-    [InlineData("Localization.Resources.enen-en-en-en")]
-    [InlineData("Localization.Resources.Designer")]
-    [InlineData("Asd.Localization.Resources.en")]
-    [InlineData("Localization.0Resources.en")]
-    [InlineData("Localization0.Resources.en")]
-    [InlineData("Localization.Resources.e")]
-    [InlineData("Localization.Resources0.de-DE")]
-    [InlineData("Localization.Asd.Resources.en")]
-    [InlineData("Localization.Asd.Resources.en.en")]
-    [InlineData("Localization.Resources.d-DE")]
-    [InlineData("Localization.Resources.enen", Skip = "Behaves differently between local PC and CI")]
-    public void IsChildFile_ShouldClassifyParentFilesCorrectly(string fileToCheck)
+    [Fact]
+    public async Task SingleString_PublicAsync()
     {
-        string[] availableFiles = ["Localization.Resources", fileToCheck];
-        var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
-        isChildFile.Should().BeFalse();
-        cultureInfo.Should().BeNull();
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
+                AnalyzerConfigFiles =
+                {
+                    ("/.globalconfig", """
+is_global = true
+
+[/0/Resources.resx]
+build_metadata.EmbeddedResource.Public = true
+"""),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
+    }
+
+    [Fact]
+    public async Task SingleString_DebugInformationAsync()
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
+                AnalyzerConfigFiles =
+                {
+                    ("/.globalconfig", """
+is_global = true
+
+build_property.ResxSourceGenerator_EmitDebugInformation = true
+"""),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
+    }
+
+    [Fact]
+    public async Task DarpResX001_RaiseOnEmptyDocument()
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxEmptyDocument) },
+                Sources = { "" },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default),
+                },
+            },
+        }.RunAsync();
     }
 
     [Theory]
-    [InlineData("Localization.Resources.en", "en")]
-    [InlineData("Localization.Resources.de-DE", "de-DE")]
-    [InlineData("Localization.Resources.az-cyrl-az", "az-cyrl-az")]
-    [InlineData("Localization.Resources.es-419", "es-419")]
-    [InlineData("Localization.Resources.sr-latn-ba", "sr-latn-ba")]
-    [InlineData("Localization.Resources.ia-001", "ia-001")]
-    public void IsChildFile_ShouldClassifyChildFilesCorrectly(string fileToCheck, string expectedCultureString)
+    [InlineData("")]
+    [InlineData("    ")]
+    public async Task DarpResX002_RaiseOnInvalidKey(string key)
     {
-        var expectedCulture = CultureInfo.GetCultureInfo(expectedCultureString);
-
-        string[] availableFiles = ["Localization.Resources", fileToCheck];
-        var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
-        isChildFile.Should().BeTrue();
-        cultureInfo.Should().Be(expectedCulture);
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                Sources = { "" },
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocument(key, "value")) },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default),
+                    new DiagnosticResult("DarpResX002", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.resx", 61, 2, 61, 2 + key.Length)
+                        .WithArguments(key),
+                },
+            },
+        }.RunAsync();
     }
 
-    [Theory]
-    [InlineData("Asd", "Asd")]
-    [InlineData("Asd.Asd", "Asd_Asd")]
-    public void GetIdentifierFromResourceName_ShouldGetExpectedIdentifiers(string resourceName, string expectedPropertyIdentifier)
+    [Fact]
+    public async Task DarpResX003_RaiseOnMissingValue()
     {
-        var propertyIdentifier = BuildHelper.GetIdentifierFromResourceName(resourceName);
-        propertyIdentifier.Should().Be(expectedPropertyIdentifier);
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                Sources = { "" },
+                AdditionalFiles = { ("/0/Resources.resx", ResxMissingValueDocument) },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default),
+                    new DiagnosticResult("DarpResX003", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.resx", 61, 9, 61, 13)
+                        .WithArguments("Name"),
+                },
+            },
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task DarpResX004_RaiseOnDuplicateValue()
+    {
+        await new VerifyCS.Test(testMethod: nameof(SingleString_DefaultAsync))
+        {
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocumentWithValues(
+                    [
+                        ("Name", "value"),
+                        ("Name", "Value2"),
+                    ])),
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX004", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.resx", 62, 14, 62, 18)
+                        .WithArguments("Name"),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
+    }
+
+    [Fact]
+    public async Task DarpResX005_RaiseOnMissingTranslation()
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                AdditionalFiles = {
+                    ("/0/Resources.resx", ResxDocument("Name", "value")),
+                    ("/0/Resources.de-DE.resx", ResxDocument("Name", "DE: value")),
+                    ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
+                    ("/0/Resources.es.resx", ResxEmptyDocument),
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX005", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.es.resx", 1, 1, 1, 1)
+                        .WithArguments("Name", "Spanish", "es"),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
     }
 }
