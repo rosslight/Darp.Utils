@@ -13,13 +13,14 @@ using Microsoft.CodeAnalysis.Text;
 internal static class BuildHelper
 {
     private const int MaxDocCommentLength = 256;
-
+    private const string HelpLinkUri = "https://github.com/rosslight/Darp.Utils/tree/main/src/Darp.Utils.ResxSourceGenerator/README.md#Diagnostics";
     private static readonly DiagnosticDescriptor EmptyWarning = new(
         id: "DarpResX001",
         title: "Empty resource file",
         messageFormat: "Resource file generated without any members",
         category: "Globalization",
         defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
         isEnabledByDefault: true
     );
 
@@ -29,6 +30,7 @@ internal static class BuildHelper
         messageFormat: "Entry with key '{0}' is invalid and will be ignored",
         category: "Globalization",
         defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
         isEnabledByDefault: true
     );
 
@@ -38,6 +40,7 @@ internal static class BuildHelper
         messageFormat: "Entry with key '{0}' is has no value and will be ignored",
         category: "Globalization",
         defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
         isEnabledByDefault: true
     );
 
@@ -47,6 +50,7 @@ internal static class BuildHelper
         messageFormat: "Entry with key '{0}' is duplicated and will be ignored",
         category: "Globalization",
         defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
         isEnabledByDefault: true
     );
 
@@ -56,6 +60,7 @@ internal static class BuildHelper
         messageFormat: "Entry with key '{0}' is missing a translation for {1} ({2})",
         category: "Globalization",
         defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
         isEnabledByDefault: true
     );
 

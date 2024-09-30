@@ -1,6 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E6A96FF6-3509-4DB0-8B55-7BEC3D3E286D}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Assets", "src\Darp.Utils.Assets\Darp.Utils.Assets.csproj", "{7E57404F-5D1F-46D9-941C-B1090DDBA567}"
 EndProject

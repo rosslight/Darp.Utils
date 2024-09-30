@@ -76,32 +76,8 @@ await _dialogService.CreateContentDialog("Title", viewModel)
 ```
 
 ## Darp.Utils.ResxSourceGenerator
+[![NuGet](https://img.shields.io/nuget/v/Darp.Utils.ResxSourceGenerator.svg)](https://www.nuget.org/packages/Darp.Utils.ResxSourceGenerator)
+[![Downloads](https://img.shields.io/nuget/dt/Darp.Utils.ResxSourceGenerator)](https://www.nuget.org/packages/Darp.Utils.ResxSourceGenerator)
 
 A source generator for generating strongly typed singleton resource classes from .resx files.
-Based on the [Microsoft.CodeAnalysis.ResxSourceGenerator](https://www.nuget.org/packages/Microsoft.CodeAnalysis.ResxSourceGenerator).
-
-### Usage
-
-YourProject.csproj
-```xml
-<Project>
-    <PropertyGroup>
-        <SkipShowResxFilesInHierarchy>false</SkipShowResxFilesInHierarchy>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Darp.Utils.ResxSourceGenerator" Version="X.Y.Z" PrivateAssets="all"/>
-    </ItemGroup>
-    <ItemGroup>
-        <!-- Minimal configuration -->
-        <AdditionalFiles Include="Localization\Resources1.resx"/>
-        <!-- Default configuration -->
-        <AdditionalFiles Include="Localization\Resources2.resx"
-                         GenerateSource="true"
-                         RelativeDir=""
-                         ClassName=""
-                         EmitFormatMethods="false"
-                         EmitObserveMethods="false"
-                         Public="false"/>
-    </ItemGroup>
-</Project>
-```
+Additional documentation [here](https://github.com/rosslight/Darp.Utils/tree/main/src/Darp.Utils.ResxSourceGenerator/README.md).
