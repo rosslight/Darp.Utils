@@ -32,4 +32,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Darp.Utils.ResxSourceGenerator.Tests" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/"/>
+  </ItemGroup>
 </Project>
