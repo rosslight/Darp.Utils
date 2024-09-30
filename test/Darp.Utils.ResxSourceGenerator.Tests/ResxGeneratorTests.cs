@@ -244,7 +244,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
     [Theory]
     [InlineData("")]
     [InlineData("    ")]
-    public async Task DarpResX002_RaiseOnEmptyDocument(string key)
+    public async Task DarpResX002_RaiseOnInvalidKey(string key)
     {
         await new VerifyCS.Test
         {
@@ -258,6 +258,26 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                         .WithLocation("/0/Resources.resx", default),
                     new DiagnosticResult("DarpResX002", DiagnosticSeverity.Warning)
                         .WithSpan("/0/Resources.resx", 61, 2, 61, 2 + key.Length),
+                },
+            },
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task DarpResX003_RaiseOnMissingValue()
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                Sources = { "" },
+                AdditionalFiles = { ("/0/Resources.resx", ResxMissingValueDocument) },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default),
+                    new DiagnosticResult("DarpResX003", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.resx", 61, 9, 61, 13),
                 },
             },
         }.RunAsync();

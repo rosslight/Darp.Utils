@@ -78,6 +78,13 @@ public static class ResxConstants
   </data>
 {ResxFooter}
 """;
+    public const string ResxMissingValueDocument = $"""
+{ResxHeader}
+  <data name="Name" xml:space="preserve">
+    <comment>comment</comment>
+  </data>
+{ResxFooter}
+""";
 
     public static string ResxDocument(string key, string value)
     {

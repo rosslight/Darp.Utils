@@ -32,6 +32,15 @@ internal static class BuildHelper
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor MissingValueWarning = new(
+        id: "DarpResX003",
+        title: "Missing Value in resource file",
+        messageFormat: "Entry with key '{0}' is has no value and will be ignored",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true
+    );
+
     public static bool TryGenerateSource(ResourceCollection resourceCollection,
         in List<Diagnostic> diagnostics,
         [NotNullWhen(true)] out string? sourceCode,
@@ -268,24 +277,32 @@ internal static class BuildHelper
         resourceNames = [];
         foreach (XElement node in XDocument.Load(sourceTextReader, LoadOptions.SetLineInfo).Descendants("data"))
         {
-            var name = node.Attribute("name")?.Value;
-            if (name is null || string.IsNullOrWhiteSpace(name))
+            XAttribute? nameAttribute = node.Attribute("name");
+            var name = nameAttribute?.Value;
+            if (nameAttribute is null || name is null || string.IsNullOrWhiteSpace(name))
             {
                 diagnostics.Add(Diagnostic.Create(
                     descriptor: InvalidKeyWarning,
-                    location: GetMemberLocation(additionalText, node, name),
+                    location: GetXElementLocation(additionalText, node, name),
                     messageArgs: name));
                 continue;
             }
-            var value = node.Elements("value").FirstOrDefault()?.Value.Trim();
-            resourceNames[name] = value ?? throw new Exception();
+            XElement? valueAttribute = node.Elements("value").FirstOrDefault();
+            if (valueAttribute is null)
+            {
+                diagnostics.Add(Diagnostic.Create(
+                    descriptor: MissingValueWarning,
+                    location: GetXElementLocation(additionalText, nameAttribute, name),
+                    messageArgs: name));
+                continue;
+            }
+            resourceNames[name] = valueAttribute.Value.Trim();
         }
         return true;
     }
-    private static Location GetMemberLocation(AdditionalText text, IXmlLineInfo line, string? memberName) =>
-        Location.Create(
-            filePath: text.Path,
-            textSpan: new TextSpan(),
+
+    private static Location GetXElementLocation(AdditionalText text, IXmlLineInfo line, string? memberName) =>
+        Location.Create(filePath: text.Path, textSpan: new TextSpan(),
             lineSpan: new LinePositionSpan(
                 start: new LinePosition(line.LineNumber - 1, line.LinePosition - 1),
                 end: new LinePosition(line.LineNumber - 1, line.LinePosition - 1 + memberName?.Length ?? 0)
