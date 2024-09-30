@@ -282,4 +282,27 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             },
         }.RunAsync();
     }
+
+    [Fact]
+    public async Task DarpResX003_RaiseOnDuplicateValue()
+    {
+        await new VerifyCS.Test(testMethod: nameof(SingleString_DefaultAsync))
+        {
+            TestState =
+            {
+                Sources = { "" },
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocumentWithValues(
+                    [
+                        ("Name", "value"),
+                        ("Name", "Value2"),
+                    ])),
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX004", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.resx", 62, 14, 62, 18),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
+    }
 }

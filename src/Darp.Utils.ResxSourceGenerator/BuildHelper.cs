@@ -41,6 +41,15 @@ internal static class BuildHelper
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor DuplicateKeyWarning = new(
+        id: "DarpResX004",
+        title: "Duplicate Key in resource file",
+        messageFormat: "Entry with key '{0}' is duplicated and will be ignored",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true
+    );
+
     public static bool TryGenerateSource(ResourceCollection resourceCollection,
         in List<Diagnostic> diagnostics,
         [NotNullWhen(true)] out string? sourceCode,
@@ -292,6 +301,15 @@ internal static class BuildHelper
             {
                 diagnostics.Add(Diagnostic.Create(
                     descriptor: MissingValueWarning,
+                    location: GetXElementLocation(additionalText, nameAttribute, name),
+                    messageArgs: name));
+                continue;
+            }
+
+            if (resourceNames.ContainsKey(name))
+            {
+                diagnostics.Add(Diagnostic.Create(
+                    descriptor: DuplicateKeyWarning,
                     location: GetXElementLocation(additionalText, nameAttribute, name),
                     messageArgs: name));
                 continue;
