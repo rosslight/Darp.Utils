@@ -50,6 +50,15 @@ internal static class BuildHelper
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor MissingTranslationKeyWarning = new(
+        id: "DarpResX005",
+        title: "Missing translation for specific Key",
+        messageFormat: "Entry with key '{0}' is missing a translation for {1} ({2})",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true
+    );
+
     public static bool TryGenerateSource(ResourceCollection resourceCollection,
         in List<Diagnostic> diagnostics,
         [NotNullWhen(true)] out string? sourceCode,
@@ -184,7 +193,7 @@ internal static class BuildHelper
         var keysMembersBuilder = new StringBuilder();
 
         if (!resourceInformation.ResourceFile.TryGetResourceDataAndValues(diagnostics,
-                out Dictionary<string, string>? values,
+                out Dictionary<string, XElement>? values,
                 cancellationToken))
         {
             members = keysMembers = null;
@@ -198,20 +207,21 @@ internal static class BuildHelper
                 messageArgs: null));
             return false;
         }
-        Dictionary<CultureInfo, Dictionary<string, string>> otherCulturesEntries = [];
+        Dictionary<CultureInfo, Dictionary<string, XElement>> otherCulturesEntries = [];
         foreach (KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages)
         {
             if (!pair.Value.TryGetResourceDataAndValues(diagnostics,
-                    out Dictionary<string, string>? langSpecificValues,
+                    out Dictionary<string, XElement>? langSpecificValues,
                     cancellationToken))
             {
                 continue;
             }
             otherCulturesEntries[pair.Key] = langSpecificValues;
         }
-        foreach (KeyValuePair<string, string> x in values)
+        foreach (KeyValuePair<string, XElement> x in values)
         {
-            var (name, value) = (x.Key, x.Value);
+            (var name, XElement attribute) = (x.Key, x.Value);
+            var value = attribute.Value.Trim();
             var propertyIdentifier = GetIdentifierFromResourceName(name);
             membersBuilder.AppendLine($"""
 {memberIndent}/// <summary>Get the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
@@ -231,11 +241,22 @@ internal static class BuildHelper
                 }
             }
 
-            foreach (KeyValuePair<CultureInfo, Dictionary<string, string>> entry in otherCulturesEntries
+            foreach (KeyValuePair<CultureInfo, Dictionary<string, XElement>> entry in otherCulturesEntries
                          .OrderBy(item => item.Key.ToString()))
             {
-                if (!entry.Value.TryGetValue(name, out var otherValue))
+                string otherValue;
+                if (entry.Value.TryGetValue(name, out XElement otherAttribute))
+                {
+                    otherValue = otherAttribute.Value.Trim();
+                }
+                else
+                {
+                    diagnostics.Add(Diagnostic.Create(
+                        descriptor: MissingTranslationKeyWarning,
+                        location: Location.Create(resourceCollection.OtherLanguages[entry.Key].Path, default, default),
+                        messageArgs: [name, entry.Key.DisplayName, entry.Key]));
                     otherValue = "n/a";
+                }
                 keysMembersBuilder.AppendLine(
                     $"{memberIndent}    /// <item> <term><b>{entry.Key}</b></term> {GetTrimmedDocComment("description", otherValue)} </item>");
             }
@@ -270,7 +291,7 @@ internal static class BuildHelper
 
     private static bool TryGetResourceDataAndValues(this AdditionalText additionalText,
         in List<Diagnostic> diagnostics,
-        [NotNullWhen(true)] out Dictionary<string, string>? resourceNames,
+        [NotNullWhen(true)] out Dictionary<string, XElement>? resourceNames,
         CancellationToken cancellationToken)
     {
         SourceText? text = additionalText.GetText(cancellationToken);
@@ -314,7 +335,7 @@ internal static class BuildHelper
                     messageArgs: name));
                 continue;
             }
-            resourceNames[name] = valueAttribute.Value.Trim();
+            resourceNames[name] = valueAttribute;
         }
         return true;
     }

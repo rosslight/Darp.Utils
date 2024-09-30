@@ -4,7 +4,6 @@ namespace Darp.Utils.ResxSourceGenerator.Tests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Text;
 using Xunit;
 using static ResxConstants;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
@@ -162,21 +161,15 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
     [Fact]
     public async Task SingleString_DifferentLanguagesAsync()
     {
-        var code = ResxDocument("Name", "value");
-        var codeDeDE = ResxDocument("Name", "DE: value");
-        var codeFr = ResxDocument("Name", "FR: value");
-        const string codeEs = ResxHeader + ResxFooter;
-
         await new VerifyCS.Test
         {
             TestState =
             {
                 AdditionalFiles =
                 {
-                    ("/0/Resources.resx", code),
-                    ("/0/Resources.de-DE.resx", codeDeDE),
-                    ("/0/Resources.fr.resx", codeFr),
-                    ("/0/Resources.es.resx", codeEs),
+                    ("/0/Resources.resx", ResxDocument("Name", "value")),
+                    ("/0/Resources.de-DE.resx", ResxDocument("Name", "DE: value")),
+                    ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
                 },
             },
         }.AddGeneratedSources().RunAsync();
@@ -257,7 +250,8 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                     new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
                         .WithLocation("/0/Resources.resx", default),
                     new DiagnosticResult("DarpResX002", DiagnosticSeverity.Warning)
-                        .WithSpan("/0/Resources.resx", 61, 2, 61, 2 + key.Length),
+                        .WithSpan("/0/Resources.resx", 61, 2, 61, 2 + key.Length)
+                        .WithArguments(key),
                 },
             },
         }.RunAsync();
@@ -277,20 +271,20 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                     new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
                         .WithLocation("/0/Resources.resx", default),
                     new DiagnosticResult("DarpResX003", DiagnosticSeverity.Warning)
-                        .WithSpan("/0/Resources.resx", 61, 9, 61, 13),
+                        .WithSpan("/0/Resources.resx", 61, 9, 61, 13)
+                        .WithArguments("Name"),
                 },
             },
         }.RunAsync();
     }
 
     [Fact]
-    public async Task DarpResX003_RaiseOnDuplicateValue()
+    public async Task DarpResX004_RaiseOnDuplicateValue()
     {
         await new VerifyCS.Test(testMethod: nameof(SingleString_DefaultAsync))
         {
             TestState =
             {
-                Sources = { "" },
                 AdditionalFiles = { ("/0/Resources.resx", ResxDocumentWithValues(
                     [
                         ("Name", "value"),
@@ -300,7 +294,31 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                 ExpectedDiagnostics =
                 {
                     new DiagnosticResult("DarpResX004", DiagnosticSeverity.Warning)
-                        .WithSpan("/0/Resources.resx", 62, 14, 62, 18),
+                        .WithSpan("/0/Resources.resx", 62, 14, 62, 18)
+                        .WithArguments("Name"),
+                },
+            },
+        }.AddGeneratedSources().RunAsync();
+    }
+
+    [Fact]
+    public async Task DarpResX005_RaiseOnMissingTranslation()
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                AdditionalFiles = {
+                    ("/0/Resources.resx", ResxDocument("Name", "value")),
+                    ("/0/Resources.de-DE.resx", ResxDocument("Name", "DE: value")),
+                    ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
+                    ("/0/Resources.es.resx", ResxEmptyDocument),
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX005", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.es.resx", 1, 1, 1, 1)
+                        .WithArguments("Name", "Spanish", "es"),
                 },
             },
         }.AddGeneratedSources().RunAsync();

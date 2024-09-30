@@ -49,6 +49,7 @@ namespace TestProject
             /// <summary> <list type="table">
             /// <item> <term><b>Default</b></term> <description>value</description> </item>
             /// <item> <term><b>de-DE</b></term> <description>DE: value</description> </item>
+            /// <item> <term><b>es</b></term> <description>n/a</description> </item>
             /// <item> <term><b>fr</b></term> <description>FR: value</description> </item>
             /// </list> </summary>
             public const string @Name = @"Name";
