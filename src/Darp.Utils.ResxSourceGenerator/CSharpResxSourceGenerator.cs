@@ -63,15 +63,14 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
         {
             try
             {
+                List<Diagnostic> diagnostics = [];
                 if (BuildHelper.TryGenerateSource(resourceInformation,
-                        out IEnumerable<Diagnostic>? diagnostics,
+                        diagnostics,
                         out var sourceText,
                         context.CancellationToken))
                 {
                     context.AddSource(resourceInformation.FileHintName, SourceText.From(sourceText, Encoding.UTF8, SourceHashAlgorithm.Sha256));
                 }
-                if (diagnostics is null)
-                    return;
                 foreach (Diagnostic diagnostic in diagnostics)
                 {
                     context.ReportDiagnostic(diagnostic);

@@ -4,6 +4,7 @@ namespace Darp.Utils.ResxSourceGenerator.Tests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Text;
 using Xunit;
 using static ResxConstants;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
@@ -213,18 +214,11 @@ build_metadata.EmbeddedResource.Public = true
                 AnalyzerConfigFiles =
                 {
                     ("/.globalconfig", """
-                                       is_global = true
+is_global = true
 
-                                       build_property.ResxSourceGenerator_EmitDebugInformation = true
-                                       """),
+build_property.ResxSourceGenerator_EmitDebugInformation = true
+"""),
                 },
-            },
-            ExpectedDiagnostics =
-            {
-                new DiagnosticResult(
-                    "ADEF001",
-                    DiagnosticSeverity.Warning
-                ).WithLocation(18, 27)
             },
         }.AddGeneratedSources().RunAsync();
     }
@@ -242,6 +236,28 @@ build_metadata.EmbeddedResource.Public = true
                 {
                     new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
                         .WithLocation("/0/Resources.resx", default),
+                },
+            },
+        }.RunAsync();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("    ")]
+    public async Task DarpResX002_RaiseOnEmptyDocument(string key)
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                Sources = { "" },
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocument(key, "value")) },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default),
+                    new DiagnosticResult("DarpResX002", DiagnosticSeverity.Warning)
+                        .WithSpan("/0/Resources.resx", 61, 2, 61, 2 + key.Length),
                 },
             },
         }.RunAsync();

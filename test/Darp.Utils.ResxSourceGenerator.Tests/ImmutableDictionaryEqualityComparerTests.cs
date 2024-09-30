@@ -11,10 +11,7 @@ public class ImmutableDictionaryEqualityComparerTests
     private static readonly ImmutableDictionaryEqualityComparer<string, int> Comparer = ImmutableDictionaryEqualityComparer<string, int>.Instance;
 
     [Fact]
-    public void Equals_BothNull_ReturnsTrue()
-    {
-        Comparer.Equals(null, null).Should().BeTrue();
-    }
+    public void Equals_BothNull_ReturnsTrue() => Comparer.Equals(null, null).Should().BeTrue();
 
     [Fact]
     public void Equals_XNull_YNotNull_ReturnsFalse()
@@ -128,10 +125,7 @@ public class ImmutableDictionaryEqualityComparerTests
     }
 
     [Fact]
-    public void GetHashCode_Null_ReturnsZero()
-    {
-        Comparer.GetHashCode(null).Should().Be(0);
-    }
+    public void GetHashCode_Null_ReturnsZero() => Comparer.GetHashCode(null).Should().Be(0);
 
     [Fact]
     public void GetHashCode_EmptyDictionary_ReturnsZero()
