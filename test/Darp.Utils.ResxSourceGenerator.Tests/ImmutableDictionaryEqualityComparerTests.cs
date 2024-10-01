@@ -8,7 +8,8 @@ using Xunit;
 
 public class ImmutableDictionaryEqualityComparerTests
 {
-    private static readonly ImmutableDictionaryEqualityComparer<string, int> Comparer = ImmutableDictionaryEqualityComparer<string, int>.Instance;
+    private static readonly ImmutableDictionaryEqualityComparer<string, int> Comparer =
+        ImmutableDictionaryEqualityComparer<string, int>.Instance;
 
     [Fact]
     public void Equals_BothNull_ReturnsTrue() => Comparer.Equals(null, null).Should().BeTrue();
@@ -67,8 +68,12 @@ public class ImmutableDictionaryEqualityComparerTests
     [Fact]
     public void Equals_DifferentKeyComparers_ReturnsFalse()
     {
-        ImmutableDictionary<string, int> x = ImmutableDictionary.Create<string, int>(StringComparer.OrdinalIgnoreCase).Add("key1", 1);
-        ImmutableDictionary<string, int> y = ImmutableDictionary.Create<string, int>(StringComparer.Ordinal).Add("key1", 1);
+        ImmutableDictionary<string, int> x = ImmutableDictionary
+            .Create<string, int>(StringComparer.OrdinalIgnoreCase)
+            .Add("key1", 1);
+        ImmutableDictionary<string, int> y = ImmutableDictionary
+            .Create<string, int>(StringComparer.Ordinal)
+            .Add("key1", 1);
 
         Comparer.Equals(x, y).Should().BeFalse();
     }
@@ -76,8 +81,12 @@ public class ImmutableDictionaryEqualityComparerTests
     [Fact]
     public void Equals_SameKeyComparer_DifferentCasing_ReturnsTrue()
     {
-        ImmutableDictionary<string, int> x = ImmutableDictionary.Create<string, int>(StringComparer.OrdinalIgnoreCase).Add("key1", 1);
-        ImmutableDictionary<string, int> y = ImmutableDictionary.Create<string, int>(StringComparer.OrdinalIgnoreCase).Add("KEY1", 1);
+        ImmutableDictionary<string, int> x = ImmutableDictionary
+            .Create<string, int>(StringComparer.OrdinalIgnoreCase)
+            .Add("key1", 1);
+        ImmutableDictionary<string, int> y = ImmutableDictionary
+            .Create<string, int>(StringComparer.OrdinalIgnoreCase)
+            .Add("KEY1", 1);
 
         Comparer.Equals(x, y).Should().BeTrue();
     }
@@ -85,12 +94,16 @@ public class ImmutableDictionaryEqualityComparerTests
     [Fact]
     public void Equals_DifferentValueComparers_ReturnsFalse()
     {
-        ImmutableDictionaryEqualityComparer<string, string> comparer = ImmutableDictionaryEqualityComparer<string, string>.Instance;
+        ImmutableDictionaryEqualityComparer<string, string> comparer =
+            ImmutableDictionaryEqualityComparer<string, string>.Instance;
         ImmutableDictionary<string, string> x = ImmutableDictionary
             .Create<string, string>(EqualityComparer<string>.Default, StringComparer.Ordinal)
             .Add("key1", "value");
         ImmutableDictionary<string, string> y = ImmutableDictionary
-            .Create<string, string>(EqualityComparer<string>.Default, StringComparer.OrdinalIgnoreCase)
+            .Create<string, string>(
+                EqualityComparer<string>.Default,
+                StringComparer.OrdinalIgnoreCase
+            )
             .Add("key1", "value");
 
         comparer.Equals(x, y).Should().BeFalse();
@@ -99,7 +112,8 @@ public class ImmutableDictionaryEqualityComparerTests
     [Fact]
     public void Equals_SameValueComparer_DifferentValues_ReturnsFalse()
     {
-        ImmutableDictionaryEqualityComparer<string, string> comparer = ImmutableDictionaryEqualityComparer<string, string>.Instance;
+        ImmutableDictionaryEqualityComparer<string, string> comparer =
+            ImmutableDictionaryEqualityComparer<string, string>.Instance;
         ImmutableDictionary<string, string> x = ImmutableDictionary
             .Create<string, string>(EqualityComparer<string>.Default, StringComparer.Ordinal)
             .Add("key1", "value1");
@@ -113,12 +127,19 @@ public class ImmutableDictionaryEqualityComparerTests
     [Fact]
     public void Equals_SameValueComparer_DifferentCasing_ReturnsTrue()
     {
-        ImmutableDictionaryEqualityComparer<string, string> comparer = ImmutableDictionaryEqualityComparer<string, string>.Instance;
+        ImmutableDictionaryEqualityComparer<string, string> comparer =
+            ImmutableDictionaryEqualityComparer<string, string>.Instance;
         ImmutableDictionary<string, string> x = ImmutableDictionary
-            .Create<string, string>(EqualityComparer<string>.Default, StringComparer.OrdinalIgnoreCase)
+            .Create<string, string>(
+                EqualityComparer<string>.Default,
+                StringComparer.OrdinalIgnoreCase
+            )
             .Add("key1", "value");
         ImmutableDictionary<string, string> y = ImmutableDictionary
-            .Create<string, string>(EqualityComparer<string>.Default, StringComparer.OrdinalIgnoreCase)
+            .Create<string, string>(
+                EqualityComparer<string>.Default,
+                StringComparer.OrdinalIgnoreCase
+            )
             .Add("key1", "VALUE");
 
         comparer.Equals(x, y).Should().BeTrue();
@@ -138,7 +159,9 @@ public class ImmutableDictionaryEqualityComparerTests
     [Fact]
     public void GetHashCode_NonEmptyDictionary_ReturnsCount()
     {
-        ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1).Add("key2", 2);
+        ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>
+            .Empty.Add("key1", 1)
+            .Add("key2", 2);
 
         Comparer.GetHashCode(x).Should().Be(2);
     }
@@ -147,7 +170,9 @@ public class ImmutableDictionaryEqualityComparerTests
     public void Equals_DictionariesWithDifferentCounts_ReturnsFalse()
     {
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1);
-        ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>.Empty.Add("key1", 1).Add("key2", 2);
+        ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>
+            .Empty.Add("key1", 1)
+            .Add("key2", 2);
 
         Comparer.Equals(x, y).Should().BeFalse();
     }
@@ -155,8 +180,12 @@ public class ImmutableDictionaryEqualityComparerTests
     [Fact]
     public void Equals_DictionariesWithSameContentDifferentOrder_ReturnsTrue()
     {
-        ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1).Add("key2", 2);
-        ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>.Empty.Add("key2", 2).Add("key1", 1);
+        ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>
+            .Empty.Add("key1", 1)
+            .Add("key2", 2);
+        ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>
+            .Empty.Add("key2", 2)
+            .Add("key1", 1);
 
         Comparer.Equals(x, y).Should().BeTrue();
     }

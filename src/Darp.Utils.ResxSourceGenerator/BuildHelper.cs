@@ -13,74 +13,89 @@ using Microsoft.CodeAnalysis.Text;
 internal static class BuildHelper
 {
     private const int MaxDocCommentLength = 256;
-    private const string HelpLinkUri = "https://github.com/rosslight/Darp.Utils/tree/main/src/Darp.Utils.ResxSourceGenerator/README.md#Diagnostics";
-    private static readonly DiagnosticDescriptor EmptyWarning = new(
-        id: "DarpResX001",
-        title: "Empty resource file",
-        messageFormat: "Resource file generated without any members",
-        category: "Globalization",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: HelpLinkUri,
-        isEnabledByDefault: true
-    );
+    private const string HelpLinkUri =
+        "https://github.com/rosslight/Darp.Utils/tree/main/src/Darp.Utils.ResxSourceGenerator/README.md#Diagnostics";
+    private static readonly DiagnosticDescriptor EmptyWarning =
+        new(
+            id: "DarpResX001",
+            title: "Empty resource file",
+            messageFormat: "Resource file generated without any members",
+            category: "Globalization",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            helpLinkUri: HelpLinkUri,
+            isEnabledByDefault: true
+        );
 
-    private static readonly DiagnosticDescriptor InvalidKeyWarning = new(
-        id: "DarpResX002",
-        title: "Invalid Key in resource file",
-        messageFormat: "Entry with key '{0}' is invalid and will be ignored",
-        category: "Globalization",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: HelpLinkUri,
-        isEnabledByDefault: true
-    );
+    private static readonly DiagnosticDescriptor InvalidKeyWarning =
+        new(
+            id: "DarpResX002",
+            title: "Invalid Key in resource file",
+            messageFormat: "Entry with key '{0}' is invalid and will be ignored",
+            category: "Globalization",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            helpLinkUri: HelpLinkUri,
+            isEnabledByDefault: true
+        );
 
-    private static readonly DiagnosticDescriptor MissingValueWarning = new(
-        id: "DarpResX003",
-        title: "Missing Value in resource file",
-        messageFormat: "Entry with key '{0}' is has no value and will be ignored",
-        category: "Globalization",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: HelpLinkUri,
-        isEnabledByDefault: true
-    );
+    private static readonly DiagnosticDescriptor MissingValueWarning =
+        new(
+            id: "DarpResX003",
+            title: "Missing Value in resource file",
+            messageFormat: "Entry with key '{0}' is has no value and will be ignored",
+            category: "Globalization",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            helpLinkUri: HelpLinkUri,
+            isEnabledByDefault: true
+        );
 
-    private static readonly DiagnosticDescriptor DuplicateKeyWarning = new(
-        id: "DarpResX004",
-        title: "Duplicate Key in resource file",
-        messageFormat: "Entry with key '{0}' is duplicated and will be ignored",
-        category: "Globalization",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: HelpLinkUri,
-        isEnabledByDefault: true
-    );
+    private static readonly DiagnosticDescriptor DuplicateKeyWarning =
+        new(
+            id: "DarpResX004",
+            title: "Duplicate Key in resource file",
+            messageFormat: "Entry with key '{0}' is duplicated and will be ignored",
+            category: "Globalization",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            helpLinkUri: HelpLinkUri,
+            isEnabledByDefault: true
+        );
 
-    private static readonly DiagnosticDescriptor MissingTranslationKeyWarning = new(
-        id: "DarpResX005",
-        title: "Missing translation for specific Key",
-        messageFormat: "Entry with key '{0}' is missing a translation for {1} ({2})",
-        category: "Globalization",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: HelpLinkUri,
-        isEnabledByDefault: true
-    );
+    private static readonly DiagnosticDescriptor MissingTranslationKeyWarning =
+        new(
+            id: "DarpResX005",
+            title: "Missing translation for specific Key",
+            messageFormat: "Entry with key '{0}' is missing a translation for {1} ({2})",
+            category: "Globalization",
+            defaultSeverity: DiagnosticSeverity.Warning,
+            helpLinkUri: HelpLinkUri,
+            isEnabledByDefault: true
+        );
 
-    public static bool TryGenerateSource(ResourceCollection resourceCollection,
+    public static bool TryGenerateSource(
+        ResourceCollection resourceCollection,
         in List<Diagnostic> diagnostics,
         [NotNullWhen(true)] out string? sourceCode,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         ResourceInformation resourceInformation = resourceCollection.BaseInformation;
 
-        GenerateNamespaceStartAndEnd(resourceInformation.Namespace,
+        GenerateNamespaceStartAndEnd(
+            resourceInformation.Namespace,
             out var namespaceStart,
             out var classIndent,
             out var memberIndent,
-            out var namespaceEnd);
-        if (!TryGenerateMembers(resourceCollection, memberIndent,
+            out var namespaceEnd
+        );
+        if (
+            !TryGenerateMembers(
+                resourceCollection,
+                memberIndent,
                 out var members,
                 out var keysMembers,
                 diagnostics,
-                cancellationToken))
+                cancellationToken
+            )
+        )
         {
             sourceCode = null;
             return false;
@@ -104,8 +119,12 @@ internal static class BuildHelper
 """;
         }
         var defaultClass = $$"""
-{{classIndent}}/// <summary>A strongly typed resource class for '{{resourceInformation.ResourceFile.Path}}'</summary>
-{{classIndent}}{{(resourceInformation.Settings.Public ? "public" : "internal")}} sealed partial class {{resourceInformation.ClassName}}
+{{classIndent}}/// <summary>A strongly typed resource class for '{{resourceInformation
+                .ResourceFile
+                .Path}}'</summary>
+{{classIndent}}{{(
+                resourceInformation.Settings.Public ? "public" : "internal"
+            )}} sealed partial class {{resourceInformation.ClassName}}
 {{classIndent}}{
 {{memberIndent}}private static {{resourceInformation.ClassName}}? _default;
 {{memberIndent}}/// <summary>The Default implementation of <see cref="{{resourceInformation.ClassName}}"/></summary>
@@ -186,20 +205,26 @@ internal static class BuildHelper
 """;
     }
 
-    private static bool TryGenerateMembers(ResourceCollection resourceCollection,
+    private static bool TryGenerateMembers(
+        ResourceCollection resourceCollection,
         string memberIndent,
         [NotNullWhen(true)] out string? members,
         [NotNullWhen(true)] out string? keysMembers,
         in List<Diagnostic> diagnostics,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         ResourceInformation resourceInformation = resourceCollection.BaseInformation;
         var membersBuilder = new StringBuilder();
         var keysMembersBuilder = new StringBuilder();
 
-        if (!resourceInformation.ResourceFile.TryGetResourceDataAndValues(diagnostics,
+        if (
+            !resourceInformation.ResourceFile.TryGetResourceDataAndValues(
+                diagnostics,
                 out Dictionary<string, XElement>? values,
-                cancellationToken))
+                cancellationToken
+            )
+        )
         {
             members = keysMembers = null;
             return false;
@@ -207,17 +232,31 @@ internal static class BuildHelper
         if (values.Count == 0)
         {
             members = keysMembers = null;
-            diagnostics.Add(Diagnostic.Create(descriptor: EmptyWarning,
-                location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
-                messageArgs: null));
+            diagnostics.Add(
+                Diagnostic.Create(
+                    descriptor: EmptyWarning,
+                    location: Location.Create(
+                        resourceInformation.ResourceFile.Path,
+                        default,
+                        default
+                    ),
+                    messageArgs: null
+                )
+            );
             return false;
         }
         Dictionary<CultureInfo, Dictionary<string, XElement>> otherCulturesEntries = [];
-        foreach (KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages)
+        foreach (
+            KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages
+        )
         {
-            if (!pair.Value.TryGetResourceDataAndValues(diagnostics,
+            if (
+                !pair.Value.TryGetResourceDataAndValues(
+                    diagnostics,
                     out Dictionary<string, XElement>? langSpecificValues,
-                    cancellationToken))
+                    cancellationToken
+                )
+            )
             {
                 continue;
             }
@@ -228,15 +267,22 @@ internal static class BuildHelper
             (var name, XElement attribute) = (x.Key, x.Value);
             var value = attribute.Value.Trim();
             var propertyIdentifier = GetIdentifierFromResourceName(name);
-            membersBuilder.AppendLine($"""
+            membersBuilder.AppendLine(
+                $"""
 {memberIndent}/// <summary>Get the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
 {memberIndent}/// {GetTrimmedDocComment("value", value)}
 {memberIndent}public string @{propertyIdentifier} => GetResourceString(Keys.@{propertyIdentifier});
-""");
-            keysMembersBuilder.AppendLine($"""
+"""
+            );
+            keysMembersBuilder.AppendLine(
+                $"""
 {memberIndent}    /// <summary> <list type="table">
-{memberIndent}    /// <item> <term><b>Default</b></term> {GetTrimmedDocComment("description", value)} </item>
-""");
+{memberIndent}    /// <item> <term><b>Default</b></term> {GetTrimmedDocComment(
+                    "description",
+                    value
+                )} </item>
+"""
+            );
             if (resourceInformation.Settings.EmitFormatMethods)
             {
                 var resourceString = new ResourceString(propertyIdentifier, value);
@@ -246,8 +292,12 @@ internal static class BuildHelper
                 }
             }
 
-            foreach (KeyValuePair<CultureInfo, Dictionary<string, XElement>> entry in otherCulturesEntries
-                         .OrderBy(item => item.Key.ToString()))
+            foreach (
+                KeyValuePair<
+                    CultureInfo,
+                    Dictionary<string, XElement>
+                > entry in otherCulturesEntries.OrderBy(item => item.Key.ToString())
+            )
             {
                 string otherValue;
                 if (entry.Value.TryGetValue(name, out XElement otherAttribute))
@@ -256,25 +306,40 @@ internal static class BuildHelper
                 }
                 else
                 {
-                    diagnostics.Add(Diagnostic.Create(
-                        descriptor: MissingTranslationKeyWarning,
-                        location: Location.Create(resourceCollection.OtherLanguages[entry.Key].Path, default, default),
-                        messageArgs: [name, entry.Key.DisplayName, entry.Key]));
+                    diagnostics.Add(
+                        Diagnostic.Create(
+                            descriptor: MissingTranslationKeyWarning,
+                            location: Location.Create(
+                                resourceCollection.OtherLanguages[entry.Key].Path,
+                                default,
+                                default
+                            ),
+                            messageArgs: [name, entry.Key.DisplayName, entry.Key]
+                        )
+                    );
                     otherValue = "n/a";
                 }
                 keysMembersBuilder.AppendLine(
-                    $"{memberIndent}    /// <item> <term><b>{entry.Key}</b></term> {GetTrimmedDocComment("description", otherValue)} </item>");
+                    $"{memberIndent}    /// <item> <term><b>{entry.Key}</b></term> {GetTrimmedDocComment("description", otherValue)} </item>"
+                );
             }
-            keysMembersBuilder.AppendLine($"""
+            keysMembersBuilder.AppendLine(
+                $"""
 {memberIndent}    /// </list> </summary>
 {memberIndent}    public const string @{propertyIdentifier} = @"{name}";
-""");
+"""
+            );
         }
         members = membersBuilder.ToString();
         keysMembers = keysMembersBuilder.ToString().TrimEnd();
         return true;
     }
-    private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
+
+    private static void RenderFormatMethod(
+        string indent,
+        StringBuilder strings,
+        ResourceString resourceString
+    )
     {
         var propertyIdentifier = resourceString.Identifier;
         var methodParameters = resourceString.GetMethodParameters();
@@ -282,62 +347,90 @@ internal static class BuildHelper
         var argumentNames = resourceString.UsingNamedArgs
             ? $"GetResourceString(@{propertyIdentifier}, new[] {{ {resourceString.GetArgumentNames()} }})"
             : $"@{propertyIdentifier}";
-        var paramDocs = string.Join("\n", resourceString.GetArguments().Select((x, i) =>
-            $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"));
+        var paramDocs = string.Join(
+            "\n",
+            resourceString
+                .GetArguments()
+                .Select(
+                    (x, i) =>
+                        $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"
+                )
+        );
 
-        strings.AppendLine($"""
+        strings.AppendLine(
+            $"""
 {indent}/// <summary>Format the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
 {indent}/// {GetTrimmedDocComment("value", resourceString.Value)}
 {paramDocs}
 {indent}/// <returns>The formatted <see cref="Keys.@{propertyIdentifier}"/> string</returns>
 {indent}public string @Format{propertyIdentifier}({methodParameters}) => string.Format(Culture, {argumentNames}, {arguments});
-""");
+"""
+        );
     }
 
-    private static bool TryGetResourceDataAndValues(this AdditionalText additionalText,
+    private static bool TryGetResourceDataAndValues(
+        this AdditionalText additionalText,
         in List<Diagnostic> diagnostics,
         [NotNullWhen(true)] out Dictionary<string, XElement>? resourceNames,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         SourceText? text = additionalText.GetText(cancellationToken);
         if (text is null)
         {
-            diagnostics.Add(Diagnostic.Create(descriptor: EmptyWarning,
-                location: Location.Create(additionalText.Path, default, default),
-                messageArgs: null));
+            diagnostics.Add(
+                Diagnostic.Create(
+                    descriptor: EmptyWarning,
+                    location: Location.Create(additionalText.Path, default, default),
+                    messageArgs: null
+                )
+            );
             resourceNames = null;
             return false;
         }
         using var sourceTextReader = new SourceTextReader(text);
         resourceNames = [];
-        foreach (XElement node in XDocument.Load(sourceTextReader, LoadOptions.SetLineInfo).Descendants("data"))
+        foreach (
+            XElement node in XDocument
+                .Load(sourceTextReader, LoadOptions.SetLineInfo)
+                .Descendants("data")
+        )
         {
             XAttribute? nameAttribute = node.Attribute("name");
             var name = nameAttribute?.Value;
             if (nameAttribute is null || name is null || string.IsNullOrWhiteSpace(name))
             {
-                diagnostics.Add(Diagnostic.Create(
-                    descriptor: InvalidKeyWarning,
-                    location: GetXElementLocation(additionalText, node, name),
-                    messageArgs: name));
+                diagnostics.Add(
+                    Diagnostic.Create(
+                        descriptor: InvalidKeyWarning,
+                        location: GetXElementLocation(additionalText, node, name),
+                        messageArgs: name
+                    )
+                );
                 continue;
             }
             XElement? valueAttribute = node.Elements("value").FirstOrDefault();
             if (valueAttribute is null)
             {
-                diagnostics.Add(Diagnostic.Create(
-                    descriptor: MissingValueWarning,
-                    location: GetXElementLocation(additionalText, nameAttribute, name),
-                    messageArgs: name));
+                diagnostics.Add(
+                    Diagnostic.Create(
+                        descriptor: MissingValueWarning,
+                        location: GetXElementLocation(additionalText, nameAttribute, name),
+                        messageArgs: name
+                    )
+                );
                 continue;
             }
 
             if (resourceNames.ContainsKey(name))
             {
-                diagnostics.Add(Diagnostic.Create(
-                    descriptor: DuplicateKeyWarning,
-                    location: GetXElementLocation(additionalText, nameAttribute, name),
-                    messageArgs: name));
+                diagnostics.Add(
+                    Diagnostic.Create(
+                        descriptor: DuplicateKeyWarning,
+                        location: GetXElementLocation(additionalText, nameAttribute, name),
+                        messageArgs: name
+                    )
+                );
                 continue;
             }
             resourceNames[name] = valueAttribute;
@@ -345,27 +438,39 @@ internal static class BuildHelper
         return true;
     }
 
-    private static Location GetXElementLocation(AdditionalText text, IXmlLineInfo line, string? memberName) =>
-        Location.Create(filePath: text.Path, textSpan: new TextSpan(),
+    private static Location GetXElementLocation(
+        AdditionalText text,
+        IXmlLineInfo line,
+        string? memberName
+    ) =>
+        Location.Create(
+            filePath: text.Path,
+            textSpan: new TextSpan(),
             lineSpan: new LinePositionSpan(
                 start: new LinePosition(line.LineNumber - 1, line.LinePosition - 1),
-                end: new LinePosition(line.LineNumber - 1, line.LinePosition - 1 + memberName?.Length ?? 0)
+                end: new LinePosition(
+                    line.LineNumber - 1,
+                    line.LinePosition - 1 + memberName?.Length ?? 0
+                )
             )
         );
 
     private static string GetTrimmedDocComment(string elementName, string value)
     {
-        var trimmedValue = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
+        var trimmedValue =
+            value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
         var element = new XElement(elementName, trimmedValue).ToString();
         var splits = element.Split('\n');
         return string.Join("<br/>", splits.Select(x => x.Trim()));
     }
 
-    private static void GenerateNamespaceStartAndEnd(string? namespaceName,
+    private static void GenerateNamespaceStartAndEnd(
+        string? namespaceName,
         out string? namespaceStart,
         out string classIndent,
         out string memberIndent,
-        out string? namespaceEnd)
+        out string? namespaceEnd
+    )
     {
         const string indent = "    ";
         if (namespaceName is null)
@@ -386,9 +491,11 @@ namespace {{namespaceName}}
         memberIndent = classIndent + indent;
     }
 
-    public static bool SplitName(string fullName,
+    public static bool SplitName(
+        string fullName,
         [NotNullWhen(true)] out string? namespaceName,
-        out string className)
+        out string className
+    )
     {
         var lastDot = fullName.LastIndexOf('.');
         if (lastDot == -1)
@@ -407,26 +514,34 @@ namespace {{namespaceName}}
     public delegate bool TryParseDelegateStruct<T>(string value, [NotNullWhen(true)] out T result)
         where T : struct;
 
-    public static bool? GetBoolValue(this AnalyzerConfigOptions options, string key) => options
-        .GetStructValue(key, (string value, out bool result) => bool.TryParse(value, out result));
-    public static T? GetStructValue<T>(this AnalyzerConfigOptions options,
+    public static bool? GetBoolValue(this AnalyzerConfigOptions options, string key) =>
+        options.GetStructValue(
+            key,
+            (string value, out bool result) => bool.TryParse(value, out result)
+        );
+
+    public static T? GetStructValue<T>(
+        this AnalyzerConfigOptions options,
         string key,
-        TryParseDelegateStruct<T> tryParse)
+        TryParseDelegateStruct<T> tryParse
+    )
         where T : struct
     {
-        if (options.TryGetValue(key, out var stringValue)
-            && tryParse(stringValue, out T value))
+        if (options.TryGetValue(key, out var stringValue) && tryParse(stringValue, out T value))
         {
             return value;
         }
         return null;
     }
-    public static string? GetValue(this AnalyzerConfigOptions options,
-        string key) => options.TryGetValue(key, out var stringValue) ? stringValue : null;
 
-    internal static bool IsChildFile(string fileToCheck,
+    public static string? GetValue(this AnalyzerConfigOptions options, string key) =>
+        options.TryGetValue(key, out var stringValue) ? stringValue : null;
+
+    internal static bool IsChildFile(
+        string fileToCheck,
         IEnumerable<string> availableFiles,
-        [NotNullWhen(true)] out CultureInfo? cultureInfo)
+        [NotNullWhen(true)] out CultureInfo? cultureInfo
+    )
     {
         SplitName(fileToCheck, out var parentFileName, out var languageExtension);
         if (!availableFiles.Contains(parentFileName))
@@ -495,8 +610,10 @@ namespace {{namespaceName}}
 
     private readonly struct ResourceString
     {
-        private static readonly Regex NamedParameterMatcher = new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex NumberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
+        private static readonly Regex NamedParameterMatcher =
+            new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex NumberParameterMatcher =
+            new(@"\{(\d+)\}", RegexOptions.Compiled);
         private readonly IReadOnlyList<string> _arguments;
 
         public ResourceString(string identifier, string value)
@@ -512,7 +629,8 @@ namespace {{namespaceName}}
                 match = NumberParameterMatcher.Matches(value);
             }
 
-            IEnumerable<string> arguments = match.Cast<Match>()
+            IEnumerable<string> arguments = match
+                .Cast<Match>()
                 .Select(m => m.Groups[1].Value)
                 .Distinct();
             if (!UsingNamedArgs)
@@ -530,7 +648,8 @@ namespace {{namespaceName}}
 
         public bool HasArguments => _arguments.Count > 0;
 
-        public string GetArgumentNames() => string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
+        public string GetArgumentNames() =>
+            string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
 
         public IEnumerable<string> GetArguments()
         {
@@ -543,9 +662,13 @@ namespace {{namespaceName}}
         public string GetMethodParameters()
         {
             var usingNamedArgs = UsingNamedArgs;
-            return string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a, usingNamedArgs)));
+            return string.Join(
+                ", ",
+                _arguments.Select(a => "object? " + GetArgName(a, usingNamedArgs))
+            );
         }
 
-        private static string GetArgName(string name, bool usingNamedArgs) => usingNamedArgs ? name : 'p' + name;
+        private static string GetArgName(string name, bool usingNamedArgs) =>
+            usingNamedArgs ? name : 'p' + name;
     }
 }

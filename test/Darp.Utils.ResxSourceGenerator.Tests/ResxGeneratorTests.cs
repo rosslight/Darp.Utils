@@ -23,11 +23,10 @@ public class ResxGeneratorTests
         await new VerifyCS.Test
         {
             LanguageVersion = languageVersion,
-            TestState =
-            {
-                AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
-            },
-        }.AddGeneratedSources().RunAsync();
+            TestState = { AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) } },
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Fact]
@@ -44,7 +43,9 @@ public class ResxGeneratorTests
                 },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", @"
+                    (
+                        "/.globalconfig",
+                        @"
 is_global = true
 
 build_property.RootNamespace = TestProject
@@ -54,10 +55,13 @@ build_metadata.EmbeddedResource.RelativeDir = First/
 
 [/0/Second/Resources.resx]
 build_metadata.EmbeddedResource.RelativeDir = Second/
-"),
+"
+                    ),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Theory]
@@ -73,14 +77,19 @@ build_metadata.EmbeddedResource.RelativeDir = Second/
                 AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", $@"
+                    (
+                        "/.globalconfig",
+                        $@"
 is_global = true
 
 build_property.RootNamespace = {rootNamespace}
-"),
+"
+                    ),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Theory]
@@ -96,15 +105,20 @@ build_property.RootNamespace = {rootNamespace}
                 AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", $@"
+                    (
+                        "/.globalconfig",
+                        $@"
 is_global = true
 
 [/0/Resources.resx]
 build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
-"),
+"
+                    ),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Theory]
@@ -120,15 +134,20 @@ build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
                 AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", $"""
+                    (
+                        "/.globalconfig",
+                        $"""
 is_global = true
 
 [/0/Resources.resx]
 build_metadata.EmbeddedResource.ClassName = {className}
-"""),
+"""
+                    ),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Theory]
@@ -147,15 +166,20 @@ build_metadata.EmbeddedResource.ClassName = {className}
                 AdditionalFiles = { ("/0/Resources.resx", code) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", """
+                    (
+                        "/.globalconfig",
+                        """
 is_global = true
 
 [/0/Resources.resx]
 build_metadata.EmbeddedResource.EmitFormatMethods = true
-"""),
+"""
+                    ),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Fact]
@@ -172,7 +196,9 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
                     ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Fact]
@@ -185,15 +211,20 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
                 AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", """
+                    (
+                        "/.globalconfig",
+                        """
 is_global = true
 
 [/0/Resources.resx]
 build_metadata.EmbeddedResource.Public = true
-"""),
+"""
+                    ),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Fact]
@@ -206,14 +237,19 @@ build_metadata.EmbeddedResource.Public = true
                 AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) },
                 AnalyzerConfigFiles =
                 {
-                    ("/.globalconfig", """
+                    (
+                        "/.globalconfig",
+                        """
 is_global = true
 
 build_property.ResxSourceGenerator_EmitDebugInformation = true
-"""),
+"""
+                    ),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Fact]
@@ -227,8 +263,10 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                 Sources = { "" },
                 ExpectedDiagnostics =
                 {
-                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
-                        .WithLocation("/0/Resources.resx", default),
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning).WithLocation(
+                        "/0/Resources.resx",
+                        default
+                    ),
                 },
             },
         }.RunAsync();
@@ -247,8 +285,10 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                 AdditionalFiles = { ("/0/Resources.resx", ResxDocument(key, "value")) },
                 ExpectedDiagnostics =
                 {
-                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
-                        .WithLocation("/0/Resources.resx", default),
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning).WithLocation(
+                        "/0/Resources.resx",
+                        default
+                    ),
                     new DiagnosticResult("DarpResX002", DiagnosticSeverity.Warning)
                         .WithSpan("/0/Resources.resx", 61, 2, 61, 2 + key.Length)
                         .WithArguments(key),
@@ -268,8 +308,10 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                 AdditionalFiles = { ("/0/Resources.resx", ResxMissingValueDocument) },
                 ExpectedDiagnostics =
                 {
-                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning)
-                        .WithLocation("/0/Resources.resx", default),
+                    new DiagnosticResult("DarpResX001", DiagnosticSeverity.Warning).WithLocation(
+                        "/0/Resources.resx",
+                        default
+                    ),
                     new DiagnosticResult("DarpResX003", DiagnosticSeverity.Warning)
                         .WithSpan("/0/Resources.resx", 61, 9, 61, 13)
                         .WithArguments("Name"),
@@ -285,11 +327,12 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
         {
             TestState =
             {
-                AdditionalFiles = { ("/0/Resources.resx", ResxDocumentWithValues(
-                    [
-                        ("Name", "value"),
-                        ("Name", "Value2"),
-                    ])),
+                AdditionalFiles =
+                {
+                    (
+                        "/0/Resources.resx",
+                        ResxDocumentWithValues([("Name", "value"), ("Name", "Value2")])
+                    ),
                 },
                 ExpectedDiagnostics =
                 {
@@ -298,7 +341,9 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                         .WithArguments("Name"),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 
     [Fact]
@@ -308,7 +353,8 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
         {
             TestState =
             {
-                AdditionalFiles = {
+                AdditionalFiles =
+                {
                     ("/0/Resources.resx", ResxDocument("Name", "value")),
                     ("/0/Resources.de-DE.resx", ResxDocument("Name", "DE: value")),
                     ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
@@ -321,6 +367,8 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                         .WithArguments("Name", "Spanish", "es"),
                 },
             },
-        }.AddGeneratedSources().RunAsync();
+        }
+            .AddGeneratedSources()
+            .RunAsync();
     }
 }

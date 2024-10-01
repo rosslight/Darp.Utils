@@ -30,12 +30,17 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         private readonly string? _testFile;
         private readonly string? _testMethod;
 
-        public Test([CallerFilePath] string? testFile = null, [CallerMemberName] string? testMethod = null)
-            : this(string.Empty, testFile, testMethod)
-        {
-        }
+        public Test(
+            [CallerFilePath] string? testFile = null,
+            [CallerMemberName] string? testMethod = null
+        )
+            : this(string.Empty, testFile, testMethod) { }
 
-        public Test(string identifier, [CallerFilePath] string? testFile = null, [CallerMemberName] string? testMethod = null)
+        public Test(
+            string identifier,
+            [CallerFilePath] string? testFile = null,
+            [CallerMemberName] string? testMethod = null
+        )
         {
             _identifier = identifier;
             _testFile = testFile;
@@ -49,7 +54,6 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.Default;
 
         protected override string DefaultFileExt => "g.cs";
-
 
         private string ResourceName
         {
@@ -66,16 +70,32 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         {
             CompilationOptions compilationOptions = base.CreateCompilationOptions();
             return compilationOptions.WithSpecificDiagnosticOptions(
-                compilationOptions.SpecificDiagnosticOptions.SetItems(CSharpVerifierHelper.NullableWarnings));
+                compilationOptions.SpecificDiagnosticOptions.SetItems(
+                    CSharpVerifierHelper.NullableWarnings
+                )
+            );
         }
 
-        protected override ParseOptions CreateParseOptions() => ((CSharpParseOptions)base.CreateParseOptions()).WithLanguageVersion(LanguageVersion);
+        protected override ParseOptions CreateParseOptions() =>
+            ((CSharpParseOptions)base.CreateParseOptions()).WithLanguageVersion(LanguageVersion);
 
-        protected override async Task<(Compilation compilation, ImmutableArray<Diagnostic> generatorDiagnostics)> GetProjectCompilationAsync(Project project, IVerifier verifier, CancellationToken cancellationToken)
+        protected override async Task<(
+            Compilation compilation,
+            ImmutableArray<Diagnostic> generatorDiagnostics
+        )> GetProjectCompilationAsync(
+            Project project,
+            IVerifier verifier,
+            CancellationToken cancellationToken
+        )
         {
-            var resourceDirectory = Path.Combine(Path.GetDirectoryName(_testFile)!, "Resources", ResourceName);
+            var resourceDirectory = Path.Combine(
+                Path.GetDirectoryName(_testFile)!,
+                "Resources",
+                ResourceName
+            );
 
-            (Compilation compilation, ImmutableArray<Diagnostic> generatorDiagnostics) = await base.GetProjectCompilationAsync(project, verifier, cancellationToken);
+            (Compilation compilation, ImmutableArray<Diagnostic> generatorDiagnostics) =
+                await base.GetProjectCompilationAsync(project, verifier, cancellationToken);
             var expectedNames = new HashSet<string>();
             foreach (SyntaxTree? tree in compilation.SyntaxTrees.Skip(project.DocumentIds.Count))
             {
@@ -83,7 +103,8 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
                 expectedNames.Add(Path.GetFileName(tree.FilePath));
             }
 
-            var currentTestPrefix = $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
+            var currentTestPrefix =
+                $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
             foreach (var name in GetType().Assembly.GetManifestResourceNames())
             {
                 if (!name.StartsWith(currentTestPrefix, StringComparison.Ordinal))
@@ -93,7 +114,9 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
 
                 if (!expectedNames.Contains(name.Substring(currentTestPrefix.Length)))
                 {
-                    throw new InvalidOperationException($"Unexpected test resource: {name.Substring(currentTestPrefix.Length)}");
+                    throw new InvalidOperationException(
+                        $"Unexpected test resource: {name.Substring(currentTestPrefix.Length)}"
+                    );
                 }
             }
 
@@ -102,7 +125,8 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
 
         public Test AddGeneratedSources()
         {
-            var expectedPrefix = $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
+            var expectedPrefix =
+                $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
             foreach (var resourceName in Assembly.GetExecutingAssembly().GetManifestResourceNames())
             {
                 if (!resourceName.StartsWith(expectedPrefix, StringComparison.Ordinal))
@@ -110,12 +134,26 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
                     continue;
                 }
 
-                using Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName) ?? throw new InvalidOperationException();
-                using var reader = new StreamReader(resourceStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096, leaveOpen: true);
+                using Stream resourceStream =
+                    Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
+                    ?? throw new InvalidOperationException();
+                using var reader = new StreamReader(
+                    resourceStream,
+                    Encoding.UTF8,
+                    detectEncodingFromByteOrderMarks: true,
+                    bufferSize: 4096,
+                    leaveOpen: true
+                );
                 var name = resourceName.Substring(expectedPrefix.Length);
                 var readData = reader.ReadToEnd();
                 readData = readData.ReplaceLineEndings("\n");
-                TestState.GeneratedSources.Add((typeof(TSourceGenerator), name, SourceText.From(readData, Encoding.UTF8, SourceHashAlgorithm.Sha256)));
+                TestState.GeneratedSources.Add(
+                    (
+                        typeof(TSourceGenerator),
+                        name,
+                        SourceText.From(readData, Encoding.UTF8, SourceHashAlgorithm.Sha256)
+                    )
+                );
             }
 
             return this;

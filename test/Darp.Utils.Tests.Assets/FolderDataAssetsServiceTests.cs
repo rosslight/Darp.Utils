@@ -10,12 +10,16 @@ public sealed class FolderDataAssetsServiceTests
     private static IDisposable CreateTemporaryFolderAssetsService(
         out IFolderAssetsService folderAssetsService,
         out string tempDirectory,
-        out string relativePath)
+        out string relativePath
+    )
     {
         tempDirectory = Path.GetTempPath();
         relativePath = $"DarpUtils_{Guid.NewGuid()}";
         folderAssetsService = new FolderAssetsService(tempDirectory, relativePath);
-        return Disposable.Create(folderAssetsService.BasePath, path => Directory.Delete(path, true));
+        return Disposable.Create(
+            folderAssetsService.BasePath,
+            path => Directory.Delete(path, true)
+        );
     }
 
     [Fact]
@@ -38,8 +42,11 @@ public sealed class FolderDataAssetsServiceTests
         // Arrange
         const string testFileName = "test.json";
         var testData = new TestData("Test");
-        using IDisposable dis =
-            CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService, out var _, out var _);
+        using IDisposable dis = CreateTemporaryFolderAssetsService(
+            out IFolderAssetsService appDataService,
+            out var _,
+            out var _
+        );
 
         // Act
         appDataService.Exists(testFileName).Should().BeFalse();
@@ -57,8 +64,11 @@ public sealed class FolderDataAssetsServiceTests
         // Arrange
         const string testFileName = "test.json";
         var testData = new TestData("Test");
-        using IDisposable dis =
-            CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService, out var _, out var _);
+        using IDisposable dis = CreateTemporaryFolderAssetsService(
+            out IFolderAssetsService appDataService,
+            out var _,
+            out var _
+        );
 
         // Act
         await appDataService.SerializeJsonAsync(testFileName, testData);
@@ -66,7 +76,8 @@ public sealed class FolderDataAssetsServiceTests
 
         stream.SetLength(0);
         await stream.WriteAsync(Array.Empty<byte>());
-        Func<Task> act = async () => await appDataService.DeserializeJsonAsync<TestData>(testFileName);
+        Func<Task> act = async () =>
+            await appDataService.DeserializeJsonAsync<TestData>(testFileName);
 
         // Assert
         await act.Should().ThrowAsync<Exception>();

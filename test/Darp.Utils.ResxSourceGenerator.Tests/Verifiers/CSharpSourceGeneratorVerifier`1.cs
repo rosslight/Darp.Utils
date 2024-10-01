@@ -6,6 +6,4 @@ namespace Darp.Utils.ResxSourceGenerator.Tests.Verifiers;
 using Microsoft.CodeAnalysis;
 
 public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
-    where TSourceGenerator : IIncrementalGenerator, new()
-{
-}
+    where TSourceGenerator : IIncrementalGenerator, new() { }

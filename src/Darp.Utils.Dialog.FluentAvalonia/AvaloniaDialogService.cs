@@ -6,10 +6,13 @@ public sealed class AvaloniaDialogService : IDialogService
     private readonly List<IDisposable> _disposables = [];
 
     /// <inheritdoc />
-    public IContentDialogBuilder<TContent> CreateContentDialog<TContent>(string title, TContent content) =>
-        new FluentAvaloniaContentDialogBuilder<TContent>(this, title, content);
+    public IContentDialogBuilder<TContent> CreateContentDialog<TContent>(
+        string title,
+        TContent content
+    ) => new FluentAvaloniaContentDialogBuilder<TContent>(this, title, content);
 
-    internal T RegisterDisposable<T>(T disposable) where T : IDisposable
+    internal T RegisterDisposable<T>(T disposable)
+        where T : IDisposable
     {
         _disposables.Add(disposable);
         return disposable;

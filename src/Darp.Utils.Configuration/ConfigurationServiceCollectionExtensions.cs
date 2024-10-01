@@ -21,9 +21,17 @@ public static class ConfigurationServiceCollectionExtensions
     public static IServiceCollection AddConfigurationFile<TConfig, TAssetsService>(
         this IServiceCollection serviceCollection,
         string configFileName,
-        JsonTypeInfo<TConfig> typeInfo)
-        where TAssetsService : IAssetsService where TConfig : new() => serviceCollection
-        .AddSingleton<IConfigurationService<TConfig>>(provider => new ConfigurationService<TConfig>(configFileName, provider.GetRequiredService<TAssetsService>(), typeInfo));
+        JsonTypeInfo<TConfig> typeInfo
+    )
+        where TAssetsService : IAssetsService
+        where TConfig : new() =>
+        serviceCollection.AddSingleton<IConfigurationService<TConfig>>(
+            provider => new ConfigurationService<TConfig>(
+                configFileName,
+                provider.GetRequiredService<TAssetsService>(),
+                typeInfo
+            )
+        );
 
     /// <summary>
     /// Adds a new configuration file and registers a corresponding <see cref="IConfigurationService{TConfig}"/>.
@@ -34,11 +42,22 @@ public static class ConfigurationServiceCollectionExtensions
     /// <typeparam name="TConfig"> The type of the config </typeparam>
     /// <typeparam name="TAssetsService"> The type of the assets service </typeparam>
     /// <returns> A reference to this instance after the operation has completed. </returns>
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
-    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
     public static IServiceCollection AddConfigurationFile<TConfig, TAssetsService>(
         this IServiceCollection serviceCollection,
-        string configFileName)
-        where TAssetsService : IAssetsService where TConfig : new() => serviceCollection
-        .AddSingleton<IConfigurationService<TConfig>>(provider => new ConfigurationService<TConfig>(configFileName, provider.GetRequiredService<TAssetsService>()));
+        string configFileName
+    )
+        where TAssetsService : IAssetsService
+        where TConfig : new() =>
+        serviceCollection.AddSingleton<IConfigurationService<TConfig>>(
+            provider => new ConfigurationService<TConfig>(
+                configFileName,
+                provider.GetRequiredService<TAssetsService>()
+            )
+        );
 }

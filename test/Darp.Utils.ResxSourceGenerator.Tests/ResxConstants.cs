@@ -90,11 +90,14 @@ public static class ResxConstants
     {
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine(ResxHeader);
-        stringBuilder.Append(CultureInfo.InvariantCulture, $"""
+        stringBuilder.Append(
+            CultureInfo.InvariantCulture,
+            $"""
 <data name="{key}" xml:space="preserve">
   <value>{value}</value>
 </data>
-""");
+"""
+        );
         stringBuilder.Append(ResxFooter);
         return stringBuilder.ToString();
     }
@@ -105,12 +108,14 @@ public static class ResxConstants
         stringBuilder.Append(ResxHeader);
         foreach ((var key, var value) in keyValues)
         {
-
-            stringBuilder.Append(CultureInfo.InvariantCulture, $"""
+            stringBuilder.Append(
+                CultureInfo.InvariantCulture,
+                $"""
 <data name="{key}" xml:space="preserve">
   <value>{value}</value>
 </data>
-""");
+"""
+            );
         }
         stringBuilder.Append(ResxFooter);
         return stringBuilder.ToString();

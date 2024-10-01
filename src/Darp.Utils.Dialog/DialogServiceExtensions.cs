@@ -14,7 +14,10 @@ public static class DialogServiceExtensions
     /// <param name="title"> The title of the dialog </param>
     /// <typeparam name="TContent"> The type of the content </typeparam>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static IContentDialogBuilder<TContent> CreateContentDialog<TContent>(this IDialogService dialogService, string title)
+    public static IContentDialogBuilder<TContent> CreateContentDialog<TContent>(
+        this IDialogService dialogService,
+        string title
+    )
         where TContent : new()
     {
         ArgumentNullException.ThrowIfNull(dialogService);
@@ -29,14 +32,19 @@ public static class DialogServiceExtensions
     /// <param name="message"> The message to be shown </param>
     /// <param name="isSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static IContentDialogBuilder<MessageBoxModel> CreateMessageBoxDialog(this IDialogService dialogService,
+    public static IContentDialogBuilder<MessageBoxModel> CreateMessageBoxDialog(
+        this IDialogService dialogService,
         string title,
         string message,
-        bool isSelectable = false)
+        bool isSelectable = false
+    )
     {
         ArgumentNullException.ThrowIfNull(dialogService);
         return dialogService
-            .CreateContentDialog(title, new MessageBoxModel { Message = message, IsSelectable = isSelectable, })
+            .CreateContentDialog(
+                title,
+                new MessageBoxModel { Message = message, IsSelectable = isSelectable }
+            )
             .SetDefaultButton(ContentDialogButton.Primary)
             .SetPrimaryButton("Ok");
     }
@@ -49,14 +57,22 @@ public static class DialogServiceExtensions
     /// <param name="message"> The optional message to be shown on top of the input </param>
     /// <param name="isMessageSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    [RequiresUnreferencedCode("This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path")]
-    public static IContentDialogBuilder<InputDialogData> CreateInputDialog(this IDialogService dialogService,
+    [RequiresUnreferencedCode(
+        "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
+    )]
+    public static IContentDialogBuilder<InputDialogData> CreateInputDialog(
+        this IDialogService dialogService,
         string title,
         string? message = null,
-        bool isMessageSelectable = false)
+        bool isMessageSelectable = false
+    )
     {
         ArgumentNullException.ThrowIfNull(dialogService);
-        var dialogData = new InputDialogData { Message = message, IsMessageSelectable = isMessageSelectable };
+        var dialogData = new InputDialogData
+        {
+            Message = message,
+            IsMessageSelectable = isMessageSelectable,
+        };
         return dialogService
             .CreateContentDialog(title, dialogData)
             .SetDefaultButton(ContentDialogButton.Primary)

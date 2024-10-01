@@ -9,7 +9,8 @@ using Utils.Assets.Abstractions;
 
 public sealed class AssetsExtensionTests
 {
-    private static readonly byte[] TestConfig = /*lang=json,strict*/ """
+    private static readonly byte[] TestConfig = /*lang=json,strict*/
+        """
                                                 {
                                                    "Name":"Test"
                                                 }
@@ -25,7 +26,10 @@ public sealed class AssetsExtensionTests
         CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
-        TestObject result = await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", cancellationToken: cancellationToken);
+        TestObject result = await readOnlyService.DeserializeJsonAsync<TestObject>(
+            "test.json",
+            cancellationToken: cancellationToken
+        );
 
         // Assert
         result.Should().NotBeNull();
@@ -41,7 +45,11 @@ public sealed class AssetsExtensionTests
         CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
-        Func<Task> act = async () => await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", cancellationToken: cancellationToken);
+        Func<Task> act = async () =>
+            await readOnlyService.DeserializeJsonAsync<TestObject>(
+                "test.json",
+                cancellationToken: cancellationToken
+            );
 
         // Assert
         await act.Should().ThrowAsync<Exception>();
@@ -59,10 +67,17 @@ public sealed class AssetsExtensionTests
         CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
-        await writeOnlyService.SerializeJsonAsync("test.json", testObject, cancellationToken: cancellationToken);
+        await writeOnlyService.SerializeJsonAsync(
+            "test.json",
+            testObject,
+            cancellationToken: cancellationToken
+        );
 
         var memoryStream = new MemoryStream(buffer.TrimBufferEnd());
-        TestObject? resultObject = await JsonSerializer.DeserializeAsync<TestObject>(memoryStream, cancellationToken: cancellationToken);
+        TestObject? resultObject = await JsonSerializer.DeserializeAsync<TestObject>(
+            memoryStream,
+            cancellationToken: cancellationToken
+        );
 
         // Assert
         resultObject.Should().NotBeNull();

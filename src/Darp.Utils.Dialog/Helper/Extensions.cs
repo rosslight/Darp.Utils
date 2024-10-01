@@ -5,9 +5,11 @@ using System.Linq.Expressions;
 
 internal static class Extensions
 {
-    public static IObservable<TResult> WhenPropertyChanged<TObject, TProperty, TResult>(this TObject changed,
+    public static IObservable<TResult> WhenPropertyChanged<TObject, TProperty, TResult>(
+        this TObject changed,
         Expression<Func<TObject, TProperty>> expression,
-        Func<TProperty, TResult> selector)
+        Func<TProperty, TResult> selector
+    )
         where TObject : INotifyPropertyChanged
     {
         Func<TObject, TProperty> func = expression.Compile();

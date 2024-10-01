@@ -46,17 +46,17 @@ internal static class CharExtensions
         return false;
     }
 
-    public static bool IsIdentifierStartCharacter(this char ch)
-        => ch == '_' || CharUnicodeInfo.GetUnicodeCategory(ch).IsLetterChar();
+    public static bool IsIdentifierStartCharacter(this char ch) =>
+        ch == '_' || CharUnicodeInfo.GetUnicodeCategory(ch).IsLetterChar();
 
     public static bool IsIdentifierPartCharacter(this char ch)
     {
         UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(ch);
         return cat.IsLetterChar()
-               || cat == UnicodeCategory.DecimalDigitNumber
-               || cat == UnicodeCategory.ConnectorPunctuation
-               || cat == UnicodeCategory.Format
-               || cat == UnicodeCategory.NonSpacingMark
-               || cat == UnicodeCategory.SpacingCombiningMark;
+            || cat == UnicodeCategory.DecimalDigitNumber
+            || cat == UnicodeCategory.ConnectorPunctuation
+            || cat == UnicodeCategory.Format
+            || cat == UnicodeCategory.NonSpacingMark
+            || cat == UnicodeCategory.SpacingCombiningMark;
     }
 }

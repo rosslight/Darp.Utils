@@ -21,13 +21,16 @@ public static class ContentDialogBuilderExtensions
         this IContentDialogBuilder<TContent> builder,
         string text,
         IObservable<bool>? isEnabled = null,
-        Func<TContent, bool>? onClick = null)
+        Func<TContent, bool>? onClick = null
+    )
         where TContent : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.SetPrimaryButton(text, isEnabled, onClick is null
-            ? null
-            : (content, _) => Task.FromResult(onClick(content)));
+        return builder.SetPrimaryButton(
+            text,
+            isEnabled,
+            onClick is null ? null : (content, _) => Task.FromResult(onClick(content))
+        );
     }
 
     /// <summary>
@@ -44,13 +47,16 @@ public static class ContentDialogBuilderExtensions
         this IContentDialogBuilder<TContent> builder,
         string text,
         IObservable<bool>? isEnabled = null,
-        Func<TContent, Task<bool>>? onClick = null)
+        Func<TContent, Task<bool>>? onClick = null
+    )
         where TContent : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.SetPrimaryButton(text, isEnabled, onClick is null
-            ? null
-            : (content, _) => onClick(content));
+        return builder.SetPrimaryButton(
+            text,
+            isEnabled,
+            onClick is null ? null : (content, _) => onClick(content)
+        );
     }
 
     /// <summary>
@@ -67,13 +73,16 @@ public static class ContentDialogBuilderExtensions
         this IContentDialogBuilder<TContent> builder,
         string text,
         IObservable<bool>? isEnabled = null,
-        Func<TContent, bool>? onClick = null)
+        Func<TContent, bool>? onClick = null
+    )
         where TContent : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.SetSecondaryButton(text, isEnabled, onClick is null
-            ? null
-            : (content, _) => Task.FromResult(onClick(content)));
+        return builder.SetSecondaryButton(
+            text,
+            isEnabled,
+            onClick is null ? null : (content, _) => Task.FromResult(onClick(content))
+        );
     }
 
     /// <summary>
@@ -90,13 +99,16 @@ public static class ContentDialogBuilderExtensions
         this IContentDialogBuilder<TContent> builder,
         string text,
         IObservable<bool>? isEnabled = null,
-        Func<TContent, Task<bool>>? onClick = null)
+        Func<TContent, Task<bool>>? onClick = null
+    )
         where TContent : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.SetSecondaryButton(text, isEnabled, onClick is null
-            ? null
-            : (content, _) => onClick(content));
+        return builder.SetSecondaryButton(
+            text,
+            isEnabled,
+            onClick is null ? null : (content, _) => onClick(content)
+        );
     }
 
     /// <summary> Configure the input field </summary>
@@ -109,7 +121,8 @@ public static class ContentDialogBuilderExtensions
         this IContentDialogBuilder<InputDialogData> builder,
         string? watermark = null,
         bool? isPassword = null,
-        Func<string?, ValidationResult?>? validateInput = null)
+        Func<string?, ValidationResult?>? validateInput = null
+    )
     {
         ArgumentNullException.ThrowIfNull(builder);
         if (watermark is not null)

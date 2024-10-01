@@ -9,7 +9,8 @@ public interface IProgramDataAssetsService : IAssetsService;
 /// <summary> Instantiate a new ProgramDataAssetsService with a given path relative to the <see cref="Environment.SpecialFolder.CommonApplicationData"/> folder </summary>
 /// <param name="relativePath">The path relative to the <see cref="Environment.SpecialFolder.CommonApplicationData"/></param>
 public sealed class ProgramDataAssetsService(string relativePath)
-    : FolderAssetsService(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), relativePath),
-        IProgramDataAssetsService
-{
-}
+    : FolderAssetsService(
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+        relativePath
+    ),
+        IProgramDataAssetsService { }

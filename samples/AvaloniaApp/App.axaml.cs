@@ -19,11 +19,7 @@ public partial class App : Application
                 .AddTransient<MainWindowViewModel>()
                 .BuildServiceProvider();
             MainWindowViewModel vm = provider.GetRequiredService<MainWindowViewModel>();
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = vm,
-                ViewModel = vm,
-            };
+            desktop.MainWindow = new MainWindow { DataContext = vm, ViewModel = vm };
         }
 
         base.OnFrameworkInitializationCompleted();

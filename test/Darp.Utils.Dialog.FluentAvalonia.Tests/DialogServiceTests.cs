@@ -1,6 +1,3 @@
 namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
 
-public class DialogServiceTests
-{
-
-}
+public class DialogServiceTests { }

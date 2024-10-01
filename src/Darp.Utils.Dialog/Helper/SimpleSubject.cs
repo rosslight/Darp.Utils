@@ -37,6 +37,9 @@ internal sealed class SimpleSubject<T> : IObservable<T>
     public IDisposable Subscribe(IObserver<T> observer)
     {
         _observers.Add(observer);
-        return new CallbackDisposable<(SimpleSubject<T>, IObserver<T>)>((this, observer), subject => subject.Item1._observers.Remove(subject.Item2));
+        return new CallbackDisposable<(SimpleSubject<T>, IObserver<T>)>(
+            (this, observer),
+            subject => subject.Item1._observers.Remove(subject.Item2)
+        );
     }
 }

@@ -17,17 +17,24 @@ public static class AssetsExtensions
     /// <returns>A TValue representation of the JSON value.</returns>
     /// <exception cref="Exception">Deserialization returned null</exception>
     /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
-    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
-    public static Task<TValue> DeserializeJsonAsync<TValue>(this IReadOnlyAssetsService sourceAssetsService,
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
+    public static Task<TValue> DeserializeJsonAsync<TValue>(
+        this IReadOnlyAssetsService sourceAssetsService,
         string path,
         JsonSerializerOptions? options = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         options ??= JsonSerializerOptions.Default;
         var typeInfo = (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue));
         return sourceAssetsService.DeserializeJsonAsync(path, typeInfo, cancellationToken);
     }
+
     /// <summary> Deserialize a json from a given asset </summary>
     /// <param name="sourceAssetsService">The source assets service to be read from</param>
     /// <param name="path">The path to the file relative to the source assets service</param>
@@ -37,17 +44,21 @@ public static class AssetsExtensions
     /// <returns>A TValue representation of the JSON value.</returns>
     /// <exception cref="Exception">Deserialization returned null</exception>
     /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
-    public static async Task<TValue> DeserializeJsonAsync<TValue>(this IReadOnlyAssetsService sourceAssetsService,
+    public static async Task<TValue> DeserializeJsonAsync<TValue>(
+        this IReadOnlyAssetsService sourceAssetsService,
         string path,
         JsonTypeInfo<TValue> typeInfo,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(sourceAssetsService);
         Stream stream = sourceAssetsService.GetReadOnlySteam(path);
         await using (stream.ConfigureAwait(false))
         {
-            return await JsonSerializer.DeserializeAsync(stream, typeInfo, cancellationToken).ConfigureAwait(false)
-                   ?? throw new JsonException("Deserialization returned null");
+            return await JsonSerializer
+                    .DeserializeAsync(stream, typeInfo, cancellationToken)
+                    .ConfigureAwait(false)
+                ?? throw new JsonException("Deserialization returned null");
         }
     }
 
@@ -60,13 +71,19 @@ public static class AssetsExtensions
     /// <typeparam name="TValue">The target type of the JSON value.</typeparam>
     /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
     /// <returns>A task that represents the asynchronous copy operation.</returns>
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.")]
-    [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.")]
-    public static Task SerializeJsonAsync<TValue>(this IWriteOnlyAssetsService targetAssetsService,
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
+    public static Task SerializeJsonAsync<TValue>(
+        this IWriteOnlyAssetsService targetAssetsService,
         string path,
         TValue value,
         JsonSerializerOptions? options = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         options ??= JsonSerializerOptions.Default;
         var typeInfo = (JsonTypeInfo<TValue>)options.GetTypeInfo(typeof(TValue));
@@ -82,18 +99,22 @@ public static class AssetsExtensions
     /// <typeparam name="TValue">The target type of the JSON value.</typeparam>
     /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
     /// <returns>A task that represents the asynchronous copy operation.</returns>
-    public static async Task SerializeJsonAsync<TValue>(this IWriteOnlyAssetsService targetAssetsService,
+    public static async Task SerializeJsonAsync<TValue>(
+        this IWriteOnlyAssetsService targetAssetsService,
         string path,
         TValue value,
         JsonTypeInfo<TValue> typeInfo,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(targetAssetsService);
         Stream stream = targetAssetsService.GetWriteOnlySteam(path);
         await using (stream.ConfigureAwait(false))
         {
             stream.SetLength(0);
-            await JsonSerializer.SerializeAsync(stream, value, typeInfo, cancellationToken).ConfigureAwait(false);
+            await JsonSerializer
+                .SerializeAsync(stream, value, typeInfo, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 
@@ -106,11 +127,13 @@ public static class AssetsExtensions
     /// <param name="targetPath">The path to the target position</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is None.</param>
     /// <returns>A task that represents the asynchronous copy operation.</returns>
-    public static async Task CopyToAsync(this IReadOnlyAssetsService sourceAssetsService,
+    public static async Task CopyToAsync(
+        this IReadOnlyAssetsService sourceAssetsService,
         string sourcePath,
         IWriteOnlyAssetsService targetAssetsService,
         string targetPath,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(sourceAssetsService);
         ArgumentNullException.ThrowIfNull(targetAssetsService);

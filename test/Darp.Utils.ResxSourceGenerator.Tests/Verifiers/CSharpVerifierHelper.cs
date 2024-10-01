@@ -16,12 +16,17 @@ internal static class CSharpVerifierHelper
     /// related to nullability mapped to <see cref="ReportDiagnostic.Error"/>, which is then used to enable all
     /// of these warnings for default validation during analyzer and code fix tests.
     /// </summary>
-    internal static ImmutableDictionary<string, ReportDiagnostic> NullableWarnings { get; } = GetNullableWarningsFromCompiler();
+    internal static ImmutableDictionary<string, ReportDiagnostic> NullableWarnings { get; } =
+        GetNullableWarningsFromCompiler();
 
     private static ImmutableDictionary<string, ReportDiagnostic> GetNullableWarningsFromCompiler()
     {
         string[] args = ["/warnaserror:nullable"];
-        CSharpCommandLineArguments commandLineArguments = CSharpCommandLineParser.Default.Parse(args, baseDirectory: Environment.CurrentDirectory, sdkDirectory: Environment.CurrentDirectory);
+        CSharpCommandLineArguments commandLineArguments = CSharpCommandLineParser.Default.Parse(
+            args,
+            baseDirectory: Environment.CurrentDirectory,
+            sdkDirectory: Environment.CurrentDirectory
+        );
         return commandLineArguments.CompilationOptions.SpecificDiagnosticOptions;
     }
 }

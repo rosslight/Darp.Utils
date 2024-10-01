@@ -8,10 +8,13 @@ public interface IConfigurationService<TConfig> : IDisposable, INotifyPropertyCh
 {
     /// <summary> Gives back whether a config value is available </summary>
     bool IsLoaded { get; }
+
     /// <summary> Gives back whether the config service is disposed </summary>
     bool IsDisposed { get; }
+
     /// <summary> The config </summary>
     TConfig Config { get; }
+
     /// <summary> The path to the main config file </summary>
     string Path { get; }
 
@@ -19,9 +22,13 @@ public interface IConfigurationService<TConfig> : IDisposable, INotifyPropertyCh
     /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
     /// <returns>The new config</returns>
     Task<TConfig> LoadConfigurationAsync(CancellationToken cancellationToken = default);
+
     /// <summary> Saves a new config. Updates the <see cref="Config"/> property. </summary>
     /// <param name="configuration">The configuration to be saved</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
     /// <returns>The new config</returns>
-    Task<TConfig> WriteConfigurationAsync(TConfig configuration, CancellationToken cancellationToken = default);
+    Task<TConfig> WriteConfigurationAsync(
+        TConfig configuration,
+        CancellationToken cancellationToken = default
+    );
 }

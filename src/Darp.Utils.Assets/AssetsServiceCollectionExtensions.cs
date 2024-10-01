@@ -13,10 +13,15 @@ public static class AssetsServiceCollectionExtensions
     /// <param name="folderPath"> The path to the folder </param>
     /// <param name="relativePath"> The relative path inside the AppData </param>
     /// <returns> A reference to this instance after the operation has completed. </returns>
-    public static IServiceCollection AddFolderAssetsService(this IServiceCollection serviceCollection,
+    public static IServiceCollection AddFolderAssetsService(
+        this IServiceCollection serviceCollection,
         string folderPath,
-        string relativePath) => serviceCollection
-        .AddTransient<IFolderAssetsService>(_ => new FolderAssetsService(folderPath, relativePath));
+        string relativePath
+    ) =>
+        serviceCollection.AddTransient<IFolderAssetsService>(_ => new FolderAssetsService(
+            folderPath,
+            relativePath
+        ));
 
     /// <summary>
     /// Adds an <see cref="IAppDataAssetsService"/> to the serviceCollection.
@@ -25,9 +30,13 @@ public static class AssetsServiceCollectionExtensions
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <param name="relativePath"> The relative path inside the <see cref="Environment.SpecialFolder.ApplicationData"/> </param>
     /// <returns> A reference to this instance after the operation has completed. </returns>
-    public static IServiceCollection AddAppDataAssetsService(this IServiceCollection serviceCollection,
-        string relativePath) => serviceCollection
-        .AddTransient<IAppDataAssetsService>(_ => new AppDataAssetsService(relativePath));
+    public static IServiceCollection AddAppDataAssetsService(
+        this IServiceCollection serviceCollection,
+        string relativePath
+    ) =>
+        serviceCollection.AddTransient<IAppDataAssetsService>(_ => new AppDataAssetsService(
+            relativePath
+        ));
 
     /// <summary>
     /// Adds an <see cref="IProgramDataAssetsService"/> to the serviceCollection.
@@ -36,7 +45,11 @@ public static class AssetsServiceCollectionExtensions
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <param name="relativePath"> The relative path inside the <see cref="Environment.SpecialFolder.CommonApplicationData"/> </param>
     /// <returns> A reference to this instance after the operation has completed. </returns>
-    public static IServiceCollection AddProgramDataAssetsService(this IServiceCollection serviceCollection,
-        string relativePath) => serviceCollection
-        .AddTransient<IProgramDataAssetsService>(_ => new ProgramDataAssetsService(relativePath));
+    public static IServiceCollection AddProgramDataAssetsService(
+        this IServiceCollection serviceCollection,
+        string relativePath
+    ) =>
+        serviceCollection.AddTransient<IProgramDataAssetsService>(_ => new ProgramDataAssetsService(
+            relativePath
+        ));
 }

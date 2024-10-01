@@ -2,7 +2,8 @@ namespace Darp.Utils.ResxSourceGenerator;
 
 using System.Collections.Immutable;
 
-internal sealed class ImmutableDictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<ImmutableDictionary<TKey, TValue>?>
+internal sealed class ImmutableDictionaryEqualityComparer<TKey, TValue>
+    : IEqualityComparer<ImmutableDictionary<TKey, TValue>?>
     where TKey : notnull
 {
     public static readonly ImmutableDictionaryEqualityComparer<TKey, TValue> Instance = new();
@@ -26,8 +27,10 @@ internal sealed class ImmutableDictionaryEqualityComparer<TKey, TValue> : IEqual
 
         foreach (KeyValuePair<TKey, TValue> pair in x)
         {
-            if (!y.TryGetValue(pair.Key, out TValue? other)
-                || !x.ValueComparer.Equals(pair.Value, other))
+            if (
+                !y.TryGetValue(pair.Key, out TValue? other)
+                || !x.ValueComparer.Equals(pair.Value, other)
+            )
             {
                 return false;
             }

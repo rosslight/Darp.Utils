@@ -16,17 +16,20 @@ using NSubstitute;
 
 public sealed class SubstituteDialogService : IDialogService
 {
-    public IContentDialogBuilder<TContent> CreateContentDialog<TContent>(string title, TContent content)
+    public IContentDialogBuilder<TContent> CreateContentDialog<TContent>(
+        string title,
+        TContent content
+    )
     {
-        IContentDialogBuilder<TContent> subBuilder = Substitute.For<IContentDialogBuilder<TContent>>();
+        IContentDialogBuilder<TContent> subBuilder = Substitute.For<
+            IContentDialogBuilder<TContent>
+        >();
         subBuilder.Title.Returns(title);
         subBuilder.Content.Returns(content);
         return subBuilder;
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }
 
 public class AvaloniaDialogServiceTests
@@ -55,8 +58,9 @@ public class AvaloniaDialogServiceTests
         var service = new AvaloniaDialogService();
 
         // Act
-        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
-            new FluentAvaloniaContentDialogBuilder<int>(service, title, content));
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(
+            () => new FluentAvaloniaContentDialogBuilder<int>(service, title, content)
+        );
 
         // Assert
         builder.Title.Should().Be(title);
@@ -72,15 +76,18 @@ public class AvaloniaDialogServiceTests
     {
         // Arrange
         var service = new AvaloniaDialogService();
-        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
-            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(
+            () => new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42)
+        );
 
         // Act
         IContentDialogBuilder<int> returnedBuilder = builder.SetDefaultButton(button);
 
         // Assert
         builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.DefaultButton.Should().Be((global::FluentAvalonia.UI.Controls.ContentDialogButton)button);
+        builder
+            .Dialog.DefaultButton.Should()
+            .Be((global::FluentAvalonia.UI.Controls.ContentDialogButton)button);
     }
 
     [Fact]
@@ -89,8 +96,9 @@ public class AvaloniaDialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
-            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(
+            () => new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42)
+        );
 
         // Act
         IContentDialogBuilder<int> returnedBuilder = builder.SetCloseButton(buttonText);
@@ -108,18 +116,21 @@ public class AvaloniaDialogServiceTests
         const int content = 42;
         var service = new AvaloniaDialogService();
         var window = new Window();
-        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
-            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window));
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(
+            () => new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window)
+        );
 
         // Act
         window.Show();
         int? contentReceivedOnClick = null;
-        IContentDialogBuilder<int> returnedBuilder = builder
-            .SetCloseButton(buttonText, c =>
+        IContentDialogBuilder<int> returnedBuilder = builder.SetCloseButton(
+            buttonText,
+            c =>
             {
                 contentReceivedOnClick = c;
                 return true;
-            });
+            }
+        );
         builder.Dialog.Opened += (sender, _) =>
         {
             Button button = sender.GetFirstDescendant<Button>("CloseButton");
@@ -142,8 +153,9 @@ public class AvaloniaDialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
-            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(
+            () => new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42)
+        );
 
         // Act
         IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(buttonText);
@@ -159,12 +171,16 @@ public class AvaloniaDialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
-            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(
+            () => new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42)
+        );
         var subject = new BehaviorSubject<bool>(false);
 
         // Act and assert
-        IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(buttonText, isEnabled: subject);
+        IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(
+            buttonText,
+            isEnabled: subject
+        );
 
         builder.Should().BeEquivalentTo(returnedBuilder);
         builder.Dialog.IsPrimaryButtonEnabled.Should().BeFalse();
@@ -184,18 +200,25 @@ public class AvaloniaDialogServiceTests
         const int content = 42;
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window);
+        var builder = new FluentAvaloniaContentDialogBuilder<int>(
+            service,
+            "Title",
+            content,
+            window
+        );
 
         // Act
         window.Show();
         Dispatcher.UIThread.RunJobs();
         int? contentReceivedOnClick = null;
-        IContentDialogBuilder<int> returnedBuilder = builder
-            .SetPrimaryButton(buttonText, onClick: (c, _) =>
+        IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(
+            buttonText,
+            onClick: (c, _) =>
             {
                 contentReceivedOnClick = c;
                 return Task.FromResult(true);
-            });
+            }
+        );
         builder.Dialog.Opened += (sender, _) =>
         {
             Button button = sender.GetFirstDescendant<Button>("PrimaryButton");
@@ -234,12 +257,16 @@ public class AvaloniaDialogServiceTests
         // Arrange
         const string buttonText = "ButtonText";
         var service = new AvaloniaDialogService();
-        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
-            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42));
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(
+            () => new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42)
+        );
         var subject = new BehaviorSubject<bool>(false);
 
         // Act and assert
-        IContentDialogBuilder<int> returnedBuilder = builder.SetSecondaryButton(buttonText, isEnabled: subject);
+        IContentDialogBuilder<int> returnedBuilder = builder.SetSecondaryButton(
+            buttonText,
+            isEnabled: subject
+        );
 
         builder.Should().BeEquivalentTo(returnedBuilder);
         builder.Dialog.IsSecondaryButtonEnabled.Should().BeFalse();
@@ -259,18 +286,25 @@ public class AvaloniaDialogServiceTests
         const int content = 42;
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window);
+        var builder = new FluentAvaloniaContentDialogBuilder<int>(
+            service,
+            "Title",
+            content,
+            window
+        );
 
         // Act
         window.Show();
         Dispatcher.UIThread.RunJobs();
         int? contentReceivedOnClick = null;
-        IContentDialogBuilder<int> returnedBuilder = builder
-            .SetSecondaryButton(buttonText, onClick: (c, _) =>
+        IContentDialogBuilder<int> returnedBuilder = builder.SetSecondaryButton(
+            buttonText,
+            onClick: (c, _) =>
             {
                 contentReceivedOnClick = c;
                 return Task.FromResult(true);
-            });
+            }
+        );
         builder.Dialog.Opened += (sender, _) =>
         {
             Button button = sender.GetFirstDescendant<Button>("SecondaryButton");
@@ -294,14 +328,15 @@ public class AvaloniaDialogServiceTests
     {
         // Arrange
         const string messageText = "message";
-        var content = new MessageBoxModel
-        {
-            Message = messageText,
-            IsSelectable = isSelectable,
-        };
+        var content = new MessageBoxModel { Message = messageText, IsSelectable = isSelectable };
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<MessageBoxModel>(service, "Title", content, window);
+        var builder = new FluentAvaloniaContentDialogBuilder<MessageBoxModel>(
+            service,
+            "Title",
+            content,
+            window
+        );
 
         // Act
         window.Show();
@@ -309,14 +344,16 @@ public class AvaloniaDialogServiceTests
         bool? isSelectableTextBlock = null;
         builder.Dialog.Opened += (sender, _) =>
         {
-            TextBlock? textBlock = sender.GetVisualDescendants()
+            TextBlock? textBlock = sender
+                .GetVisualDescendants()
                 .OfType<TextBlock>()
                 .FirstOrDefault(x => x.IsVisible && x.Text == messageText);
             if (textBlock is not null)
             {
                 isSelectableTextBlock = false;
             }
-            SelectableTextBlock? selectableTextBlock = sender.GetVisualDescendants()
+            SelectableTextBlock? selectableTextBlock = sender
+                .GetVisualDescendants()
                 .OfType<SelectableTextBlock>()
                 .FirstOrDefault(x => x.IsVisible && x.Text == messageText);
             if (selectableTextBlock is not null)
@@ -336,11 +373,11 @@ public class AvaloniaDialogServiceTests
 
 file static class Extensions
 {
-    public static T GetFirstDescendant<T>(this Visual visual, string name) where T : StyledElement =>
-        visual.GetVisualDescendants().GetFirstDescendant<T>(name);
+    public static T GetFirstDescendant<T>(this Visual visual, string name)
+        where T : StyledElement => visual.GetVisualDescendants().GetFirstDescendant<T>(name);
 
-    public static T GetFirstDescendant<T>(this IEnumerable<Visual> source, string name) where T : StyledElement =>
-        source.OfType<T>().First(x => x.Name == name);
+    public static T GetFirstDescendant<T>(this IEnumerable<Visual> source, string name)
+        where T : StyledElement => source.OfType<T>().First(x => x.Name == name);
 
     /// <summary>
     /// Get the bounds of the first visual relative to the second visual.
@@ -352,7 +389,12 @@ file static class Extensions
     /// <exception cref="ArgumentOutOfRangeException"> Thrown if transform between visuals could not be calculated </exception>
     public static Rect GetRelativeBounds(this Visual visual, Visual second)
     {
-        Matrix? transform = visual.TransformToVisual(second) ?? throw new ArgumentOutOfRangeException(null, "Could not calculate transformation from one visual to the other");
+        Matrix? transform =
+            visual.TransformToVisual(second)
+            ?? throw new ArgumentOutOfRangeException(
+                null,
+                "Could not calculate transformation from one visual to the other"
+            );
         return new Rect(visual.Bounds.Size).TransformToAABB(transform.Value);
     }
 
@@ -361,7 +403,8 @@ file static class Extensions
         this TopLevel topLevel,
         Point point,
         MouseButton button,
-        RawInputModifiers modifiers = RawInputModifiers.None)
+        RawInputModifiers modifiers = RawInputModifiers.None
+    )
     {
         topLevel.MouseDown(point, button, modifiers);
         topLevel.MouseUp(point, button, modifiers);

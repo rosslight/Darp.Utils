@@ -8,6 +8,7 @@ public interface IContentDialogBuilder<TContent>
 {
     /// <summary> The content of the dialog </summary>
     string Title { get; }
+
     /// <summary> The content of the dialog </summary>
     TContent Content { get; }
 
@@ -22,8 +23,10 @@ public interface IContentDialogBuilder<TContent>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
     /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
-    IContentDialogBuilder<TContent> SetCloseButton(string text,
-        Func<TContent, bool>? onClick = null);
+    IContentDialogBuilder<TContent> SetCloseButton(
+        string text,
+        Func<TContent, bool>? onClick = null
+    );
 
     /// <summary>
     /// Enables the <see cref="ContentDialogButton.Primary"/> button and sets the text to be displayed.
@@ -32,9 +35,11 @@ public interface IContentDialogBuilder<TContent>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
     /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
-    IContentDialogBuilder<TContent> SetPrimaryButton(string text,
+    IContentDialogBuilder<TContent> SetPrimaryButton(
+        string text,
         IObservable<bool>? isEnabled = null,
-        Func<TContent, CancellationToken, Task<bool>>? onClick = null);
+        Func<TContent, CancellationToken, Task<bool>>? onClick = null
+    );
 
     /// <summary>
     /// Enables the <see cref="ContentDialogButton.Secondary"/> button and sets the text to be displayed.
@@ -43,9 +48,11 @@ public interface IContentDialogBuilder<TContent>
     /// <param name="isEnabled"> An observable which is bound to the button and can enable/disable it </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
     /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
-    IContentDialogBuilder<TContent> SetSecondaryButton(string text,
+    IContentDialogBuilder<TContent> SetSecondaryButton(
+        string text,
         IObservable<bool>? isEnabled = null,
-        Func<TContent, CancellationToken, Task<bool>>? onClick = null);
+        Func<TContent, CancellationToken, Task<bool>>? onClick = null
+    );
 
     /// <summary> Show the current dialog </summary>
     /// <param name="cancellationToken"> The CancellationToken to cancel the operation </param>
@@ -58,17 +65,23 @@ public interface IContentDialogBuilder<TContent>
 /// <param name="Content"> The content </param>
 /// <typeparam name="TContent"> The type of the <see cref="Content"/> </typeparam>
 [method: SetsRequiredMembers]
-public readonly record struct ContentDialogResult<TContent>(ContentDialogResult Result, TContent Content)
+public readonly record struct ContentDialogResult<TContent>(
+    ContentDialogResult Result,
+    TContent Content
+)
 {
     /// <summary> The result status </summary>
     public required ContentDialogResult Result { get; init; } = Result;
+
     /// <summary> The content </summary>
     public required TContent Content { get; init; } = Content;
 
     /// <summary> The dialog closed with result <see cref="ContentDialogResult.None"/> </summary>
     public bool IsNone => Result is ContentDialogResult.None;
+
     /// <summary> The dialog closed with result <see cref="ContentDialogResult.Primary"/> </summary>
     public bool IsPrimary => Result is ContentDialogResult.Primary;
+
     /// <summary> The dialog closed with result <see cref="ContentDialogResult.Secondary"/> </summary>
     public bool IsSecondary => Result is ContentDialogResult.Secondary;
 }

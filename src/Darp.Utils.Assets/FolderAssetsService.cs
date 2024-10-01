@@ -29,8 +29,9 @@ public class FolderAssetsService(string folderPath, string relativePath) : IFold
             return File.OpenWrite(joinedPath);
         }
 
-        var directoryPath = Path.GetDirectoryName(joinedPath)
-                            ?? throw new DirectoryNotFoundException("Could not get directory name");
+        var directoryPath =
+            Path.GetDirectoryName(joinedPath)
+            ?? throw new DirectoryNotFoundException("Could not get directory name");
         Directory.CreateDirectory(directoryPath);
         return File.OpenWrite(joinedPath);
     }
