@@ -14,7 +14,6 @@ public partial class MainWindowViewModel : ViewModelBase
         I18N.CultureChanged += (_, _) => OnPropertyChanged(nameof(Greeting));
     }
 
-
     public void SetLanguage(string? langCode)
     {
         if (langCode is null)
