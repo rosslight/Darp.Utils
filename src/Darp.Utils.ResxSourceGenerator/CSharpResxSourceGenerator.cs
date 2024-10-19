@@ -31,15 +31,12 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
     )]
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<AdditionalText> resourceFiles =
-            context.AdditionalTextsProvider.Where(static file =>
-                file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase)
-            );
-        IncrementalValueProvider<CompilationInformation> compilationInformation =
-            context.CompilationProvider.Select(
-                static (compilation, _) =>
-                    new CompilationInformation { AssemblyName = compilation.AssemblyName }
-            );
+        IncrementalValuesProvider<AdditionalText> resourceFiles = context.AdditionalTextsProvider.Where(static file =>
+            file.Path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase)
+        );
+        IncrementalValueProvider<CompilationInformation> compilationInformation = context.CompilationProvider.Select(
+            static (compilation, _) => new CompilationInformation { AssemblyName = compilation.AssemblyName }
+        );
         IncrementalValuesProvider<ResourceInformation> resourceFilesToGenerateSource = resourceFiles
             .Combine(context.AnalyzerConfigOptionsProvider.Combine(compilationInformation))
             .SelectMany(
@@ -47,50 +44,30 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                 {
                     (
                         AdditionalText resourceFile,
-                        (
-                            AnalyzerConfigOptionsProvider optionsProvider,
-                            CompilationInformation compilationInfo
-                        )
+                        (AnalyzerConfigOptionsProvider optionsProvider, CompilationInformation compilationInfo)
                     ) = values;
-                    return CreateResourceInformation(
-                        optionsProvider,
-                        resourceFile,
-                        compilationInfo
-                    );
+                    return CreateResourceInformation(optionsProvider, resourceFile, compilationInfo);
                 }
             );
         IncrementalValueProvider<ImmutableArray<ResourceInformation>> allFilesSource =
             resourceFilesToGenerateSource.Collect();
-        IncrementalValueProvider<ImmutableDictionary<ResourceInformation, string>> renameMapping =
-            allFilesSource
-                .Select(static (values, _) => CreateNamePrefixMapping(values))
-                .WithComparer(
-                    ImmutableDictionaryEqualityComparer<ResourceInformation, string>.Instance
-                );
+        IncrementalValueProvider<ImmutableDictionary<ResourceInformation, string>> renameMapping = allFilesSource
+            .Select(static (values, _) => CreateNamePrefixMapping(values))
+            .WithComparer(ImmutableDictionaryEqualityComparer<ResourceInformation, string>.Instance);
         IncrementalValuesProvider<ResourceCollection> resourceFilesToGenerateSourceWithNames =
             resourceFilesToGenerateSource
                 .Combine(renameMapping)
                 .Combine(allFilesSource)
                 .Where(static values =>
                 {
-                    (
-                        (ResourceInformation resource, _),
-                        ImmutableArray<ResourceInformation> allFiles
-                    ) = values;
-                    return !BuildHelper.IsChildFile(
-                        resource.ResourceName,
-                        allFiles.Select(r => r.ResourceName),
-                        out _
-                    );
+                    ((ResourceInformation resource, _), ImmutableArray<ResourceInformation> allFiles) = values;
+                    return !BuildHelper.IsChildFile(resource.ResourceName, allFiles.Select(r => r.ResourceName), out _);
                 })
                 .Select(
                     static (values, _) =>
                     {
                         (
-                            (
-                                ResourceInformation resource,
-                                ImmutableDictionary<ResourceInformation, string>? mappings
-                            ),
+                            (ResourceInformation resource, ImmutableDictionary<ResourceInformation, string>? mappings),
                             ImmutableArray<ResourceInformation> allFiles
                         ) = values;
                         return CreateResourceCollection(mappings, resource, allFiles);
@@ -123,23 +100,15 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                         context.ReportDiagnostic(diagnostic);
                     }
                 }
-                catch (OperationCanceledException)
-                    when (context.CancellationToken.IsCancellationRequested)
+                catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
                 {
                     throw;
                 }
                 catch (Exception ex)
                 {
                     var exceptionLines = ex.ToString().Split(['\n'], StringSplitOptions.None);
-                    var text = string.Join(
-                        "",
-                        exceptionLines.Select(line => "#error " + line + "\n")
-                    );
-                    var errorText = SourceText.From(
-                        text,
-                        Encoding.UTF8,
-                        SourceHashAlgorithm.Sha256
-                    );
+                    var text = string.Join("", exceptionLines.Select(line => "#error " + line + "\n"));
+                    var errorText = SourceText.From(text, Encoding.UTF8, SourceHashAlgorithm.Sha256);
                     context.AddSource($"Error", errorText);
                 }
             }
@@ -161,18 +130,14 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             return [];
         }
 
-        var rootNamespace =
-            globalOptions.GetValue("build_property.RootNamespace") ?? compilationInfo.AssemblyName;
+        var rootNamespace = globalOptions.GetValue("build_property.RootNamespace") ?? compilationInfo.AssemblyName;
         var emitDebugInformation =
-            globalOptions.GetBoolValue("build_property.ResxSourceGenerator_EmitDebugInformation")
-            ?? false;
+            globalOptions.GetBoolValue("build_property.ResxSourceGenerator_EmitDebugInformation") ?? false;
 
         var relativeDir = options.GetValue("build_metadata.EmbeddedResource.RelativeDir");
         var className = options.GetValue("build_metadata.EmbeddedResource.ClassName");
-        var emitFormatMethods =
-            options.GetBoolValue("build_metadata.EmbeddedResource.EmitFormatMethods") ?? false;
-        var publicResource =
-            options.GetBoolValue("build_metadata.EmbeddedResource.Public") ?? false;
+        var emitFormatMethods = options.GetBoolValue("build_metadata.EmbeddedResource.EmitFormatMethods") ?? false;
+        var publicResource = options.GetBoolValue("build_metadata.EmbeddedResource.Public") ?? false;
 
         var resourcePathName = Path.GetFileNameWithoutExtension(resourceFile.Path);
         var computedResourceName = resourcePathName;
@@ -187,11 +152,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             className is null || string.IsNullOrEmpty(className)
                 ? string.Join(".", rootNamespace, computedResourceName)
                 : className;
-        BuildHelper.SplitName(
-            resourceAccessName,
-            out var computedNamespaceName,
-            out var computedClassName
-        );
+        BuildHelper.SplitName(resourceAccessName, out var computedNamespaceName, out var computedClassName);
 
         return
         [
@@ -226,10 +187,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
             string
         >.Empty;
         foreach (
-            ResourceInformation resourceInformation in resource.OrderBy(
-                x => x.ResourceName,
-                StringComparer.Ordinal
-            )
+            ResourceInformation resourceInformation in resource.OrderBy(x => x.ResourceName, StringComparer.Ordinal)
         )
         {
             for (var i = -1; ; i++)
@@ -274,9 +232,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                         allFiles.Select(r => r.ResourceName),
                         out CultureInfo? cultureInfo
                     );
-                    return !isChildFile
-                        ? ((CultureInfo?, AdditionalText)?)null
-                        : (cultureInfo, x.ResourceFile);
+                    return !isChildFile ? ((CultureInfo?, AdditionalText)?)null : (cultureInfo, x.ResourceFile);
                 })
                 .Where(x => x is not null)
                 .ToImmutableDictionary(x => x!.Value.Item1!, x => x!.Value.Item2),

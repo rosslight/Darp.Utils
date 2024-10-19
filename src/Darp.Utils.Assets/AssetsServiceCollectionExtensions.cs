@@ -17,11 +17,7 @@ public static class AssetsServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         string folderPath,
         string relativePath
-    ) =>
-        serviceCollection.AddTransient<IFolderAssetsService>(_ => new FolderAssetsService(
-            folderPath,
-            relativePath
-        ));
+    ) => serviceCollection.AddTransient<IFolderAssetsService>(_ => new FolderAssetsService(folderPath, relativePath));
 
     /// <summary>
     /// Adds an <see cref="IAppDataAssetsService"/> to the serviceCollection.
@@ -33,10 +29,7 @@ public static class AssetsServiceCollectionExtensions
     public static IServiceCollection AddAppDataAssetsService(
         this IServiceCollection serviceCollection,
         string relativePath
-    ) =>
-        serviceCollection.AddTransient<IAppDataAssetsService>(_ => new AppDataAssetsService(
-            relativePath
-        ));
+    ) => serviceCollection.AddTransient<IAppDataAssetsService>(_ => new AppDataAssetsService(relativePath));
 
     /// <summary>
     /// Adds an <see cref="IProgramDataAssetsService"/> to the serviceCollection.
@@ -48,8 +41,5 @@ public static class AssetsServiceCollectionExtensions
     public static IServiceCollection AddProgramDataAssetsService(
         this IServiceCollection serviceCollection,
         string relativePath
-    ) =>
-        serviceCollection.AddTransient<IProgramDataAssetsService>(_ => new ProgramDataAssetsService(
-            relativePath
-        ));
+    ) => serviceCollection.AddTransient<IProgramDataAssetsService>(_ => new ProgramDataAssetsService(relativePath));
 }

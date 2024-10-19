@@ -235,20 +235,14 @@ internal static class BuildHelper
             diagnostics.Add(
                 Diagnostic.Create(
                     descriptor: EmptyWarning,
-                    location: Location.Create(
-                        resourceInformation.ResourceFile.Path,
-                        default,
-                        default
-                    ),
+                    location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
                     messageArgs: null
                 )
             );
             return false;
         }
         Dictionary<CultureInfo, Dictionary<string, XElement>> otherCulturesEntries = [];
-        foreach (
-            KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages
-        )
+        foreach (KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages)
         {
             if (
                 !pair.Value.TryGetResourceDataAndValues(
@@ -293,10 +287,9 @@ internal static class BuildHelper
             }
 
             foreach (
-                KeyValuePair<
-                    CultureInfo,
-                    Dictionary<string, XElement>
-                > entry in otherCulturesEntries.OrderBy(item => item.Key.ToString())
+                KeyValuePair<CultureInfo, Dictionary<string, XElement>> entry in otherCulturesEntries.OrderBy(item =>
+                    item.Key.ToString()
+                )
             )
             {
                 string otherValue;
@@ -335,11 +328,7 @@ internal static class BuildHelper
         return true;
     }
 
-    private static void RenderFormatMethod(
-        string indent,
-        StringBuilder strings,
-        ResourceString resourceString
-    )
+    private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
     {
         var propertyIdentifier = resourceString.Identifier;
         var methodParameters = resourceString.GetMethodParameters();
@@ -352,8 +341,7 @@ internal static class BuildHelper
             resourceString
                 .GetArguments()
                 .Select(
-                    (x, i) =>
-                        $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"
+                    (x, i) => $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"
                 )
         );
 
@@ -390,11 +378,7 @@ internal static class BuildHelper
         }
         using var sourceTextReader = new SourceTextReader(text);
         resourceNames = [];
-        foreach (
-            XElement node in XDocument
-                .Load(sourceTextReader, LoadOptions.SetLineInfo)
-                .Descendants("data")
-        )
+        foreach (XElement node in XDocument.Load(sourceTextReader, LoadOptions.SetLineInfo).Descendants("data"))
         {
             XAttribute? nameAttribute = node.Attribute("name");
             var name = nameAttribute?.Value;
@@ -438,27 +422,19 @@ internal static class BuildHelper
         return true;
     }
 
-    private static Location GetXElementLocation(
-        AdditionalText text,
-        IXmlLineInfo line,
-        string? memberName
-    ) =>
+    private static Location GetXElementLocation(AdditionalText text, IXmlLineInfo line, string? memberName) =>
         Location.Create(
             filePath: text.Path,
             textSpan: new TextSpan(),
             lineSpan: new LinePositionSpan(
                 start: new LinePosition(line.LineNumber - 1, line.LinePosition - 1),
-                end: new LinePosition(
-                    line.LineNumber - 1,
-                    line.LinePosition - 1 + memberName?.Length ?? 0
-                )
+                end: new LinePosition(line.LineNumber - 1, line.LinePosition - 1 + memberName?.Length ?? 0)
             )
         );
 
     private static string GetTrimmedDocComment(string elementName, string value)
     {
-        var trimmedValue =
-            value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
+        var trimmedValue = value.Length > MaxDocCommentLength ? value[..MaxDocCommentLength] + " ..." : value;
         var element = new XElement(elementName, trimmedValue).ToString();
         var splits = element.Split('\n');
         return string.Join("<br/>", splits.Select(x => x.Trim()));
@@ -491,11 +467,7 @@ namespace {{namespaceName}}
         memberIndent = classIndent + indent;
     }
 
-    public static bool SplitName(
-        string fullName,
-        [NotNullWhen(true)] out string? namespaceName,
-        out string className
-    )
+    public static bool SplitName(string fullName, [NotNullWhen(true)] out string? namespaceName, out string className)
     {
         var lastDot = fullName.LastIndexOf('.');
         if (lastDot == -1)
@@ -515,10 +487,7 @@ namespace {{namespaceName}}
         where T : struct;
 
     public static bool? GetBoolValue(this AnalyzerConfigOptions options, string key) =>
-        options.GetStructValue(
-            key,
-            (string value, out bool result) => bool.TryParse(value, out result)
-        );
+        options.GetStructValue(key, (string value, out bool result) => bool.TryParse(value, out result));
 
     public static T? GetStructValue<T>(
         this AnalyzerConfigOptions options,
@@ -612,8 +581,7 @@ namespace {{namespaceName}}
     {
         private static readonly Regex NamedParameterMatcher =
             new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex NumberParameterMatcher =
-            new(@"\{(\d+)\}", RegexOptions.Compiled);
+        private static readonly Regex NumberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
         private readonly IReadOnlyList<string> _arguments;
 
         public ResourceString(string identifier, string value)
@@ -629,10 +597,7 @@ namespace {{namespaceName}}
                 match = NumberParameterMatcher.Matches(value);
             }
 
-            IEnumerable<string> arguments = match
-                .Cast<Match>()
-                .Select(m => m.Groups[1].Value)
-                .Distinct();
+            IEnumerable<string> arguments = match.Cast<Match>().Select(m => m.Groups[1].Value).Distinct();
             if (!UsingNamedArgs)
             {
                 arguments = arguments.OrderBy(Convert.ToInt32);
@@ -648,8 +613,7 @@ namespace {{namespaceName}}
 
         public bool HasArguments => _arguments.Count > 0;
 
-        public string GetArgumentNames() =>
-            string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
+        public string GetArgumentNames() => string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
 
         public IEnumerable<string> GetArguments()
         {
@@ -662,13 +626,9 @@ namespace {{namespaceName}}
         public string GetMethodParameters()
         {
             var usingNamedArgs = UsingNamedArgs;
-            return string.Join(
-                ", ",
-                _arguments.Select(a => "object? " + GetArgName(a, usingNamedArgs))
-            );
+            return string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a, usingNamedArgs)));
         }
 
-        private static string GetArgName(string name, bool usingNamedArgs) =>
-            usingNamedArgs ? name : 'p' + name;
+        private static string GetArgName(string name, bool usingNamedArgs) => usingNamedArgs ? name : 'p' + name;
     }
 }

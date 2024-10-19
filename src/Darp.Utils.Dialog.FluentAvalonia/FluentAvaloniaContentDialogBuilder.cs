@@ -64,10 +64,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     }
 
     /// <inheritdoc />
-    public IContentDialogBuilder<TContent> SetCloseButton(
-        string text,
-        Func<TContent, bool>? onClick = null
-    )
+    public IContentDialogBuilder<TContent> SetCloseButton(string text, Func<TContent, bool>? onClick = null)
     {
         Dialog.CloseButtonText = text;
 
@@ -90,9 +87,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     )
     {
         Dialog.PrimaryButtonText = text;
-        BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(
-            new BehaviorSubject<bool>(true)
-        );
+        BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
         if (isEnabled is not null)
         {
             Dialog[!FluentContentDialog.IsPrimaryButtonEnabledProperty] = isEnabled
@@ -110,8 +105,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
                 {
                     notExecutingSubject.OnNext(false);
                     deferral = args.GetDeferral();
-                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default)
-                        .ConfigureAwait(true);
+                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default).ConfigureAwait(true);
                     args.Cancel = !shouldClose;
                 }
                 finally
@@ -132,9 +126,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     )
     {
         Dialog.SecondaryButtonText = text;
-        BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(
-            new BehaviorSubject<bool>(true)
-        );
+        BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
         if (isEnabled is not null)
         {
             Dialog[!FluentContentDialog.IsSecondaryButtonEnabledProperty] = isEnabled
@@ -152,8 +144,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
                 {
                     notExecutingSubject.OnNext(false);
                     deferral = args.GetDeferral();
-                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default)
-                        .ConfigureAwait(true);
+                    var shouldClose = await onClick(Content, _cancelTokenSource?.Token ?? default).ConfigureAwait(true);
                     args.Cancel = !shouldClose;
                 }
                 finally
@@ -167,15 +158,12 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     }
 
     /// <inheritdoc />
-    public async Task<ContentDialogResult<TContent>> ShowAsync(
-        CancellationToken cancellationToken = default
-    )
+    public async Task<ContentDialogResult<TContent>> ShowAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var result = (ContentDialogResult)
-                await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+            var result = (ContentDialogResult)await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
             return new ContentDialogResult<TContent>(result, Content);
         }
         finally

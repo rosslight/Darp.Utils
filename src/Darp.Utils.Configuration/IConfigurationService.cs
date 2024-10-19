@@ -27,8 +27,5 @@ public interface IConfigurationService<TConfig> : IDisposable, INotifyPropertyCh
     /// <param name="configuration">The configuration to be saved</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
     /// <returns>The new config</returns>
-    Task<TConfig> WriteConfigurationAsync(
-        TConfig configuration,
-        CancellationToken cancellationToken = default
-    );
+    Task<TConfig> WriteConfigurationAsync(TConfig configuration, CancellationToken cancellationToken = default);
 }

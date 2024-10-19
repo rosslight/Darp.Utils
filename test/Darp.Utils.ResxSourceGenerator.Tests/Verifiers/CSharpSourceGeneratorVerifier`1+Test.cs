@@ -30,10 +30,7 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         private readonly string? _testFile;
         private readonly string? _testMethod;
 
-        public Test(
-            [CallerFilePath] string? testFile = null,
-            [CallerMemberName] string? testMethod = null
-        )
+        public Test([CallerFilePath] string? testFile = null, [CallerMemberName] string? testMethod = null)
             : this(string.Empty, testFile, testMethod) { }
 
         public Test(
@@ -70,9 +67,7 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         {
             CompilationOptions compilationOptions = base.CreateCompilationOptions();
             return compilationOptions.WithSpecificDiagnosticOptions(
-                compilationOptions.SpecificDiagnosticOptions.SetItems(
-                    CSharpVerifierHelper.NullableWarnings
-                )
+                compilationOptions.SpecificDiagnosticOptions.SetItems(CSharpVerifierHelper.NullableWarnings)
             );
         }
 
@@ -82,17 +77,9 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
         protected override async Task<(
             Compilation compilation,
             ImmutableArray<Diagnostic> generatorDiagnostics
-        )> GetProjectCompilationAsync(
-            Project project,
-            IVerifier verifier,
-            CancellationToken cancellationToken
-        )
+        )> GetProjectCompilationAsync(Project project, IVerifier verifier, CancellationToken cancellationToken)
         {
-            var resourceDirectory = Path.Combine(
-                Path.GetDirectoryName(_testFile)!,
-                "Resources",
-                ResourceName
-            );
+            var resourceDirectory = Path.Combine(Path.GetDirectoryName(_testFile)!, "Resources", ResourceName);
 
             (Compilation compilation, ImmutableArray<Diagnostic> generatorDiagnostics) =
                 await base.GetProjectCompilationAsync(project, verifier, cancellationToken);
@@ -103,8 +90,7 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
                 expectedNames.Add(Path.GetFileName(tree.FilePath));
             }
 
-            var currentTestPrefix =
-                $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
+            var currentTestPrefix = $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
             foreach (var name in GetType().Assembly.GetManifestResourceNames())
             {
                 if (!name.StartsWith(currentTestPrefix, StringComparison.Ordinal))
@@ -125,8 +111,7 @@ public static partial class CSharpSourceGeneratorVerifier<TSourceGenerator>
 
         public Test AddGeneratedSources()
         {
-            var expectedPrefix =
-                $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
+            var expectedPrefix = $"{Assembly.GetExecutingAssembly().GetName().Name}.Resources.{ResourceName}.";
             foreach (var resourceName in Assembly.GetExecutingAssembly().GetManifestResourceNames())
             {
                 if (!resourceName.StartsWith(expectedPrefix, StringComparison.Ordinal))

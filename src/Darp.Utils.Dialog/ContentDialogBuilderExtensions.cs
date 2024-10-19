@@ -52,11 +52,7 @@ public static class ContentDialogBuilderExtensions
         where TContent : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.SetPrimaryButton(
-            text,
-            isEnabled,
-            onClick is null ? null : (content, _) => onClick(content)
-        );
+        return builder.SetPrimaryButton(text, isEnabled, onClick is null ? null : (content, _) => onClick(content));
     }
 
     /// <summary>
@@ -104,11 +100,7 @@ public static class ContentDialogBuilderExtensions
         where TContent : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.SetSecondaryButton(
-            text,
-            isEnabled,
-            onClick is null ? null : (content, _) => onClick(content)
-        );
+        return builder.SetSecondaryButton(text, isEnabled, onClick is null ? null : (content, _) => onClick(content));
     }
 
     /// <summary> Configure the input field </summary>

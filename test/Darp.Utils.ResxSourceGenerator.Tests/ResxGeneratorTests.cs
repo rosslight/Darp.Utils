@@ -329,10 +329,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             {
                 AdditionalFiles =
                 {
-                    (
-                        "/0/Resources.resx",
-                        ResxDocumentWithValues([("Name", "value"), ("Name", "Value2")])
-                    ),
+                    ("/0/Resources.resx", ResxDocumentWithValues([("Name", "value"), ("Name", "Value2")])),
                 },
                 ExpectedDiagnostics =
                 {

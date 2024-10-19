@@ -23,10 +23,7 @@ public interface IContentDialogBuilder<TContent>
     /// <param name="text"> The text to be shown on the button </param>
     /// <param name="onClick"> A callback function on button click. Returning 'false' aborts the close operation </param>
     /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
-    IContentDialogBuilder<TContent> SetCloseButton(
-        string text,
-        Func<TContent, bool>? onClick = null
-    );
+    IContentDialogBuilder<TContent> SetCloseButton(string text, Func<TContent, bool>? onClick = null);
 
     /// <summary>
     /// Enables the <see cref="ContentDialogButton.Primary"/> button and sets the text to be displayed.
@@ -65,10 +62,7 @@ public interface IContentDialogBuilder<TContent>
 /// <param name="Content"> The content </param>
 /// <typeparam name="TContent"> The type of the <see cref="Content"/> </typeparam>
 [method: SetsRequiredMembers]
-public readonly record struct ContentDialogResult<TContent>(
-    ContentDialogResult Result,
-    TContent Content
-)
+public readonly record struct ContentDialogResult<TContent>(ContentDialogResult Result, TContent Content)
 {
     /// <summary> The result status </summary>
     public required ContentDialogResult Result { get; init; } = Result;

@@ -40,10 +40,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     public async Task LoadConfigurationAsync_FileExists_DeserializesAndReturnsConfig()
     {
         // Arrange
-        CreateServices(
-            out IAssetsService assetsService,
-            out ConfigurationService<TestConfig> configurationService
-        );
+        CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
         var expectedConfig = new TestConfig { Setting = "Test" };
         var json = JsonSerializer.Serialize(expectedConfig, configurationService.WriteOptions);
         using var ms = new MemoryStream();
@@ -56,9 +53,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
         assetsService.GetReadOnlySteam(ConfigFileName).Returns(ms);
 
         // Act
-        TestConfig config = await configurationService.LoadConfigurationAsync(
-            CancellationToken.None
-        );
+        TestConfig config = await configurationService.LoadConfigurationAsync(CancellationToken.None);
         configurationService.Dispose();
 
         // Assert
@@ -70,10 +65,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     public async Task LoadConfigurationAsync_FileDoesNotExist_CopiesFromDefaultAndLoads()
     {
         // Arrange
-        CreateServices(
-            out IAssetsService assetsService,
-            out ConfigurationService<TestConfig> configurationService
-        );
+        CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
         var expectedConfig = new TestConfig { Setting = "Default" };
         using var ms = new MemoryStream();
         await JsonSerializer.SerializeAsync(ms, expectedConfig, configurationService.WriteOptions);
@@ -84,9 +76,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
         assetsService.GetWriteOnlySteam(ConfigFileName).Returns(new MemoryStream(buffer));
 
         // Act
-        TestConfig config = await configurationService.LoadConfigurationAsync(
-            CancellationToken.None
-        );
+        TestConfig config = await configurationService.LoadConfigurationAsync(CancellationToken.None);
         configurationService.Dispose();
 
         // Assert
@@ -98,10 +88,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     public async Task WriteConfigurationAsync_WritesConfigAndUpdatesCachedConfig()
     {
         // Arrange
-        CreateServices(
-            out IAssetsService assetsService,
-            out ConfigurationService<TestConfig> configurationService
-        );
+        CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
         var newConfig = new TestConfig { Setting = "New" };
         var buffer = new byte[100];
         var ms = new MemoryStream(buffer);
@@ -130,10 +117,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     public void Config_PropertyNotLoaded_ThrowsNullReferenceException()
     {
         // Act
-        CreateServices(
-            out IAssetsService _,
-            out ConfigurationService<TestConfig> configurationService
-        );
+        CreateServices(out IAssetsService _, out ConfigurationService<TestConfig> configurationService);
         configurationService.Dispose();
 
         // Assert
@@ -145,10 +129,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     public void Config_Path_ReturnsCorrectPath()
     {
         // Arrange
-        CreateServices(
-            out IAssetsService _,
-            out ConfigurationService<TestConfig> configurationService
-        );
+        CreateServices(out IAssetsService _, out ConfigurationService<TestConfig> configurationService);
 
         // Assert
         configurationService.Path.Should().Be(Path.Join(BasePath, ConfigFileName));
@@ -159,10 +140,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     public async Task Config_PropertyChanged_ShouldNotRaiseOnSameWrite()
     {
         // Arrange
-        CreateServices(
-            out IAssetsService assetsService,
-            out ConfigurationService<TestConfig> configurationService
-        );
+        CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
         var buffer = new byte[100];
         var ms = new MemoryStream(buffer);
         assetsService.GetWriteOnlySteam(ConfigFileName).Returns(ms);
@@ -183,10 +161,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
     {
         // Arrange
         var newConfig = new TestConfig { Setting = "newValue" };
-        CreateServices(
-            out IAssetsService assetsService,
-            out ConfigurationService<TestConfig> configurationService
-        );
+        CreateServices(out IAssetsService assetsService, out ConfigurationService<TestConfig> configurationService);
         var buffer = new byte[100];
         var ms = new MemoryStream(buffer);
         assetsService.GetWriteOnlySteam(ConfigFileName).Returns(ms);
@@ -211,9 +186,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
             .AddConfigurationFile<TestConfig, IAppDataAssetsService>("config.json")
             .BuildServiceProvider();
 
-        IConfigurationService<TestConfig> service = provider.GetRequiredService<
-            IConfigurationService<TestConfig>
-        >();
+        IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
         service.IsLoaded.Should().BeFalse();
     }
 
@@ -229,9 +202,7 @@ public sealed class ConfigurationServiceTests(ITestOutputHelper outputHelper)
             )
             .BuildServiceProvider();
 
-        IConfigurationService<TestConfig> service = provider.GetRequiredService<
-            IConfigurationService<TestConfig>
-        >();
+        IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
         service.IsLoaded.Should().BeFalse();
     }
 }

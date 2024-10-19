@@ -55,9 +55,7 @@ public static class AssetsExtensions
         Stream stream = sourceAssetsService.GetReadOnlySteam(path);
         await using (stream.ConfigureAwait(false))
         {
-            return await JsonSerializer
-                    .DeserializeAsync(stream, typeInfo, cancellationToken)
-                    .ConfigureAwait(false)
+            return await JsonSerializer.DeserializeAsync(stream, typeInfo, cancellationToken).ConfigureAwait(false)
                 ?? throw new JsonException("Deserialization returned null");
         }
     }
@@ -112,9 +110,7 @@ public static class AssetsExtensions
         await using (stream.ConfigureAwait(false))
         {
             stream.SetLength(0);
-            await JsonSerializer
-                .SerializeAsync(stream, value, typeInfo, cancellationToken)
-                .ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(stream, value, typeInfo, cancellationToken).ConfigureAwait(false);
         }
     }
 

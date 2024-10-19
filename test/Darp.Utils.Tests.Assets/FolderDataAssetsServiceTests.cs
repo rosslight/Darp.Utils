@@ -16,10 +16,7 @@ public sealed class FolderDataAssetsServiceTests
         tempDirectory = Path.GetTempPath();
         relativePath = $"DarpUtils_{Guid.NewGuid()}";
         folderAssetsService = new FolderAssetsService(tempDirectory, relativePath);
-        return Disposable.Create(
-            folderAssetsService.BasePath,
-            path => Directory.Delete(path, true)
-        );
+        return Disposable.Create(folderAssetsService.BasePath, path => Directory.Delete(path, true));
     }
 
     [Fact]
@@ -76,8 +73,7 @@ public sealed class FolderDataAssetsServiceTests
 
         stream.SetLength(0);
         await stream.WriteAsync(Array.Empty<byte>());
-        Func<Task> act = async () =>
-            await appDataService.DeserializeJsonAsync<TestData>(testFileName);
+        Func<Task> act = async () => await appDataService.DeserializeJsonAsync<TestData>(testFileName);
 
         // Assert
         await act.Should().ThrowAsync<Exception>();
@@ -105,9 +101,7 @@ public sealed class FolderDataAssetsServiceTests
     {
         // Arrange
         const string relativePath = "RelativePath";
-        ServiceProvider provider = new ServiceCollection()
-            .AddAppDataAssetsService(relativePath)
-            .BuildServiceProvider();
+        ServiceProvider provider = new ServiceCollection().AddAppDataAssetsService(relativePath).BuildServiceProvider();
 
         // Act
         Action act = () => provider.GetRequiredService<IAppDataAssetsService>();

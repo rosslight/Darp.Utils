@@ -27,10 +27,7 @@ internal sealed class ImmutableDictionaryEqualityComparer<TKey, TValue>
 
         foreach (KeyValuePair<TKey, TValue> pair in x)
         {
-            if (
-                !y.TryGetValue(pair.Key, out TValue? other)
-                || !x.ValueComparer.Equals(pair.Value, other)
-            )
+            if (!y.TryGetValue(pair.Key, out TValue? other) || !x.ValueComparer.Equals(pair.Value, other))
             {
                 return false;
             }

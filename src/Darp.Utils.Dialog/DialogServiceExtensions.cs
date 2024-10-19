@@ -41,10 +41,7 @@ public static class DialogServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(dialogService);
         return dialogService
-            .CreateContentDialog(
-                title,
-                new MessageBoxModel { Message = message, IsSelectable = isSelectable }
-            )
+            .CreateContentDialog(title, new MessageBoxModel { Message = message, IsSelectable = isSelectable })
             .SetDefaultButton(ContentDialogButton.Primary)
             .SetPrimaryButton("Ok");
     }
@@ -68,11 +65,7 @@ public static class DialogServiceExtensions
     )
     {
         ArgumentNullException.ThrowIfNull(dialogService);
-        var dialogData = new InputDialogData
-        {
-            Message = message,
-            IsMessageSelectable = isMessageSelectable,
-        };
+        var dialogData = new InputDialogData { Message = message, IsMessageSelectable = isMessageSelectable };
         return dialogService
             .CreateContentDialog(title, dialogData)
             .SetDefaultButton(ContentDialogButton.Primary)

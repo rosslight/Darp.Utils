@@ -46,10 +46,7 @@ public sealed class AssetsExtensionTests
 
         // Act
         Func<Task> act = async () =>
-            await readOnlyService.DeserializeJsonAsync<TestObject>(
-                "test.json",
-                cancellationToken: cancellationToken
-            );
+            await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", cancellationToken: cancellationToken);
 
         // Assert
         await act.Should().ThrowAsync<Exception>();
@@ -67,11 +64,7 @@ public sealed class AssetsExtensionTests
         CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
-        await writeOnlyService.SerializeJsonAsync(
-            "test.json",
-            testObject,
-            cancellationToken: cancellationToken
-        );
+        await writeOnlyService.SerializeJsonAsync("test.json", testObject, cancellationToken: cancellationToken);
 
         var memoryStream = new MemoryStream(buffer.TrimBufferEnd());
         TestObject? resultObject = await JsonSerializer.DeserializeAsync<TestObject>(

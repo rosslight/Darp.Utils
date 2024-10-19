@@ -19,18 +19,11 @@ public class BuildHelperTests
     [InlineData("Localization.Asd.Resources.en")]
     [InlineData("Localization.Asd.Resources.en.en")]
     [InlineData("Localization.Resources.d-DE")]
-    [InlineData(
-        "Localization.Resources.enen",
-        Skip = "Behaves differently between local PC and CI"
-    )]
+    [InlineData("Localization.Resources.enen", Skip = "Behaves differently between local PC and CI")]
     public void IsChildFile_ShouldClassifyParentFilesCorrectly(string fileToCheck)
     {
         string[] availableFiles = ["Localization.Resources", fileToCheck];
-        var isChildFile = BuildHelper.IsChildFile(
-            fileToCheck,
-            availableFiles,
-            out CultureInfo? cultureInfo
-        );
+        var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
         isChildFile.Should().BeFalse();
         cultureInfo.Should().BeNull();
     }
@@ -42,19 +35,12 @@ public class BuildHelperTests
     [InlineData("Localization.Resources.es-419", "es-419")]
     [InlineData("Localization.Resources.sr-latn-ba", "sr-latn-ba")]
     [InlineData("Localization.Resources.ia-001", "ia-001")]
-    public void IsChildFile_ShouldClassifyChildFilesCorrectly(
-        string fileToCheck,
-        string expectedCultureString
-    )
+    public void IsChildFile_ShouldClassifyChildFilesCorrectly(string fileToCheck, string expectedCultureString)
     {
         var expectedCulture = CultureInfo.GetCultureInfo(expectedCultureString);
 
         string[] availableFiles = ["Localization.Resources", fileToCheck];
-        var isChildFile = BuildHelper.IsChildFile(
-            fileToCheck,
-            availableFiles,
-            out CultureInfo? cultureInfo
-        );
+        var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
         isChildFile.Should().BeTrue();
         cultureInfo.Should().Be(expectedCulture);
     }

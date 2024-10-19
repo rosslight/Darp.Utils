@@ -9,8 +9,5 @@ public interface IAppDataAssetsService : IAssetsService;
 /// <summary> Instantiate a new AppDataAssetsService with a given path relative to the <see cref="Environment.SpecialFolder.ApplicationData"/> folder </summary>
 /// <param name="relativePath">The path relative to the <see cref="Environment.SpecialFolder.ApplicationData"/></param>
 public sealed class AppDataAssetsService(string relativePath)
-    : FolderAssetsService(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        relativePath
-    ),
+    : FolderAssetsService(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), relativePath),
         IAppDataAssetsService;

@@ -83,8 +83,7 @@ public sealed class ConfigurationService<TConfig>(
     }
 
     /// <inheritdoc />
-    public string Path =>
-        System.IO.Path.Join(_configurationAssetsService.BasePath, _configFileName);
+    public string Path => System.IO.Path.Join(_configurationAssetsService.BasePath, _configFileName);
 
     /// <inheritdoc />
     public async Task<TConfig> LoadConfigurationAsync(CancellationToken cancellationToken)
@@ -102,18 +101,14 @@ public sealed class ConfigurationService<TConfig>(
             Config =
                 await JsonSerializer
                     .DeserializeAsync(stream, _configTypeInfo, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false)
-                ?? throw new JsonException("Deserialization yielded no result");
+                    .ConfigureAwait(false) ?? throw new JsonException("Deserialization yielded no result");
             IsLoaded = true;
             return Config;
         }
     }
 
     /// <inheritdoc />
-    public async Task<TConfig> WriteConfigurationAsync(
-        TConfig configuration,
-        CancellationToken cancellationToken
-    )
+    public async Task<TConfig> WriteConfigurationAsync(TConfig configuration, CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
