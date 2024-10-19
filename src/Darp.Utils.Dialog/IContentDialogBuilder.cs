@@ -12,6 +12,11 @@ public interface IContentDialogBuilder<TContent>
     /// <summary> The content of the dialog </summary>
     TContent Content { get; }
 
+    /// <summary> Sets the title of the dialog. The observable allows the dialog to react to changes </summary>
+    /// <param name="observable"> The observable to supply the title </param>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
+    IContentDialogBuilder<TContent> SetTitle(IObservable<string> observable);
+
     /// <summary> Sets the button which is shown as the default button </summary>
     /// <param name="defaultButton"> The default <see cref="ContentDialogButton"/> </param>
     /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>

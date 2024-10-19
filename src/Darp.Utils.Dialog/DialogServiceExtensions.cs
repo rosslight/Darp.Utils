@@ -32,7 +32,7 @@ public static class DialogServiceExtensions
     /// <param name="message"> The message to be shown </param>
     /// <param name="isSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static IContentDialogBuilder<MessageBoxModel> CreateMessageBoxDialog(
+    public static IContentDialogBuilder<MessageBoxViewModel> CreateMessageBoxDialog(
         this IDialogService dialogService,
         string title,
         string message,
@@ -41,9 +41,46 @@ public static class DialogServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(dialogService);
         return dialogService
-            .CreateContentDialog(title, new MessageBoxModel { Message = message, IsSelectable = isSelectable })
+            .CreateContentDialog(title, new MessageBoxViewModel { Message = message, IsSelectable = isSelectable })
             .SetDefaultButton(ContentDialogButton.Primary)
             .SetPrimaryButton("Ok");
+    }
+
+    /// <summary>
+    /// Create a new input dialog builder based on a ContentDialog. The content is an optional message and the input
+    /// </summary>
+    /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
+    /// <param name="title"> The title of the dialog </param>
+    /// <param name="usernameMessage"> The optional message to be shown on top of the input </param>
+    /// <param name="passwordMessage"> The optional message to be shown on top of the input </param>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
+    [RequiresUnreferencedCode(
+        "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
+    )]
+    public static IContentDialogBuilder<UsernamePasswordViewModel> CreateUsernamePasswordDialog(
+        this IDialogService dialogService,
+        string title,
+        string usernameMessage = "Enter username",
+        string passwordMessage = "Enter password"
+    )
+    {
+        ArgumentNullException.ThrowIfNull(dialogService);
+        var dialogData = new UsernamePasswordViewModel
+        {
+            EnterUsernameMessage = usernameMessage,
+            EnterPasswordMessage = passwordMessage,
+        };
+        IContentDialogBuilder<UsernamePasswordViewModel> dialogBuilder = dialogService
+            .CreateContentDialog(title, dialogData)
+            .SetDefaultButton(ContentDialogButton.Primary)
+            .SetCloseButton("Cancel")
+            .SetPrimaryButton(
+                "Confirm",
+                isEnabled: dialogData.WhenPropertyChanged(x => x.IsCurrentStateValid),
+                onClick: (model, token) => model.RequestNextStepAsync(token)
+            );
+
+        return dialogBuilder;
     }
 
     /// <summary>
@@ -57,7 +94,7 @@ public static class DialogServiceExtensions
     [RequiresUnreferencedCode(
         "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
     )]
-    public static IContentDialogBuilder<InputDialogData> CreateInputDialog(
+    public static IContentDialogBuilder<InputDialogViewModel> CreateInputDialog(
         this IDialogService dialogService,
         string title,
         string? message = null,
@@ -65,7 +102,7 @@ public static class DialogServiceExtensions
     )
     {
         ArgumentNullException.ThrowIfNull(dialogService);
-        var dialogData = new InputDialogData { Message = message, IsMessageSelectable = isMessageSelectable };
+        var dialogData = new InputDialogViewModel { Message = message, IsMessageSelectable = isMessageSelectable };
         return dialogService
             .CreateContentDialog(title, dialogData)
             .SetDefaultButton(ContentDialogButton.Primary)

@@ -24,7 +24,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         if (langCode is null)
             return;
-        ContentDialogResult<MessageBoxModel> result = await _dialogService
+        ContentDialogResult<MessageBoxViewModel> result = await _dialogService
             .CreateMessageBoxDialog("Set language", $"Do you want to set the language to '{langCode}'?")
             .SetCloseButton("Cancel")
             .ShowAsync(cancellationToken);
@@ -33,5 +33,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
         I18N.Culture = CultureInfo.GetCultureInfo(langCode);
+    }
+
+    [RelayCommand]
+    private async Task OpenUsernamePasswordAsync(CancellationToken cancellationToken)
+    {
+        await _dialogService.CreateUsernamePasswordDialog("Supply a custom login").ShowAsync(cancellationToken);
     }
 }

@@ -1,7 +1,8 @@
 namespace Darp.Utils.Dialog.Helper;
 
-internal sealed class SimpleSubject<T> : IObservable<T>
+internal sealed class SimpleBehaviorSubject<T>(T value) : IObservable<T>
 {
+    private readonly T _value = value;
     private readonly List<IObserver<T>> _observers = [];
 
     public void OnNext(T next)
@@ -37,7 +38,8 @@ internal sealed class SimpleSubject<T> : IObservable<T>
     public IDisposable Subscribe(IObserver<T> observer)
     {
         _observers.Add(observer);
-        return new CallbackDisposable<(SimpleSubject<T>, IObserver<T>)>(
+        observer.OnNext(_value);
+        return new CallbackDisposable<(SimpleBehaviorSubject<T>, IObserver<T>)>(
             (this, observer),
             subject => subject.Item1._observers.Remove(subject.Item2)
         );

@@ -109,8 +109,8 @@ public static class ContentDialogBuilderExtensions
     /// <param name="isPassword"> If true, the input field is set up to hold a password </param>
     /// <param name="validateInput"> A validation callback called on input </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static IContentDialogBuilder<InputDialogData> ConfigureInput(
-        this IContentDialogBuilder<InputDialogData> builder,
+    public static IContentDialogBuilder<InputDialogViewModel> ConfigureInput(
+        this IContentDialogBuilder<InputDialogViewModel> builder,
         string? watermark = null,
         bool? isPassword = null,
         Func<string?, ValidationResult?>? validateInput = null

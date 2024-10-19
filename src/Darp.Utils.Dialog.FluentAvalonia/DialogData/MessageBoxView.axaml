@@ -3,9 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:dialogData="clr-namespace:Darp.Utils.Dialog.DialogData;assembly=Darp.Utils.Dialog"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
              x:Class="Darp.Utils.Dialog.FluentAvalonia.DialogData.MessageBoxView"
-             x:DataType="dialogData:MessageBoxModel">
+             x:DataType="dialogData:MessageBoxViewModel">
+    <Design.DataContext>
+        <dialogData:MessageBoxViewModel Message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla commodo tortor sed nisi rutrum, ac laoreet lorem elementum. Aenean pulvinar enim sapien, quis consectetur ipsum venenatis sed. Integer gravida, mauris quis rutrum pellentesque, enim mauris scelerisque nunc, vitae ornare lacus odio ac felis. Maecenas lacus diam, facilisis nec viverra a"/>
+    </Design.DataContext>
     <StackPanel>
         <TextBlock Text="{CompiledBinding Message}"
                    TextWrapping="WrapWithOverflow"

@@ -9,6 +9,7 @@ using Avalonia.LogicalTree;
 using DialogData;
 using global::FluentAvalonia.Core;
 using ContentDialogButton = ContentDialogButton;
+using ContentDialogResult = Dialog.ContentDialogResult;
 using FluentContentDialog = global::FluentAvalonia.UI.Controls.ContentDialog;
 using FluentContentDialogButton = global::FluentAvalonia.UI.Controls.ContentDialogButton;
 
@@ -23,7 +24,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     private CancellationTokenSource? _cancelTokenSource;
 
     /// <inheritdoc />
-    public string Title { get; }
+    public string Title => Dialog.Title.ToString() ?? "n/a";
 
     /// <inheritdoc />
     public TContent Content { get; }
@@ -52,8 +53,14 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
             firstOrDefault?.Focus();
         };
         Dialog.DataTemplates.Add(new DialogDataViewLocator());
-        Title = title;
         Content = content;
+    }
+
+    /// <inheritdoc />
+    public IContentDialogBuilder<TContent> SetTitle(IObservable<string> observable)
+    {
+        Dialog[!FluentContentDialog.TitleProperty] = observable.ToBinding();
+        return this;
     }
 
     /// <inheritdoc />

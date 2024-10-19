@@ -24,5 +24,7 @@
                 Command="{CompiledBinding SetLanguageCommand}"
                 CommandParameter="fr"
                 MinWidth="100"/>
+        <Button Content="Open username password dialog"
+                Command="{CompiledBinding OpenUsernamePasswordCommand}" MinWidth="100"/>
     </StackPanel>
 </Window>

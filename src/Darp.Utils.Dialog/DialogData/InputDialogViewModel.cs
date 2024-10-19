@@ -6,13 +6,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 /// <summary> Data for InputDialogs </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public sealed partial class InputDialogData : ObservableValidator, IDialogData
+public sealed partial class InputDialogViewModel : ObservableValidator, IDialogData
 {
     /// <summary> Initialize a new instance </summary>
     [RequiresUnreferencedCode(
         "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
     )]
-    public InputDialogData()
+    public InputDialogViewModel()
     {
         ValidateAllProperties();
     }
@@ -27,7 +27,7 @@ public sealed partial class InputDialogData : ObservableValidator, IDialogData
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [Required]
-    [CustomValidation(typeof(InputDialogData), nameof(ValidateInput))]
+    [CustomValidation(typeof(InputDialogViewModel), nameof(ValidateInput))]
     private string? _input;
 
     /// <summary> The watermark to show on the <see cref="Input"/> field </summary>
@@ -46,7 +46,7 @@ public sealed partial class InputDialogData : ObservableValidator, IDialogData
     public static ValidationResult? ValidateInput(string? input, ValidationContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var instance = (InputDialogData)context.ObjectInstance;
+        var instance = (InputDialogViewModel)context.ObjectInstance;
         return instance.ValidateInputCallback?.Invoke(input);
     }
 }

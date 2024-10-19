@@ -291,10 +291,10 @@ public class AvaloniaDialogServiceTests
     {
         // Arrange
         const string messageText = "message";
-        var content = new MessageBoxModel { Message = messageText, IsSelectable = isSelectable };
+        var content = new MessageBoxViewModel { Message = messageText, IsSelectable = isSelectable };
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<MessageBoxModel>(service, "Title", content, window);
+        var builder = new FluentAvaloniaContentDialogBuilder<MessageBoxViewModel>(service, "Title", content, window);
 
         // Act
         window.Show();
@@ -320,7 +320,7 @@ public class AvaloniaDialogServiceTests
             }
             builder.Dialog.Hide();
         };
-        ContentDialogResult<MessageBoxModel> result = await builder.ShowAsync();
+        ContentDialogResult<MessageBoxViewModel> result = await builder.ShowAsync();
 
         // Assert
         isSelectableTextBlock.Should().Be(isSelectable);

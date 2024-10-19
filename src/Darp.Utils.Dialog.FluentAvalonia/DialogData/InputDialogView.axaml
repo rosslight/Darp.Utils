@@ -4,9 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:dialogData="clr-namespace:Darp.Utils.Dialog.DialogData;assembly=Darp.Utils.Dialog"
              xmlns:dialogData1="clr-namespace:Darp.Utils.Dialog.FluentAvalonia.DialogData"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
              x:Class="Darp.Utils.Dialog.FluentAvalonia.DialogData.InputDialogView"
-             x:DataType="dialogData:InputDialogData">
+             x:DataType="dialogData:InputDialogViewModel">
+    <Design.DataContext>
+        <dialogData:InputDialogViewModel Message="This is the input message" Input="aasd"/>
+    </Design.DataContext>
     <StackPanel>
         <TextBlock Text="{CompiledBinding Message}"
                    TextWrapping="WrapWithOverflow">

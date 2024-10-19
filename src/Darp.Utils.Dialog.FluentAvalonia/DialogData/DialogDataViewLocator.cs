@@ -17,8 +17,9 @@ public sealed class DialogDataViewLocator : IDataTemplate
             {
                 Text = "No DialogData provided. This should not happen (because of Match)",
             },
-            InputDialogData vm => new InputDialogView { DataContext = vm },
-            MessageBoxModel vm => new MessageBoxView { DataContext = vm },
+            InputDialogViewModel vm => new InputDialogView { DataContext = vm },
+            MessageBoxViewModel vm => new MessageBoxView { DataContext = vm },
+            UsernamePasswordViewModel vm => new UsernamePasswordView { DataContext = vm },
             _ => new TextBlock { Text = $"DialogData is not registered: {param.GetType()}" },
         };
 

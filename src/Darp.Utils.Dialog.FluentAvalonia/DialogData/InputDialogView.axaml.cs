@@ -3,7 +3,7 @@ namespace Darp.Utils.Dialog.FluentAvalonia.DialogData;
 using Avalonia.Controls;
 using Darp.Utils.Dialog.DialogData;
 
-/// <summary> A view for <see cref="InputDialogData"/> </summary>
+/// <summary> A view for <see cref="InputDialogViewModel"/> </summary>
 public partial class InputDialogView : UserControl
 {
     /// <summary> Initialize a new instance </summary>
@@ -15,7 +15,7 @@ public partial class InputDialogView : UserControl
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (DataContext is not InputDialogData inputData)
+        if (DataContext is not InputDialogViewModel inputData)
         {
             return;
         }

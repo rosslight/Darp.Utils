@@ -5,14 +5,14 @@ using FluentAssertions;
 using FluentAssertions.Reactive;
 using Microsoft.Reactive.Testing;
 
-public class SimpleSubjectTests
+public class SimpleBehaviorSubjectTests
 {
     [Fact]
     public void OnNext_ShouldNotifyAllSubscribers()
     {
         // Arrange
         var scheduler = new TestScheduler();
-        var x = new SimpleSubject<string>();
+        var x = new SimpleBehaviorSubject<string>(string.Empty);
         using FluentTestObserver<string> observedSequence = x.Observe(scheduler);
 
         // Act
@@ -22,7 +22,7 @@ public class SimpleSubjectTests
         scheduler.AdvanceBy(1);
 
         // Assert
-        observedSequence.RecordedNotifications.Should().HaveCount(3);
+        observedSequence.RecordedNotifications.Should().HaveCount(4);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class SimpleSubjectTests
     {
         // Arrange
         var error = new ArgumentException("Some argument was bad");
-        var x = new SimpleSubject<string>();
+        var x = new SimpleBehaviorSubject<string>(string.Empty);
         using FluentTestObserver<string> observedSequence = x.Observe();
 
         // Act
@@ -44,7 +44,7 @@ public class SimpleSubjectTests
     public void OnCompleted_ShouldNotifyAllSubscribers()
     {
         // Arrange
-        var x = new SimpleSubject<string>();
+        var x = new SimpleBehaviorSubject<string>(string.Empty);
         using FluentTestObserver<string> observedSequence = x.Observe();
 
         // Act

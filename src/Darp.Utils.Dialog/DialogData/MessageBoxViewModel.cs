@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 /// <summary> Wraps message box information </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public sealed class MessageBoxModel : ObservableObject, IDialogData
+public sealed class MessageBoxViewModel : ObservableObject, IDialogData
 {
     private string _message;
 

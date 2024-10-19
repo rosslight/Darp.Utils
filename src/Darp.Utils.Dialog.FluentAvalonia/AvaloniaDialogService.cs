@@ -38,8 +38,10 @@ public sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public IDialogService WithDialogRoot(Type dialogRootType) =>
-        new AvaloniaDialogService(dialogRootType, _topLevelGetter);
+    public IDialogService WithDialogRoot(Type dialogRootType)
+    {
+        return dialogRootType == _dialogRootType ? this : new AvaloniaDialogService(dialogRootType, _topLevelGetter);
+    }
 
     internal T RegisterDisposable<T>(T disposable)
         where T : IDisposable

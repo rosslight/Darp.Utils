@@ -12,11 +12,14 @@ internal static class Extensions
     )
         where TObject : INotifyPropertyChanged
     {
+        var name = (expression.Body as MemberExpression)?.Member.Name;
+        ArgumentNullException.ThrowIfNull(name);
         Func<TObject, TProperty> func = expression.Compile();
-        var simpleSubject = new SimpleSubject<TResult>();
+        TProperty initialValue = func(changed);
+        var simpleSubject = new SimpleBehaviorSubject<TResult>(selector(initialValue));
         changed.PropertyChanged += (sender, args) =>
         {
-            if (args.PropertyName != expression.Name || sender is not TObject obj)
+            if (args.PropertyName != name || sender is not TObject obj)
             {
                 return;
             }
@@ -24,5 +27,14 @@ internal static class Extensions
             simpleSubject.OnNext(selector(value));
         };
         return simpleSubject;
+    }
+
+    public static IObservable<TProperty> WhenPropertyChanged<TObject, TProperty>(
+        this TObject changed,
+        Expression<Func<TObject, TProperty>> expression
+    )
+        where TObject : INotifyPropertyChanged
+    {
+        return changed.WhenPropertyChanged<TObject, TProperty, TProperty>(expression, x => x);
     }
 }
