@@ -11,6 +11,9 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" Version="1.1.2" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2" />
         <PackageReference Include="Xunit.Combinatorial" Version="1.6.24" />
+        <PackageReference Update="FluentAssertions" Version="6.12.1" />
+        <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+        <PackageReference Update="xunit" Version="2.9.2" />
     </ItemGroup>
 
     <ItemGroup>
