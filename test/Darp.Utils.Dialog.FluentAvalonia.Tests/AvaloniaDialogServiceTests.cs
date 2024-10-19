@@ -12,25 +12,6 @@ using Darp.Utils.Dialog;
 using Darp.Utils.Dialog.DialogData;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
-
-public sealed class SubstituteDialogService : IDialogService
-{
-    public IContentDialogBuilder<TContent> CreateContentDialog<TContent>(
-        string title,
-        TContent content
-    )
-    {
-        IContentDialogBuilder<TContent> subBuilder = Substitute.For<
-            IContentDialogBuilder<TContent>
-        >();
-        subBuilder.Title.Returns(title);
-        subBuilder.Content.Returns(content);
-        return subBuilder;
-    }
-
-    public void Dispose() { }
-}
 
 public class AvaloniaDialogServiceTests
 {
@@ -85,9 +66,7 @@ public class AvaloniaDialogServiceTests
 
         // Assert
         builder.Should().BeEquivalentTo(returnedBuilder);
-        builder
-            .Dialog.DefaultButton.Should()
-            .Be((global::FluentAvalonia.UI.Controls.ContentDialogButton)button);
+        builder.Dialog.DefaultButton.Should().Be((global::FluentAvalonia.UI.Controls.ContentDialogButton)button);
     }
 
     [Fact]
@@ -177,10 +156,7 @@ public class AvaloniaDialogServiceTests
         var subject = new BehaviorSubject<bool>(false);
 
         // Act and assert
-        IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(
-            buttonText,
-            isEnabled: subject
-        );
+        IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(buttonText, isEnabled: subject);
 
         builder.Should().BeEquivalentTo(returnedBuilder);
         builder.Dialog.IsPrimaryButtonEnabled.Should().BeFalse();
@@ -200,12 +176,7 @@ public class AvaloniaDialogServiceTests
         const int content = 42;
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(
-            service,
-            "Title",
-            content,
-            window
-        );
+        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window);
 
         // Act
         window.Show();
@@ -263,10 +234,7 @@ public class AvaloniaDialogServiceTests
         var subject = new BehaviorSubject<bool>(false);
 
         // Act and assert
-        IContentDialogBuilder<int> returnedBuilder = builder.SetSecondaryButton(
-            buttonText,
-            isEnabled: subject
-        );
+        IContentDialogBuilder<int> returnedBuilder = builder.SetSecondaryButton(buttonText, isEnabled: subject);
 
         builder.Should().BeEquivalentTo(returnedBuilder);
         builder.Dialog.IsSecondaryButtonEnabled.Should().BeFalse();
@@ -286,12 +254,7 @@ public class AvaloniaDialogServiceTests
         const int content = 42;
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<int>(
-            service,
-            "Title",
-            content,
-            window
-        );
+        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window);
 
         // Act
         window.Show();
@@ -331,12 +294,7 @@ public class AvaloniaDialogServiceTests
         var content = new MessageBoxModel { Message = messageText, IsSelectable = isSelectable };
         var service = new AvaloniaDialogService();
         var window = new Window();
-        var builder = new FluentAvaloniaContentDialogBuilder<MessageBoxModel>(
-            service,
-            "Title",
-            content,
-            window
-        );
+        var builder = new FluentAvaloniaContentDialogBuilder<MessageBoxModel>(service, "Title", content, window);
 
         // Act
         window.Show();
