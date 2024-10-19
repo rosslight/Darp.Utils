@@ -13,15 +13,15 @@
         <TextBlock Text="{CompiledBinding Greeting}"/>
         <TextBlock Text="{CompiledBinding I18N.Asd}"/>
         <Button Content="English"
-                Command="{CompiledBinding SetLanguage}"
+                Command="{CompiledBinding SetLanguageCommand}"
                 CommandParameter="en"
                 MinWidth="100"/>
         <Button Content="German"
-                Command="{CompiledBinding SetLanguage}"
+                Command="{CompiledBinding SetLanguageCommand}"
                 CommandParameter="de"
                 MinWidth="100"/>
         <Button Content="French"
-                Command="{CompiledBinding SetLanguage}"
+                Command="{CompiledBinding SetLanguageCommand}"
                 CommandParameter="fr"
                 MinWidth="100"/>
     </StackPanel>
