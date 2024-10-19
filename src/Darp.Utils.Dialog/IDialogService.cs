@@ -10,8 +10,8 @@ public interface IDialogService : IDisposable
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
     IContentDialogBuilder<TContent> CreateContentDialog<TContent>(string title, TContent content);
 
-    /// <summary> Create a new dialogService with information about the dialog parent attached </summary>
-    /// <param name="dialogRoot"> The parent to show the dialog </param>
+    /// <summary> Create a new <see cref="IDialogService"/> with information about the dialog parent attached </summary>
+    /// <param name="dialogRootType"> The type of the dialog root </param>
     /// <returns> A new dialogService </returns>
-    IDialogService WithDialogRoot(object dialogRoot);
+    IDialogService WithDialogRoot(Type dialogRootType);
 }

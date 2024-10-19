@@ -63,8 +63,8 @@ ServiceProvider provider = new ServiceCollection()
     .BuildServiceProvider();
 
 IDialogService dialogService = provider.GetRequiredService<IDialogService>();
-// Specify the dataContext of the window the dialog is supposed to be shown on
-//    .WithDialogRoot(mainWindowViewModel)
+// Specify the Type of the dataContext of the window the dialog is supposed to be shown on
+//    .WithDialogRoot<MainWindowViewModel>()
 await _dialogService.CreateMessageBoxDialog("Title", "Message").ShowAsync();
 
 // Assumes you have registered a view for 'SomeViewModel' in a ViewLocator

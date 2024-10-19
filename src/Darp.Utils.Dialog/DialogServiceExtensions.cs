@@ -72,4 +72,16 @@ public static class DialogServiceExtensions
             .SetCloseButton("Cancel")
             .SetPrimaryButton("Ok", dialogData.WhenPropertyChanged(x => x.HasErrors, x => !x));
     }
+
+    /// <summary>
+    /// Create a new <see cref="IDialogService"/> with the dialog root set to <typeparamref name="TDialogRoot"/>
+    /// </summary>
+    /// <param name="dialogService"> The <see cref="IDialogService"/> to set the dialog root to </param>
+    /// <typeparam name="TDialogRoot"> The type of the dialog root to be used as a key </typeparam>
+    /// <returns> A new dialogService </returns>
+    public static IDialogService WithDialogRoot<TDialogRoot>(this IDialogService dialogService)
+    {
+        ArgumentNullException.ThrowIfNull(dialogService);
+        return dialogService.WithDialogRoot(typeof(TDialogRoot));
+    }
 }

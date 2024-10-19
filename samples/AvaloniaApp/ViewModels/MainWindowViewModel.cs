@@ -6,7 +6,7 @@ using Darp.Utils.Dialog;
 using Darp.Utils.Dialog.DialogData;
 using Localization;
 
-public partial class MainWindowViewModel : ViewModelBase
+public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IDialogService _dialogService;
     public Resources I18N { get; } = Resources.Default;
@@ -15,7 +15,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(IDialogService dialogService)
     {
-        _dialogService = dialogService.WithDialogRoot(this);
+        _dialogService = dialogService.WithDialogRoot<MainWindowViewModel>();
         I18N.CultureChanged += (_, _) => OnPropertyChanged(nameof(Greeting));
     }
 
