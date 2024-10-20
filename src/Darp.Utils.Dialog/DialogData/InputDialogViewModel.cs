@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 /// <summary> Data for InputDialogs </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public sealed partial class InputDialogViewModel : ObservableValidator, IDialogData
+public sealed partial class InputDialogViewModel : ObservableValidator, IDialogData<string>
 {
     /// <summary> Initialize a new instance </summary>
     [RequiresUnreferencedCode(
@@ -48,5 +48,18 @@ public sealed partial class InputDialogViewModel : ObservableValidator, IDialogD
         ArgumentNullException.ThrowIfNull(context);
         var instance = (InputDialogViewModel)context.ObjectInstance;
         return instance.ValidateInputCallback?.Invoke(input);
+    }
+
+    /// <inheritdoc />
+    public bool TryGetResultData([NotNullWhen(true)] out string? resultData)
+    {
+        if (string.IsNullOrEmpty(Input))
+        {
+            resultData = null;
+            return false;
+        }
+
+        resultData = Input;
+        return true;
     }
 }

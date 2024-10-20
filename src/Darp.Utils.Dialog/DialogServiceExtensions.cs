@@ -51,34 +51,28 @@ public static class DialogServiceExtensions
     /// </summary>
     /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
     /// <param name="title"> The title of the dialog </param>
-    /// <param name="usernameMessage"> The optional message to be shown on top of the input </param>
-    /// <param name="passwordMessage"> The optional message to be shown on top of the input </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
     [RequiresUnreferencedCode(
         "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
     )]
     public static IContentDialogBuilder<UsernamePasswordViewModel> CreateUsernamePasswordDialog(
         this IDialogService dialogService,
-        string title,
-        string usernameMessage = "Enter username",
-        string passwordMessage = "Enter password"
+        string title
     )
     {
         ArgumentNullException.ThrowIfNull(dialogService);
-        var dialogData = new UsernamePasswordViewModel
-        {
-            EnterUsernameMessage = usernameMessage,
-            EnterPasswordMessage = passwordMessage,
-        };
+        var dialogData = new UsernamePasswordViewModel();
         IContentDialogBuilder<UsernamePasswordViewModel> dialogBuilder = dialogService
             .CreateContentDialog(title, dialogData)
             .SetDefaultButton(ContentDialogButton.Primary)
             .SetCloseButton("Cancel")
             .SetPrimaryButton(
                 "Confirm",
-                isEnabled: dialogData.WhenPropertyChanged(x => x.IsCurrentStateValid),
+                isEnabled: dialogData.WhenPropertyChanged(x => x.IsCurrentStepValid),
                 onClick: (model, token) => model.RequestNextStepAsync(token)
-            );
+            )
+            .ConfigureUsernameStep("Enter username")
+            .ConfigurePasswordStep("Enter password");
 
         return dialogBuilder;
     }

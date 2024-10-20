@@ -18,6 +18,11 @@ public partial class UsernamePasswordView : UserControl
     protected override void OnLoaded(RoutedEventArgs e)
     {
         Dispatcher.UIThread.Post(() => UsernameTextBox.Focus());
+        PasswordTextBox.TextChanged += (sender, args) =>
+        {
+            if (DataContext is UsernamePasswordViewModel vm)
+                vm.ClearPasswordValidationError();
+        };
         base.OnLoaded(e);
     }
 
@@ -28,11 +33,11 @@ public partial class UsernamePasswordView : UserControl
         {
             vm.PropertyChanged += (sender, args) =>
             {
-                if (args.PropertyName is nameof(UsernamePasswordViewModel.State))
+                if (args.PropertyName is nameof(UsernamePasswordViewModel.Step))
                 {
-                    if (vm.State is UsernamePasswordState.RequestUsername)
+                    if (vm.Step is UsernamePasswordStep.RequestUsername)
                         Dispatcher.UIThread.Post(() => UsernameTextBox.Focus());
-                    else if (vm.State is UsernamePasswordState.RequestPassword)
+                    else if (vm.Step is UsernamePasswordStep.RequestPassword)
                         Dispatcher.UIThread.Post(() => PasswordTextBox.Focus());
                 }
             };

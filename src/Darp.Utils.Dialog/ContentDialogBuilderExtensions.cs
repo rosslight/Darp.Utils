@@ -131,4 +131,38 @@ public static class ContentDialogBuilderExtensions
         }
         return builder;
     }
+
+    /// <summary> Configure the input field </summary>
+    /// <param name="builder"> The input dialog builder </param>
+    /// <param name="usernameMessage"> The optional message to be shown on top of the input </param>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
+    public static IContentDialogBuilder<UsernamePasswordViewModel> ConfigureUsernameStep(
+        this IContentDialogBuilder<UsernamePasswordViewModel> builder,
+        string usernameMessage
+    )
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.Content.EnterUsernameMessage = usernameMessage;
+        return builder;
+    }
+
+    /// <summary> Configure the input field </summary>
+    /// <param name="builder"> The input dialog builder </param>
+    /// <param name="passwordMessage"> The optional message to be shown on top of the input </param>
+    /// <param name="checkPasswordHandler"> If present, sets <see cref="UsernamePasswordViewModel.CheckPasswordHandler"/> </param>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
+    public static IContentDialogBuilder<UsernamePasswordViewModel> ConfigurePasswordStep(
+        this IContentDialogBuilder<UsernamePasswordViewModel> builder,
+        string passwordMessage,
+        UsernamePasswordViewModel.ValidatePassword? checkPasswordHandler = null
+    )
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.Content.EnterPasswordMessage = passwordMessage;
+        if (checkPasswordHandler is not null)
+        {
+            builder.Content.CheckPasswordHandler = checkPasswordHandler;
+        }
+        return builder;
+    }
 }

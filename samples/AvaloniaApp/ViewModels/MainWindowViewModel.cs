@@ -29,15 +29,27 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             .SetCloseButton("Cancel")
             .ShowAsync(cancellationToken);
         if (!result.IsPrimary)
-        {
             return;
-        }
         I18N.Culture = CultureInfo.GetCultureInfo(langCode);
     }
 
     [RelayCommand]
     private async Task OpenUsernamePasswordAsync(CancellationToken cancellationToken)
     {
-        await _dialogService.CreateUsernamePasswordDialog("Supply a custom login").ShowAsync(cancellationToken);
+        ContentDialogResult<UsernamePasswordViewModel> result = await _dialogService
+            .CreateUsernamePasswordDialog("Supply a custom login")
+            .ConfigureUsernameStep("Enter username")
+            .ConfigurePasswordStep(
+                "Enter password",
+                async (username, password, token) =>
+                {
+                    await Task.Delay(1000, token);
+                    return username == password;
+                }
+            )
+            .ShowAsync(cancellationToken);
+        if (!result.IsPrimary || !result.TryGetResultData(out UsernamePasswordData? x))
+            return;
+        await _dialogService.CreateMessageBoxDialog(x.Username, x.Password).ShowAsync(cancellationToken);
     }
 }
