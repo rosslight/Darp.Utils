@@ -32,7 +32,11 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     /// <param name="password"> The password </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     /// <returns> True, if password is valid, False otherwise </returns>
-    public delegate Task<bool> ValidatePassword(string username, string password, CancellationToken cancellationToken);
+    public delegate Task<bool> ValidatePasswordAsync(
+        string username,
+        string password,
+        CancellationToken cancellationToken
+    );
 
     private UsernamePasswordStep _step = UsernamePasswordStep.RequestUsername;
 
@@ -48,12 +52,14 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [Required]
+    [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidateUsername))]
     private string? _username;
 
-    /// <summary> The username </summary>
+    /// <summary> The password </summary>
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [Required]
+    [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidatePassword))]
     private string? _password;
 
     /// <summary> Initialize a new instance </summary>
@@ -67,7 +73,7 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     }
 
     /// <summary> An optional function which is used to check the validity of the password </summary>
-    public ValidatePassword? CheckPasswordHandler { get; set; }
+    public ValidatePasswordAsync? CheckHandler { get; set; }
 
     /// <summary> The message </summary>
     public string? PasswordValidationError { get; private set; }
@@ -76,7 +82,7 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     public UsernamePasswordStep Step
     {
         get => _step;
-        set
+        private set
         {
             if (!SetProperty(ref _step, value))
                 return;
@@ -110,6 +116,12 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
         }
     }
 
+    /// <summary> A func to validate the username on input </summary>
+    public Func<string, ValidationResult?>? ValidateUsernameHandler { get; set; }
+
+    /// <summary> A func to validate the password on input </summary>
+    public Func<string, ValidationResult?>? ValidatePasswordHandler { get; set; }
+
     [RelayCommand]
     private void RequestUsernameStep()
     {
@@ -133,8 +145,8 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
                 if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
                     return false;
                 if (
-                    CheckPasswordHandler is not null
-                    && !await CheckPasswordHandler(Username, Password, cancellationToken).ConfigureAwait(true)
+                    CheckHandler is not null
+                    && !await CheckHandler(Username, Password, cancellationToken).ConfigureAwait(true)
                 )
                 {
                     PasswordValidationError = "Username or password are invalid";
@@ -166,5 +178,31 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     {
         PasswordValidationError = null;
         OnPropertyChanged(nameof(PasswordValidationError));
+    }
+
+    /// <summary> Validate the username input. Necessary for the CustomValidation attribute </summary>
+    /// <param name="username"> The input string </param>
+    /// <param name="context"> The context of the validation </param>
+    /// <returns> The ValidationResult. <see cref="ValidationResult.Success"/>, if username is null </returns>
+    public static ValidationResult? ValidateUsername(string? username, ValidationContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (username is null)
+            return ValidationResult.Success;
+        var instance = (UsernamePasswordViewModel)context.ObjectInstance;
+        return instance.ValidateUsernameHandler?.Invoke(username);
+    }
+
+    /// <summary> Validate the password input. Necessary for the CustomValidation attribute </summary>
+    /// <param name="password"> The input string </param>
+    /// <param name="context"> The context of the validation </param>
+    /// <returns> The ValidationResult. <see cref="ValidationResult.Success"/>, if username is null </returns>
+    public static ValidationResult? ValidatePassword(string? password, ValidationContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (password is null)
+            return ValidationResult.Success;
+        var instance = (UsernamePasswordViewModel)context.ObjectInstance;
+        return instance.ValidatePasswordHandler?.Invoke(password);
     }
 }

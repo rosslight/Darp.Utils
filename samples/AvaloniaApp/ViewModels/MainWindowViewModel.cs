@@ -1,5 +1,6 @@
 namespace AvaloniaApp.ViewModels;
 
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using Darp.Utils.Dialog;
@@ -38,10 +39,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         ContentDialogResult<UsernamePasswordViewModel> result = await _dialogService
             .CreateUsernamePasswordDialog("Supply a custom login")
-            .ConfigureUsernameStep("Enter username")
+            .ConfigureUsernameStep(
+                "Enter username",
+                username =>
+                    new EmailAddressAttribute().IsValid(username)
+                        ? ValidationResult.Success
+                        : new ValidationResult("The Username should be a valid email address")
+            )
             .ConfigurePasswordStep(
                 "Enter password",
-                async (username, password, token) =>
+                checkHandler: async (username, password, token) =>
                 {
                     await Task.Delay(1000, token);
                     return username == password;

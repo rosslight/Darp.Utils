@@ -135,33 +135,45 @@ public static class ContentDialogBuilderExtensions
     /// <summary> Configure the input field </summary>
     /// <param name="builder"> The input dialog builder </param>
     /// <param name="usernameMessage"> The optional message to be shown on top of the input </param>
+    /// <param name="validateUsername"> A func to validate the username on input </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
     public static IContentDialogBuilder<UsernamePasswordViewModel> ConfigureUsernameStep(
         this IContentDialogBuilder<UsernamePasswordViewModel> builder,
-        string usernameMessage
+        string usernameMessage,
+        Func<string, ValidationResult?>? validateUsername = null
     )
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.Content.EnterUsernameMessage = usernameMessage;
+        if (validateUsername is not null)
+        {
+            builder.Content.ValidateUsernameHandler = validateUsername;
+        }
         return builder;
     }
 
     /// <summary> Configure the input field </summary>
     /// <param name="builder"> The input dialog builder </param>
     /// <param name="passwordMessage"> The optional message to be shown on top of the input </param>
-    /// <param name="checkPasswordHandler"> If present, sets <see cref="UsernamePasswordViewModel.CheckPasswordHandler"/> </param>
+    /// <param name="validatePassword"> A func to validate the password on input </param>
+    /// <param name="checkHandler"> If present, sets <see cref="UsernamePasswordViewModel.CheckHandler"/> </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
     public static IContentDialogBuilder<UsernamePasswordViewModel> ConfigurePasswordStep(
         this IContentDialogBuilder<UsernamePasswordViewModel> builder,
         string passwordMessage,
-        UsernamePasswordViewModel.ValidatePassword? checkPasswordHandler = null
+        Func<string, ValidationResult?>? validatePassword = null,
+        UsernamePasswordViewModel.ValidatePasswordAsync? checkHandler = null
     )
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.Content.EnterPasswordMessage = passwordMessage;
-        if (checkPasswordHandler is not null)
+        if (validatePassword is not null)
         {
-            builder.Content.CheckPasswordHandler = checkPasswordHandler;
+            builder.Content.ValidatePasswordHandler = validatePassword;
+        }
+        if (checkHandler is not null)
+        {
+            builder.Content.CheckHandler = checkHandler;
         }
         return builder;
     }
