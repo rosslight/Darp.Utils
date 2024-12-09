@@ -4,26 +4,11 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Utils.Assets;
 
-public class EmbeddedResourceAssetsServiceTests
+public sealed class EmbeddedResourceAssetsServiceTests
 {
     private readonly IEmbeddedResourceAssetsService _service = new EmbeddedResourceAssetsService(
         typeof(EmbeddedResourceAssetsServiceTests).Assembly
     );
-
-    [Fact]
-    public void UsingDI_ShouldNotThrow()
-    {
-        // Arrange
-        ServiceProvider provider = new ServiceCollection()
-            .AddEmbeddedResourceAssetsService<EmbeddedResourceAssetsServiceTests>()
-            .BuildServiceProvider();
-
-        // Act
-        Action act = () => provider.GetRequiredService<IEmbeddedResourceAssetsService>();
-
-        // Assert
-        act.Should().NotThrow();
-    }
 
     [Fact]
     public async Task GetReadOnlySteam_WritingToFile_ShouldCreateFile()

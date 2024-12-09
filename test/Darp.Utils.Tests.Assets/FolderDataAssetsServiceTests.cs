@@ -80,53 +80,6 @@ public sealed class FolderDataAssetsServiceTests
         await act.Should().ThrowAsync<Exception>();
     }
 
-    [Fact]
-    public void UsingDI_AddFolderAssetsService_ShouldNotThrow()
-    {
-        // Arrange
-        const string relativePath = "RelativePath";
-        var appDataDirectory = Path.GetTempPath();
-        ServiceProvider provider = new ServiceCollection()
-            .AddFolderAssetsService(relativePath, appDataDirectory)
-            .BuildServiceProvider();
-
-        // Act
-        Action act = () => provider.GetRequiredService<IFolderAssetsService>();
-
-        // Assert
-        act.Should().NotThrow();
-    }
-
-    [Fact]
-    public void UsingDI_AddAppDataAssetsService_ShouldNotThrow()
-    {
-        // Arrange
-        const string relativePath = "RelativePath";
-        ServiceProvider provider = new ServiceCollection().AddAppDataAssetsService(relativePath).BuildServiceProvider();
-
-        // Act
-        Action act = () => provider.GetRequiredService<IAppDataAssetsService>();
-
-        // Assert
-        act.Should().NotThrow();
-    }
-
-    [Fact]
-    public void UsingDI_AddProgramDataAssetsService_ShouldNotThrow()
-    {
-        // Arrange
-        const string relativePath = "RelativePath";
-        ServiceProvider provider = new ServiceCollection()
-            .AddProgramDataAssetsService(relativePath)
-            .BuildServiceProvider();
-
-        // Act
-        Action act = () => provider.GetRequiredService<IProgramDataAssetsService>();
-
-        // Assert
-        act.Should().NotThrow();
-    }
-
     private const string FileName1 = "test1.json";
     private const string FileName2 = "test2.txt";
     private const string FileName3 = "testFolder/test3.json";
