@@ -141,4 +141,27 @@ public static class AssetsExtensions
             await sourceStream.CopyToAsync(targetStream, cancellationToken).ConfigureAwait(false);
         }
     }
+
+    /// <summary> Asynchronously writes a character string to the assets service. </summary>
+    /// <param name="targetAssetsService">The target assets service to be written to</param>
+    /// <param name="path">The path to the file relative to the target assets service</param>
+    /// <param name="content"> The content to be written to the asset </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    public static async Task SerializeTextAsync(
+        this IWriteOnlyAssetsService targetAssetsService,
+        string path,
+        string content,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(targetAssetsService);
+        Stream stream = targetAssetsService.GetWriteOnlySteam(path);
+        var writer = new StreamWriter(stream);
+        await using (stream.ConfigureAwait(false))
+        await using (writer.ConfigureAwait(false))
+        {
+            stream.SetLength(0);
+            await writer.WriteAsync(content.AsMemory(), cancellationToken).ConfigureAwait(false);
+        }
+    }
 }
