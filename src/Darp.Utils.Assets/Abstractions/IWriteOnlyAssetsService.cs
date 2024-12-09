@@ -6,5 +6,5 @@ public interface IWriteOnlyAssetsService
     /// <summary> Opens an asset for writing and creates it if not existent. </summary>
     /// <param name="path">The path to write to</param>
     /// <returns>A write-only Stream on the specified path.</returns>
-    Stream GetWriteOnlySteam(string path);
+    public Stream GetWriteOnlySteam(string path);
 }

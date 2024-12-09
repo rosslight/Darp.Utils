@@ -25,12 +25,13 @@ public sealed class FolderDataAssetsServiceTests
         // Arrange
         const string relativePath = "RelativePath";
         var tempDirectory = Path.GetTempPath();
+        var joinedPath = Path.Join(tempDirectory, relativePath).Replace('\\', '/');
 
         // Act
         var appDataService = new FolderAssetsService(tempDirectory, relativePath);
 
         // Assert
-        appDataService.BasePath.Should().Be(Path.Join(tempDirectory, relativePath));
+        appDataService.BasePath.Should().Be(joinedPath);
     }
 
     [Fact]
@@ -124,6 +125,39 @@ public sealed class FolderDataAssetsServiceTests
 
         // Assert
         act.Should().NotThrow();
+    }
+
+    private const string FileName1 = "test1.json";
+    private const string FileName2 = "test2.txt";
+    private const string FileName3 = "testFolder/test3.json";
+    private const string FileName4 = "test1/test4.txt";
+
+    [Theory]
+    [InlineData("*.json", FileName1)]
+    [InlineData("*.txt", FileName2)]
+    [InlineData("test1/*.json")]
+    [InlineData("test1/*.txt", FileName4)]
+    [InlineData("**/*.json", FileName1, FileName3)]
+    public async Task EnumerateFiles_WritingToFile_ShouldCreateFile(string searchPattern, params string[] expectedFiles)
+    {
+        // Arrange
+        const string dummyContent = "DummyContent";
+        using IDisposable dis = CreateTemporaryFolderAssetsService(
+            out IFolderAssetsService appDataService,
+            out _,
+            out _
+        );
+
+        // Act
+        await appDataService.SerializeTextAsync(FileName1, dummyContent);
+        await appDataService.SerializeTextAsync(FileName2, dummyContent);
+        await appDataService.SerializeTextAsync(FileName3, dummyContent);
+        await appDataService.SerializeTextAsync(FileName4, dummyContent);
+
+        IEnumerable<string> foundFiles = appDataService.EnumerateFiles(searchPattern);
+
+        // Assert
+        foundFiles.Should().BeEquivalentTo(expectedFiles);
     }
 }
 
