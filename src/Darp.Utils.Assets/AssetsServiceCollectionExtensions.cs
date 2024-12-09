@@ -63,4 +63,10 @@ public static class AssetsServiceCollectionExtensions
         serviceCollection.AddTransient<IEmbeddedResourceAssetsService>(_ => new EmbeddedResourceAssetsService(
             assembly
         ));
+
+    /// <summary> Adds an <see cref="IBaseDirectoryAssetsService"/> to the serviceCollection. </summary>
+    /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
+    /// <returns> A reference to this instance after the operation has completed. </returns>
+    public static IServiceCollection AddBaseDirectoryAssetsService(this IServiceCollection serviceCollection) =>
+        serviceCollection.AddTransient<IBaseDirectoryAssetsService>(_ => new BaseDirectoryAssetsService());
 }

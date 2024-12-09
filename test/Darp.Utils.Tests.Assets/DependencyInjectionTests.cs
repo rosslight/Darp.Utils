@@ -72,4 +72,17 @@ public sealed class DependencyInjectionTests
         // Assert
         service.BasePath.Should().Be($"{programDataPath}/{relativePath}");
     }
+
+    [Fact]
+    public void AddBaseDirectoryAssetsService_ShouldNotThrow()
+    {
+        // Arrange
+        ServiceProvider provider = new ServiceCollection().AddBaseDirectoryAssetsService().BuildServiceProvider();
+
+        // Act
+        IBaseDirectoryAssetsService service = provider.GetRequiredService<IBaseDirectoryAssetsService>();
+
+        // Assert
+        service.BasePath.Should().Be($"{AppDomain.CurrentDomain.BaseDirectory.Replace('\\', '/')}");
+    }
 }

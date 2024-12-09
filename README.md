@@ -13,7 +13,11 @@ To extend, add a new project and test project.
 A collection of simple interfaces for app assets targeting desktop apps.
 
 Currently implemented:
-- `AppDataAssetsService`: Read or write to the `ApplicationData`. The relativePath might be e.g. the app name.
+- `IFolderAssetsService`: Read or write to a specific folder
+- `IAppDataAssetsService`: Read or write to the `ApplicationData`. The relativePath might be e.g. the app name.
+- `IProgramDataAssetsService`: Read or write to the `ProgramData`. The relativePath might be e.g. the app name.
+- `IBaseDirectoryAssetsService`: Read from the base directory of the App's executable
+- `IEmbeddedResourceAssetsService`: Read files marked as `EmbeddedResource` of a specific Assembly
 
 Example:
 ```csharp
