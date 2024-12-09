@@ -147,13 +147,12 @@ public sealed class FolderDataAssetsServiceTests
             out _,
             out _
         );
-
-        // Act
         await appDataService.SerializeTextAsync(FileName1, dummyContent);
         await appDataService.SerializeTextAsync(FileName2, dummyContent);
         await appDataService.SerializeTextAsync(FileName3, dummyContent);
         await appDataService.SerializeTextAsync(FileName4, dummyContent);
 
+        // Act
         IEnumerable<string> foundFiles = appDataService.EnumerateFiles(searchPattern);
 
         // Assert
@@ -161,4 +160,4 @@ public sealed class FolderDataAssetsServiceTests
     }
 }
 
-internal sealed record TestData(string Prop1);
+file sealed record TestData(string Prop1);

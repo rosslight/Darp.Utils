@@ -22,4 +22,11 @@
       <ProjectReference Include="..\Darp.Utils.Tests.Common\Darp.Utils.Tests.Common.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\**" />
+      <EmbeddedResource Include="Assets\**">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
 </Project>
