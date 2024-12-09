@@ -164,4 +164,24 @@ public static class AssetsExtensions
             await writer.WriteAsync(content.AsMemory(), cancellationToken).ConfigureAwait(false);
         }
     }
+
+    /// <summary> Asynchronously reads a character string from the assets service. </summary>
+    /// <param name="targetAssetsService">The target assets service to be written to</param>
+    /// <param name="path">The path to the file relative to the target assets service</param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    public static async Task<string> DeserializeTextAsync(
+        this IReadOnlyAssetsService targetAssetsService,
+        string path,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(targetAssetsService);
+        Stream stream = targetAssetsService.GetReadOnlySteam(path);
+        var writer = new StreamReader(stream);
+        await using (stream.ConfigureAwait(false))
+        using (writer)
+        {
+            return await writer.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
 }
