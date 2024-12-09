@@ -18,7 +18,6 @@ public static class ContentDialogResultExtensions
     )
         where TContent : IDialogData<TResult>
     {
-        ArgumentNullException.ThrowIfNull(dialogResult);
         return dialogResult.Content.TryGetResultData(out resultData);
     }
 }
