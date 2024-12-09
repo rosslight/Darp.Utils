@@ -15,60 +15,55 @@ internal static class BuildHelper
     private const int MaxDocCommentLength = 256;
     private const string HelpLinkUri =
         "https://github.com/rosslight/Darp.Utils/tree/main/src/Darp.Utils.ResxSourceGenerator/README.md#Diagnostics";
-    private static readonly DiagnosticDescriptor EmptyWarning =
-        new(
-            id: "DarpResX001",
-            title: "Empty resource file",
-            messageFormat: "Resource file generated without any members",
-            category: "Globalization",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            helpLinkUri: HelpLinkUri,
-            isEnabledByDefault: true
-        );
+    private static readonly DiagnosticDescriptor EmptyWarning = new(
+        id: "DarpResX001",
+        title: "Empty resource file",
+        messageFormat: "Resource file generated without any members",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
 
-    private static readonly DiagnosticDescriptor InvalidKeyWarning =
-        new(
-            id: "DarpResX002",
-            title: "Invalid Key in resource file",
-            messageFormat: "Entry with key '{0}' is invalid and will be ignored",
-            category: "Globalization",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            helpLinkUri: HelpLinkUri,
-            isEnabledByDefault: true
-        );
+    private static readonly DiagnosticDescriptor InvalidKeyWarning = new(
+        id: "DarpResX002",
+        title: "Invalid Key in resource file",
+        messageFormat: "Entry with key '{0}' is invalid and will be ignored",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
 
-    private static readonly DiagnosticDescriptor MissingValueWarning =
-        new(
-            id: "DarpResX003",
-            title: "Missing Value in resource file",
-            messageFormat: "Entry with key '{0}' is has no value and will be ignored",
-            category: "Globalization",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            helpLinkUri: HelpLinkUri,
-            isEnabledByDefault: true
-        );
+    private static readonly DiagnosticDescriptor MissingValueWarning = new(
+        id: "DarpResX003",
+        title: "Missing Value in resource file",
+        messageFormat: "Entry with key '{0}' is has no value and will be ignored",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
 
-    private static readonly DiagnosticDescriptor DuplicateKeyWarning =
-        new(
-            id: "DarpResX004",
-            title: "Duplicate Key in resource file",
-            messageFormat: "Entry with key '{0}' is duplicated and will be ignored",
-            category: "Globalization",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            helpLinkUri: HelpLinkUri,
-            isEnabledByDefault: true
-        );
+    private static readonly DiagnosticDescriptor DuplicateKeyWarning = new(
+        id: "DarpResX004",
+        title: "Duplicate Key in resource file",
+        messageFormat: "Entry with key '{0}' is duplicated and will be ignored",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
 
-    private static readonly DiagnosticDescriptor MissingTranslationKeyWarning =
-        new(
-            id: "DarpResX005",
-            title: "Missing translation for specific Key",
-            messageFormat: "Entry with key '{0}' is missing a translation for {1} ({2})",
-            category: "Globalization",
-            defaultSeverity: DiagnosticSeverity.Warning,
-            helpLinkUri: HelpLinkUri,
-            isEnabledByDefault: true
-        );
+    private static readonly DiagnosticDescriptor MissingTranslationKeyWarning = new(
+        id: "DarpResX005",
+        title: "Missing translation for specific Key",
+        messageFormat: "Entry with key '{0}' is missing a translation for {1} ({2})",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
 
     public static bool TryGenerateSource(
         ResourceCollection resourceCollection,
@@ -579,8 +574,10 @@ namespace {{namespaceName}}
 
     private readonly struct ResourceString
     {
-        private static readonly Regex NamedParameterMatcher =
-            new(@"\{([a-z]\w*)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex NamedParameterMatcher = new(
+            @"\{([a-z]\w*)\}",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled
+        );
         private static readonly Regex NumberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
         private readonly IReadOnlyList<string> _arguments;
 
