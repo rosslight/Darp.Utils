@@ -4,10 +4,4 @@
         <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Update="FluentAssertions" Version="6.12.1" />
-      <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-      <PackageReference Update="xunit" Version="2.9.2" />
-    </ItemGroup>
-
 </Project>

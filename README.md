@@ -1,7 +1,7 @@
 # Darp.Utils
 
 [![Test (and publish)](https://github.com/rosslight/Darp.Utils/actions/workflows/test_and_publish.yml/badge.svg)](https://github.com/rosslight/Darp.Utils/actions/workflows/test_and_publish.yml)
-![License](https://img.shields.io/badge/license-Apache2-0)
+![License](https://img.shields.io/github/license/rosslight/Darp.Utils)
 
 This repository bundles all open source c# helper modules of 'rosslight GmbH'.
 To extend, add a new project and test project.
@@ -21,12 +21,23 @@ Currently implemented:
 
 Example:
 ```csharp
+// Add EmbeddedResources and AppData assets to the DI Container
 ServiceProvider provider = new ServiceCollection()
+    .AddEmbeddedResourceAssetsService(typeof(Test).Assembly)
     .AddAppDataAssetsService("RelativePath")
     .BuildServiceProvider();
 
+// Example read and write operations with the app data
 IAppDataAssetsService service = provider.GetRequiredService<IAppDataAssetsService>();
-await service.SerializeJsonAsync("test.json", new { Prop1 = "value" });
+await service.SerializeJsonAsync("test.json", new Test("value"));
+Test deserialized = await service.DeserializeJsonAsync<Test>("test.json");
+await service.WriteTextAsync("test2.txt", "some content");
+
+// Copy an embedded resource to the app data
+IEmbeddedResourceAssetsService resourceService = provider.GetRequiredService<IEmbeddedResourceAssetsService>();
+await resourceService.CopyToAsync("test.json", service, "test.json");
+
+file sealed record Test(string Prop1);
 ```
 
 
