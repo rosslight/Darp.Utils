@@ -17,7 +17,7 @@ public class FolderAssetsService(string folderPath, string relativePath) : IFold
     private Regex? _noBasePathRegex;
 
     /// <inheritdoc />
-    public string BasePath { get; } = Path.Join(folderPath, relativePath).Replace('\\', '/');
+    public string BasePath { get; } = Path.Join(folderPath, relativePath).Replace('\\', '/').TrimEnd('/');
 
     /// <inheritdoc />
     public bool Exists([NotNullWhen(true)] string? path) => Path.Exists(Path.Join(BasePath, path));
