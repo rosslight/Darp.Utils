@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Assets", "src\Darp.Utils.Assets\Darp.Utils.Assets.csproj", "{7E57404F-5D1F-46D9-941C-B1090DDBA567}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{998FA92C-5039-4E21-8D9D-9B53CFFEB7A0}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Tests.Assets", "test\Darp.Utils.Tests.Assets\Darp.Utils.Tests.Assets.csproj", "{563A1D11-BA61-4E63-9606-AD6F1F62CCE1}"
 EndProject
