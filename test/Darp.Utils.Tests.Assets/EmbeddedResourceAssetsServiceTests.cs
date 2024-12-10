@@ -1,14 +1,11 @@
 namespace Darp.Utils.Tests.Assets;
 
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Utils.Assets;
 
 public sealed class EmbeddedResourceAssetsServiceTests
 {
-    private readonly IEmbeddedResourceAssetsService _service = new EmbeddedResourceAssetsService(
-        typeof(EmbeddedResourceAssetsServiceTests).Assembly
-    );
+    private readonly EmbeddedResourceAssetsService _service = new(typeof(EmbeddedResourceAssetsServiceTests).Assembly);
 
     [Fact]
     public async Task GetReadOnlySteam_WritingToFile_ShouldCreateFile()
@@ -21,7 +18,7 @@ public sealed class EmbeddedResourceAssetsServiceTests
             """;
 
         // Act
-        var content = await _service.DeserializeTextAsync(testFileName);
+        var content = await _service.ReadTextAsync(testFileName);
 
         // Assert
         content.Should().BeEquivalentTo(expectedContent);

@@ -6,7 +6,7 @@ using Darp.Utils.Assets.Abstractions;
 using GlobExpressions;
 
 /// <summary> An interface for reading from and writing to a predefined folder </summary>
-public interface IFolderAssetsService : IAssetsService;
+public interface IFolderAssetsService : IAssetsService, IWriteOnlyFileAssetsService;
 
 /// <inheritdoc />
 /// <summary> Instantiate a new <see cref="FolderAssetsService"/> with a given path relative to the <paramref name="folderPath"/> </summary>
@@ -56,5 +56,30 @@ public class FolderAssetsService(string folderPath, string relativePath) : IFold
             Path.GetDirectoryName(joinedPath) ?? throw new DirectoryNotFoundException("Could not get directory name");
         Directory.CreateDirectory(directoryPath);
         return File.OpenWrite(joinedPath);
+    }
+
+    /// <inheritdoc />
+    public Stream GetWriteOnlySteam(string path, FileAttributes fileAttributes)
+    {
+        var joinedPath = Path.Join(BasePath, path);
+        FileStream stream;
+        if (Exists(path))
+        {
+            FileAttributes currentAttributes = File.GetAttributes(joinedPath);
+            var hasReadOnlyAttribute = currentAttributes.HasFlag(FileAttributes.ReadOnly);
+            if (hasReadOnlyAttribute)
+                File.SetAttributes(joinedPath, currentAttributes & ~FileAttributes.ReadOnly);
+            stream = File.OpenWrite(joinedPath);
+        }
+        else
+        {
+            var directoryPath =
+                Path.GetDirectoryName(joinedPath)
+                ?? throw new DirectoryNotFoundException("Could not get directory name");
+            Directory.CreateDirectory(directoryPath);
+            stream = File.OpenWrite(joinedPath);
+        }
+        File.SetAttributes(joinedPath, fileAttributes);
+        return stream;
     }
 }

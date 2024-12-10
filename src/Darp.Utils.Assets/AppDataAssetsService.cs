@@ -1,9 +1,9 @@
 namespace Darp.Utils.Assets;
 
-using Darp.Utils.Assets.Abstractions;
+using Abstractions;
 
 /// <summary> An interface for reading from and writing to the <see cref="Environment.SpecialFolder.ApplicationData"/> </summary>
-public interface IAppDataAssetsService : IAssetsService;
+public interface IAppDataAssetsService : IAssetsService, IWriteOnlyFileAssetsService;
 
 /// <inheritdoc cref="IAppDataAssetsService"/>
 /// <summary> Instantiate a new AppDataAssetsService with a given path relative to the <see cref="Environment.SpecialFolder.ApplicationData"/> folder </summary>

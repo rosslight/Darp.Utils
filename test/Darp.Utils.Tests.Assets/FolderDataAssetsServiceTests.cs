@@ -2,11 +2,15 @@ namespace Darp.Utils.Tests.Assets;
 
 using System.Reactive.Disposables;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Utils.Assets;
 
 public sealed class FolderDataAssetsServiceTests
 {
+    private static IDisposable CreateTemporaryFolderAssetsService(out IFolderAssetsService folderAssetsService)
+    {
+        return CreateTemporaryFolderAssetsService(out folderAssetsService, out _, out _);
+    }
+
     private static IDisposable CreateTemporaryFolderAssetsService(
         out IFolderAssetsService folderAssetsService,
         out string tempDirectory,
@@ -40,11 +44,7 @@ public sealed class FolderDataAssetsServiceTests
         // Arrange
         const string testFileName = "test.json";
         var testData = new TestData("Test");
-        using IDisposable dis = CreateTemporaryFolderAssetsService(
-            out IFolderAssetsService appDataService,
-            out var _,
-            out var _
-        );
+        using IDisposable dis = CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService);
 
         // Act
         appDataService.Exists(testFileName).Should().BeFalse();
@@ -62,11 +62,7 @@ public sealed class FolderDataAssetsServiceTests
         // Arrange
         const string testFileName = "test.json";
         var testData = new TestData("Test");
-        using IDisposable dis = CreateTemporaryFolderAssetsService(
-            out IFolderAssetsService appDataService,
-            out var _,
-            out var _
-        );
+        using IDisposable dis = CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService);
 
         // Act
         await appDataService.SerializeJsonAsync(testFileName, testData);
@@ -91,25 +87,38 @@ public sealed class FolderDataAssetsServiceTests
     [InlineData("test1/*.json")]
     [InlineData("test1/*.txt", FileName4)]
     [InlineData("**/*.json", FileName1, FileName3)]
-    public async Task EnumerateFiles_WritingToFile_ShouldCreateFile(string searchPattern, params string[] expectedFiles)
+    public async Task EnumerateFiles(string searchPattern, params string[] expectedFiles)
     {
         // Arrange
         const string dummyContent = "DummyContent";
-        using IDisposable dis = CreateTemporaryFolderAssetsService(
-            out IFolderAssetsService appDataService,
-            out _,
-            out _
-        );
-        await appDataService.SerializeTextAsync(FileName1, dummyContent);
-        await appDataService.SerializeTextAsync(FileName2, dummyContent);
-        await appDataService.SerializeTextAsync(FileName3, dummyContent);
-        await appDataService.SerializeTextAsync(FileName4, dummyContent);
+        using IDisposable dis = CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService);
+        await appDataService.WriteTextAsync(FileName1, dummyContent);
+        await appDataService.WriteTextAsync(FileName2, dummyContent);
+        await appDataService.WriteTextAsync(FileName3, dummyContent);
+        await appDataService.WriteTextAsync(FileName4, dummyContent);
 
         // Act
         IEnumerable<string> foundFiles = appDataService.EnumerateFiles(searchPattern);
 
         // Assert
         foundFiles.Should().BeEquivalentTo(expectedFiles);
+    }
+
+    [Fact]
+    public async Task WritingToFile_WithAttributes_ShouldCreateFile()
+    {
+        // Arrange
+        const string dummyContent = "DummyContent";
+        using IDisposable dis = CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService);
+        var file1Path = Path.Join(appDataService.BasePath, FileName1);
+
+        // Act and Assert
+        await appDataService.WriteTextAsync(FileName1, dummyContent, FileAttributes.ReadOnly);
+        FileAttributes attributesAfterCreation = File.GetAttributes(file1Path);
+        attributesAfterCreation.Should().HaveFlag(FileAttributes.ReadOnly);
+        await appDataService.WriteTextAsync(FileName1, dummyContent, FileAttributes.Normal);
+        FileAttributes attributesAfterUpdate1 = File.GetAttributes(file1Path);
+        attributesAfterUpdate1.Should().NotHaveFlag(FileAttributes.ReadOnly);
     }
 }
 

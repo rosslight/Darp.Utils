@@ -101,6 +101,30 @@ public sealed class AssetsExtensionTests
         content.Should().Be("Test data");
     }
 
+    [Fact]
+    public async Task CopyToAsyncAttributes_WhenCalled_CopiesStreamCorrectly()
+    {
+        // Arrange
+        IReadOnlyAssetsService sourceService = Substitute.For<IReadOnlyAssetsService>();
+        IWriteOnlyFileAssetsService targetService = Substitute.For<IWriteOnlyFileAssetsService>();
+        var sourceStream = new MemoryStream("Test data"u8.ToArray());
+        var buffer = new byte[100];
+        var targetStream = new MemoryStream(buffer);
+
+        sourceService.GetReadOnlySteam(Arg.Any<string>()).Returns(sourceStream);
+        targetService.GetWriteOnlySteam(Arg.Any<string>(), Arg.Any<FileAttributes>()).Returns(targetStream);
+
+        // Act
+        await sourceService.CopyToAsync("source.json", targetService, "target.json", FileAttributes.ReadOnly);
+
+        // Assert
+        var memoryStream = new MemoryStream(buffer.TrimBufferEnd());
+        memoryStream.Length.Should().BeGreaterThan(0);
+        using var reader = new StreamReader(memoryStream);
+        var content = await reader.ReadToEndAsync();
+        content.Should().Be("Test data");
+    }
+
     private sealed class TestObject
     {
         public required string Name { get; init; }
