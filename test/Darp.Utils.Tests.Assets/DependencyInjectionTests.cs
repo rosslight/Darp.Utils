@@ -83,6 +83,6 @@ public sealed class DependencyInjectionTests
         IBaseDirectoryAssetsService service = provider.GetRequiredService<IBaseDirectoryAssetsService>();
 
         // Assert
-        service.BasePath.Should().Be($"{AppDomain.CurrentDomain.BaseDirectory.Replace('\\', '/')}");
+        service.BasePath.Should().Be($"{AppDomain.CurrentDomain.BaseDirectory.Replace('\\', '/')}".TrimEnd('/'));
     }
 }
