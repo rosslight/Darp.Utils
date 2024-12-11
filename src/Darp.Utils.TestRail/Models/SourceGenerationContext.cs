@@ -1,7 +1,9 @@
 namespace Darp.Utils.TestRail.Models;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Json;
 
 [JsonSerializable(typeof(Unit))]
@@ -17,11 +19,12 @@ using Json;
 [JsonSerializable(typeof(GetUser))]
 [JsonSerializable(typeof(AddResultRequest))]
 [JsonSerializable(typeof(GetResults))]
-internal partial class SourceGenerationContext : JsonSerializerContext
+internal sealed partial class SourceGenerationContext : JsonSerializerContext
 {
-    public static SourceGenerationContext CustomOptions { get; } = CreateWithCustomOptions();
+    private static readonly JsonSerializerOptions CustomOptions = CreateCustomOptions();
+    public static SourceGenerationContext TestRail { get; } = new(new JsonSerializerOptions(CustomOptions));
 
-    private static SourceGenerationContext CreateWithCustomOptions()
+    private static JsonSerializerOptions CreateCustomOptions()
     {
         JsonSerializerOptions options = new()
         {
@@ -30,6 +33,18 @@ internal partial class SourceGenerationContext : JsonSerializerContext
         };
         options.Converters.Add(new TestRailTimespanJsonConverter());
         options.Converters.Add(new UnixToDateTimeOffsetConverter());
-        return new SourceGenerationContext(options);
+        return options;
+    }
+
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
+    public static JsonTypeInfo<T> CreateDefaultJsonTypeInfo<T>()
+    {
+        var options = new JsonSerializerOptions(CustomOptions) { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
+        return (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
     }
 }

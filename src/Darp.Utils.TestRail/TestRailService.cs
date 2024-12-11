@@ -52,7 +52,7 @@ public sealed class TestRailService<TState>(TState factoryState, Func<TState, Ht
     )
     {
         using HttpRequestMessage request = CreateRequestMessage(path, HttpMethod.Post);
-        request.Content = JsonContent.Create(Unit.Default, SourceGenerationContext.CustomOptions.Unit);
+        request.Content = JsonContent.Create(Unit.Default, SourceGenerationContext.TestRail.Unit);
         return await SendAsync(request, responseTypeInfo, cancellationToken).ConfigureAwait(false);
     }
 

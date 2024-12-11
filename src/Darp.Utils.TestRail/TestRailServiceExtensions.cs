@@ -1,5 +1,6 @@
 namespace Darp.Utils.TestRail;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,11 +23,7 @@ public static partial class TestRailService
     {
         ArgumentNullException.ThrowIfNull(testRailService);
         return await testRailService
-            .GetAsync(
-                $"/get_case/{(int)caseId}",
-                SourceGenerationContext.CustomOptions.GetCaseResponse,
-                cancellationToken
-            )
+            .GetAsync($"/get_case/{(int)caseId}", SourceGenerationContext.TestRail.GetCaseResponse, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -56,7 +53,7 @@ public static partial class TestRailService
                 requestUri += $"&suite_id={(int)suiteId}";
             }
             GetCases results = await testRailService
-                .GetAsync(requestUri, SourceGenerationContext.CustomOptions.GetCases, cancellationToken)
+                .GetAsync(requestUri, SourceGenerationContext.TestRail.GetCases, cancellationToken)
                 .ConfigureAwait(false);
             foreach (GetCaseResponse getCase in results.Cases)
             {
@@ -84,11 +81,7 @@ public static partial class TestRailService
     {
         ArgumentNullException.ThrowIfNull(testRailService);
         return await testRailService
-            .GetAsync(
-                $"/get_test/{(int)testId}",
-                SourceGenerationContext.CustomOptions.GetTestResponse,
-                cancellationToken
-            )
+            .GetAsync($"/get_test/{(int)testId}", SourceGenerationContext.TestRail.GetTestResponse, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -112,7 +105,7 @@ public static partial class TestRailService
         {
             var requestUri = $"/get_tests/{(int)runId}&limit={chunkSize}&offset={offset}";
             GetTests results = await testRailService
-                .GetAsync(requestUri, SourceGenerationContext.CustomOptions.GetTests, cancellationToken)
+                .GetAsync(requestUri, SourceGenerationContext.TestRail.GetTests, cancellationToken)
                 .ConfigureAwait(false);
             foreach (GetTestResponse getRun in results.Tests)
             {
@@ -147,8 +140,8 @@ public static partial class TestRailService
             .PostAsync(
                 $"/add_result/{(int)testId}",
                 request,
-                SourceGenerationContext.CustomOptions.AddResultRequest,
-                SourceGenerationContext.CustomOptions.GetResults,
+                SourceGenerationContext.TestRail.AddResultRequest,
+                SourceGenerationContext.TestRail.GetResults,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -172,7 +165,7 @@ public static partial class TestRailService
         return await testRailService
             .GetAsync(
                 $"/get_user_by_email&email={userEmail}",
-                SourceGenerationContext.CustomOptions.GetUser,
+                SourceGenerationContext.TestRail.GetUser,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -195,7 +188,7 @@ public static partial class TestRailService
         return await testRailService
             .GetAsync(
                 $"/get_milestone/{(int)milestoneId}",
-                SourceGenerationContext.CustomOptions.GetMilestone,
+                SourceGenerationContext.TestRail.GetMilestone,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -216,7 +209,7 @@ public static partial class TestRailService
     {
         ArgumentNullException.ThrowIfNull(testRailService);
         return await testRailService
-            .GetAsync($"/get_run/{(int)runId}", SourceGenerationContext.CustomOptions.GetRun, cancellationToken)
+            .GetAsync($"/get_run/{(int)runId}", SourceGenerationContext.TestRail.GetRun, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -231,10 +224,13 @@ public static partial class TestRailService
         this ITestRailService testRailService,
         RunId runId,
         CancellationToken cancellationToken = default
-    ) =>
-        await testRailService
-            .PostAsync($"/close_run/{(int)runId}", SourceGenerationContext.CustomOptions.GetRun, cancellationToken)
+    )
+    {
+        ArgumentNullException.ThrowIfNull(testRailService);
+        return await testRailService
+            .PostAsync($"/close_run/{(int)runId}", SourceGenerationContext.TestRail.GetRun, cancellationToken)
             .ConfigureAwait(false);
+    }
 
     /// <summary>
     ///
@@ -251,11 +247,7 @@ public static partial class TestRailService
     {
         ArgumentNullException.ThrowIfNull(testRailService);
         return await testRailService
-            .GetAsync(
-                $"/get_project/{(int)projectId}",
-                SourceGenerationContext.CustomOptions.GetProject,
-                cancellationToken
-            )
+            .GetAsync($"/get_project/{(int)projectId}", SourceGenerationContext.TestRail.GetProject, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -285,7 +277,7 @@ public static partial class TestRailService
             }
 
             GetProjects results = await testRailService
-                .GetAsync(requestUri, SourceGenerationContext.CustomOptions.GetProjects, cancellationToken)
+                .GetAsync(requestUri, SourceGenerationContext.TestRail.GetProjects, cancellationToken)
                 .ConfigureAwait(false);
             foreach (GetProject getProject in results.Projects)
             {
@@ -321,7 +313,7 @@ public static partial class TestRailService
             requestUri += $"&suite_id={(int)suiteId}";
         }
         return await testRailService
-            .GetAsync(requestUri, SourceGenerationContext.CustomOptions.GetSection, cancellationToken)
+            .GetAsync(requestUri, SourceGenerationContext.TestRail.GetSection, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -352,7 +344,7 @@ public static partial class TestRailService
                 requestUri += $"&suite_id={(int)suiteId}";
             }
             GetSections results = await testRailService
-                .GetAsync(requestUri, SourceGenerationContext.CustomOptions.GetSections, cancellationToken)
+                .GetAsync(requestUri, SourceGenerationContext.TestRail.GetSections, cancellationToken)
                 .ConfigureAwait(false);
             foreach (GetSection getCase in results.Sections)
             {
@@ -382,7 +374,7 @@ public static partial class TestRailService
         ArgumentNullException.ThrowIfNull(testRailService);
         var requestUri = $"/get_suite/{(int)suiteId}";
         return await testRailService
-            .GetAsync(requestUri, SourceGenerationContext.CustomOptions.GetSuite, cancellationToken)
+            .GetAsync(requestUri, SourceGenerationContext.TestRail.GetSuite, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -403,7 +395,7 @@ public static partial class TestRailService
         IEnumerable<GetSuite> enumerable = await testRailService
             .GetAsync(
                 $"/get_suites/{(int)projectId}",
-                SourceGenerationContext.CustomOptions.IEnumerableGetSuite,
+                SourceGenerationContext.TestRail.IEnumerableGetSuite,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -431,8 +423,8 @@ public static partial class TestRailService
             .PostAsync(
                 $"/update_case/{(int)request.CaseId}",
                 request,
-                SourceGenerationContext.CustomOptions.UpdateCaseRequest,
-                SourceGenerationContext.CustomOptions.GetCaseResponse,
+                SourceGenerationContext.TestRail.UpdateCaseRequest,
+                SourceGenerationContext.TestRail.GetCaseResponse,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -465,7 +457,7 @@ public static partial class TestRailService
                 requestUri += $"&is_completed={(int)runsFilter}";
             }
             GetRuns results = await testRailService
-                .GetAsync(requestUri, SourceGenerationContext.CustomOptions.GetRuns, cancellationToken)
+                .GetAsync(requestUri, SourceGenerationContext.TestRail.GetRuns, cancellationToken)
                 .ConfigureAwait(false);
             foreach (GetRun getRun in results.Runs)
             {
@@ -477,5 +469,119 @@ public static partial class TestRailService
             }
             offset += chunkSize;
         }
+    }
+
+    /// <summary> Execute a <c>GET</c> request to the TestRail instance </summary>
+    /// <param name="testRailService"> The TestRail service to execute the request </param>
+    /// <param name="path"> The relative path in the URL </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    /// <typeparam name="TResponse"> The type of the response </typeparam>
+    /// <returns> A task which contains the response when completed </returns>
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
+    public static Task<TResponse> GetAsync<TResponse>(
+        this ITestRailService testRailService,
+        string path,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(testRailService);
+        return testRailService.GetAsync(
+            path,
+            SourceGenerationContext.CreateDefaultJsonTypeInfo<TResponse>(),
+            cancellationToken
+        );
+    }
+
+    /// <summary> Execute a <c>GET</c> request to the TestRail instance </summary>
+    /// <param name="testRailService"> The TestRail service to execute the request </param>
+    /// <param name="path"> The relative path in the URL </param>
+    /// <param name="body"> The request body which will be serialized as json </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    /// <typeparam name="TRequest"> The type of the request </typeparam>
+    /// <typeparam name="TResponse"> The type of the response </typeparam>
+    /// <returns> A task which contains the response when completed </returns>
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
+    public static Task<TResponse> GetAsync<TRequest, TResponse>(
+        this ITestRailService testRailService,
+        string path,
+        TRequest body,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(testRailService);
+        return testRailService.GetAsync(
+            path,
+            body,
+            SourceGenerationContext.CreateDefaultJsonTypeInfo<TRequest>(),
+            SourceGenerationContext.CreateDefaultJsonTypeInfo<TResponse>(),
+            cancellationToken
+        );
+    }
+
+    /// <summary> Execute a <c>POST</c> request to the TestRail instance </summary>
+    /// <param name="testRailService"> The TestRail service to execute the request </param>
+    /// <param name="path"> The relative path in the URL </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    /// <typeparam name="TResponse"> The type of the response </typeparam>
+    /// <returns> A task which contains the response when completed </returns>
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
+    public static Task<TResponse> PostAsync<TResponse>(
+        this ITestRailService testRailService,
+        string path,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(testRailService);
+        return testRailService.PostAsync(
+            path,
+            SourceGenerationContext.CreateDefaultJsonTypeInfo<TResponse>(),
+            cancellationToken
+        );
+    }
+
+    /// <summary> Execute a <c>POST</c> request to the TestRail instance </summary>
+    /// <param name="testRailService"> The TestRail service to execute the request </param>
+    /// <param name="path"> The relative path in the URL </param>
+    /// <param name="body"> The request body which will be serialized as json </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    /// <typeparam name="TRequest"> The type of the request </typeparam>
+    /// <typeparam name="TResponse"> The type of the response </typeparam>
+    /// <returns> A task which contains the response when completed </returns>
+    [RequiresUnreferencedCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
+    )]
+    [RequiresDynamicCode(
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
+    )]
+    public static Task<TResponse> PostAsync<TRequest, TResponse>(
+        this ITestRailService testRailService,
+        string path,
+        TRequest body,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(testRailService);
+        return testRailService.PostAsync(
+            path,
+            body,
+            SourceGenerationContext.CreateDefaultJsonTypeInfo<TRequest>(),
+            SourceGenerationContext.CreateDefaultJsonTypeInfo<TResponse>(),
+            cancellationToken
+        );
     }
 }
