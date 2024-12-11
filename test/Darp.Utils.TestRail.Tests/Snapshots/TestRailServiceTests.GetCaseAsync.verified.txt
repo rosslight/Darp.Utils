@@ -1,0 +1,86 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            null: /api/v2/get_case/1
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Length: 651,
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          id: 1,
+          title: Print document history and attributes,
+          section_id: 1,
+          template_id: 1,
+          type_id: 2,
+          priority_id: 2,
+          milestone_id: null,
+          refs: null,
+          created_by: 1,
+          created_on: 1646317844,
+          updated_by: 1,
+          updated_on: 1646317844,
+          estimate: null,
+          estimate_forecast: 8m 40s,
+          suite_id: 1,
+          display_order: 1,
+          is_deleted: 0,
+          custom_automation_type: 0,
+          custom_preconds: null,
+          custom_steps: null,
+          custom_expected: null,
+          custom_steps_separated: null,
+          custom_mission: null,
+          custom_goals: null
+        }
+      }
+    }
+  ],
+  Response: {
+    Id: 1,
+    Title: Print document history and attributes,
+    TypeId: 2,
+    EstimateForecast: 00:08:40,
+    CreatedBy: 1,
+    CreatedOn: DateTimeOffset_1,
+    UpdatedBy: 1,
+    UpdatedOn: DateTimeOffset_1,
+    SuiteId: 1,
+    DisplayOrder: 1,
+    PriorityId: 2,
+    TemplateId: 1,
+    SectionId: 1,
+    IsDeleted: false,
+    Properties: {
+      custom_automation_type: {
+        ValueKind: Number
+      },
+      custom_expected: {
+        ValueKind: Null
+      },
+      custom_goals: {
+        ValueKind: Null
+      },
+      custom_mission: {
+        ValueKind: Null
+      },
+      custom_preconds: {
+        ValueKind: Null
+      },
+      custom_steps: {
+        ValueKind: Null
+      },
+      custom_steps_separated: {
+        ValueKind: Null
+      }
+    }
+  }
+}
