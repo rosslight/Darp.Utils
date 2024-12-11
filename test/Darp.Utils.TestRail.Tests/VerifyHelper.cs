@@ -7,7 +7,9 @@ public static class VerifyHelper
 {
     public static SettingsTask VerifyCalls<T>(MockHttpClient client, T response)
     {
-        return Verify(new { client.Calls, Response = response }).UseDirectory("Snapshots");
+        return Verify(new { client.Calls, Response = response })
+            .UseDirectory("Snapshots")
+            .IgnoreMember("Content-Length");
     }
 
     public static MockHttpClient CreateService(string response, out ITestRailService service)
