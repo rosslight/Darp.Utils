@@ -417,20 +417,19 @@ public static partial class TestRailService
     ///
     /// </summary>
     /// <param name="testRailService"> The TestRail service to execute the request </param>
-    /// <param name="caseId"></param>
     /// <param name="request"></param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     public static async Task UpdateCase(
         this ITestRailService testRailService,
-        CaseId caseId,
         UpdateCaseRequest request,
         CancellationToken cancellationToken = default
     )
     {
         ArgumentNullException.ThrowIfNull(testRailService);
+        ArgumentNullException.ThrowIfNull(request);
         await testRailService
             .PostAsync(
-                $"/update_case/{(int)caseId}",
+                $"/update_case/{(int)request.CaseId}",
                 request,
                 SourceGenerationContext.CustomOptions.UpdateCaseRequest,
                 SourceGenerationContext.CustomOptions.GetCaseResponse,
