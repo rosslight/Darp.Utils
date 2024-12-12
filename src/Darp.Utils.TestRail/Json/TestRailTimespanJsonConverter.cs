@@ -5,12 +5,14 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+/// <summary> Convert a timespan to the testrail format </summary>
 public sealed class TestRailTimespanJsonConverter : JsonConverter<TimeSpan>
 {
+    /// <inheritdoc />
     public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var timeSpanString = reader.GetString();
-        if (TimeSpan.TryParse(timeSpanString, null, out var timeSpan))
+        if (TimeSpan.TryParse(timeSpanString, null, out TimeSpan timeSpan))
         {
             return timeSpan;
         }
@@ -52,8 +54,10 @@ public sealed class TestRailTimespanJsonConverter : JsonConverter<TimeSpan>
         return new TimeSpan(days + (weeks * 7), hours, minutes, seconds);
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(writer);
         var seconds = value.Seconds;
         var minutes = value.Minutes;
         var hours = value.Hours;

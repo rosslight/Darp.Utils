@@ -1,3 +1,8 @@
 namespace Darp.Utils.TestRail.Models;
 
-public enum CaseId;
+/// <summary> The ID of a case </summary>
+public enum CaseId
+{
+    /// <summary> No CaseId is defined </summary>
+    None = 0,
+}

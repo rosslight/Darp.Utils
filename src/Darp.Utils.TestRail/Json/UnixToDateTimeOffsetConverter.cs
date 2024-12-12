@@ -3,10 +3,13 @@ namespace Darp.Utils.TestRail.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+/// <summary> Convert a unix data time to a DateTimeOffset </summary>
 public class UnixToDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
 {
+    /// <summary> If true, the format is in seconds, otherwise in milliseconds </summary>
     public bool IsFormatInSeconds { get; init; } = true;
 
+    /// <inheritdoc />
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var time = reader.GetInt64();
@@ -18,6 +21,7 @@ public class UnixToDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
             : DateTimeOffset.FromUnixTimeMilliseconds(time);
     }
 
+    /// <inheritdoc />
     // write is out of scope, but this could be implemented via writer.ToUnixTimeMilliseconds/WriteNullValue
     public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options) =>
         throw new NotSupportedException();

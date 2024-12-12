@@ -2,22 +2,34 @@ namespace Darp.Utils.TestRail.Models;
 
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable CA1054
-#pragma warning disable CA1056
-
-public sealed record GetSuite(
-    SuiteId Id,
-    string Name,
-    string Description,
-    ProjectId ProjectId,
-    bool IsBaseline,
-    DateTimeOffset? CompletedOn,
-    bool IsCompleted,
-    bool IsMaster,
-    string Url
-)
+/// <summary> The model for the suite </summary>
+public sealed record GetSuite
 {
-    /// <summary>  </summary>
+    /// <summary> The date/time when the test suite was closed (as UNIX timestamp) (added with TestRail 4.0) </summary>
+    public DateTimeOffset? CompletedOn { get; init; }
+
+    /// <summary> The description of the test suite </summary>
+    public required string Description { get; init; }
+
+    /// <summary> True if the test suite is a baseline test suite and false otherwise (added with TestRail 4.0) </summary>
+    public bool IsBaseline { get; init; }
+
+    /// <summary> True if the test suite is marked as completed/archived and false otherwise (added with TestRail 4.0) </summary>
     [MemberNotNullWhen(true, nameof(CompletedOn))]
-    public bool IsCompleted { get; init; } = IsCompleted;
+    public bool IsCompleted { get; init; }
+
+    /// <summary> True if the test suite is a master test suite and false otherwise (added with TestRail 4.0) </summary>
+    public bool IsMaster { get; init; }
+
+    /// <summary> The unique ID of the test suite </summary>
+    public SuiteId Id { get; init; }
+
+    /// <summary> The name of the test suite </summary>
+    public required string Name { get; init; }
+
+    /// <summary> The ID of the project this test suite belongs to </summary>
+    public ProjectId ProjectId { get; init; }
+
+    /// <summary> The address/URL of the test suite in the user interface </summary>
+    public required string Url { get; init; }
 }

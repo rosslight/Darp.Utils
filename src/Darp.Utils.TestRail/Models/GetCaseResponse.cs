@@ -1,6 +1,7 @@
 namespace Darp.Utils.TestRail.Models;
 
 using System;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Json;
@@ -60,7 +61,8 @@ public sealed record GetCaseResponse
     [JsonConverter(typeof(BoolIntJsonConverter))]
     public bool IsDeleted { get; init; }
 
-    /// <summary> Unknown properties </summary>
+    /// <summary> User defined properties </summary>
     [JsonExtensionData]
-    public Dictionary<string, JsonElement> Properties { get; set; } = [];
+    public ReadOnlyDictionary<string, JsonElement> Properties { get; set; } =
+        ReadOnlyDictionary<string, JsonElement>.Empty;
 }
