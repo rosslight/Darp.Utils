@@ -30,7 +30,7 @@ public sealed record GetTestResponse
     public PriorityId? PriorityId { get; init; }
 
     /// <summary> A comma-separated list of references/requirements that are linked to the test case </summary>
-    public required string Refs { get; init; }
+    public string? Refs { get; init; }
 
     /// <summary> The ID of the test run the test belongs to </summary>
     public RunId? RunId { get; init; }
