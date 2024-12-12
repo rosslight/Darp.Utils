@@ -34,5 +34,5 @@ public sealed class UpdateCaseRequest
 
     /// <summary> User defined properties </summary>
     [JsonExtensionData]
-    public Dictionary<string, object> Properties { get; init; } = [];
+    public Dictionary<string, object> Properties { get; set; } = [];
 }

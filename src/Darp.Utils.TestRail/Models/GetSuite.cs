@@ -9,7 +9,7 @@ public sealed record GetSuite
     public DateTimeOffset? CompletedOn { get; init; }
 
     /// <summary> The description of the test suite </summary>
-    public required string Description { get; init; }
+    public string? Description { get; init; }
 
     /// <summary> True if the test suite is a baseline test suite and false otherwise (added with TestRail 4.0) </summary>
     public bool IsBaseline { get; init; }
@@ -31,5 +31,5 @@ public sealed record GetSuite
     public ProjectId ProjectId { get; init; }
 
     /// <summary> The address/URL of the test suite in the user interface </summary>
-    public required string Url { get; init; }
+    public string? Url { get; init; }
 }

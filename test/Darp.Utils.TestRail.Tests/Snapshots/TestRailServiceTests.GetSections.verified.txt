@@ -1,0 +1,79 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            limit: 250,
+            null: /api/v2/get_sections/1,
+            offset: 0
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          offset: 0,
+          limit: 250,
+          size: 3,
+          _links: {
+            next: null,
+            prev: null
+          },
+          sections: [
+            {
+              depth: 0,
+              display_order: 1,
+              id: 1,
+              name: Prerequisites,
+              parent_id: null,
+              suite_id: 1
+            },
+            {
+              depth: 0,
+              display_order: 2,
+              id: 2,
+              name: Documentation & Help,
+              parent_id: null,
+              suite_id: 1
+            },
+            {
+              depth: 1,
+              display_order: 3,
+              id: 3,
+              name: Licensing & Terms,
+              parent_id: 2,
+              suite_id: 1
+            }
+          ]
+        }
+      }
+    }
+  ],
+  Response: [
+    {
+      DisplayOrder: 1,
+      Id: 1,
+      Name: Prerequisites,
+      SuiteId: 1
+    },
+    {
+      DisplayOrder: 2,
+      Id: 2,
+      Name: Documentation & Help,
+      SuiteId: 1
+    },
+    {
+      Depth: 1,
+      DisplayOrder: 3,
+      Id: 3,
+      ParentId: 2,
+      Name: Licensing & Terms,
+      SuiteId: 1
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            limit: 250,
+            null: /api/v2/get_projects,
+            offset: 0
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          offset: 0,
+          limit: 250,
+          size: 1,
+          _links: {
+            next: null,
+            prev: null
+          },
+          projects: [
+            {
+              id: 1,
+              announcement: Welcome to project X,
+              completed_on: 1389968184,
+              default_role_id: 3,
+              default_role: Tester,
+              is_completed: false,
+              name: Project X,
+              show_announcement: true,
+              suite_mode: 1,
+              url: https://instance.testrail.io/index.php?/projects/overview/1
+            }
+          ]
+        }
+      }
+    }
+  ],
+  Response: [
+    {
+      Id: 1,
+      IsCompleted: false,
+      Name: Project X,
+      SuiteMode: SingleSuite,
+      Url: https://instance.testrail.io/index.php?/projects/overview/1
+    }
+  ]
+}

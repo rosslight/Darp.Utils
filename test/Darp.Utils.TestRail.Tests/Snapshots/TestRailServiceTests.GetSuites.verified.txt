@@ -1,0 +1,46 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            null: /api/v2/get_suites/3
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: [
+          {
+            id: 1,
+            name: Setup & Installation
+          },
+          {
+            id: 2,
+            name: Document Editing
+          }
+        ]
+      }
+    }
+  ],
+  Response: [
+    {
+      IsBaseline: false,
+      IsCompleted: false,
+      IsMaster: false,
+      Id: 1,
+      Name: Setup & Installation
+    },
+    {
+      IsBaseline: false,
+      IsCompleted: false,
+      IsMaster: false,
+      Id: 2,
+      Name: Document Editing
+    }
+  ]
+}

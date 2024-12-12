@@ -10,7 +10,7 @@ public sealed record GetSection
     public int Depth { get; init; }
 
     /// <summary> The description of the section </summary>
-    public required string Description { get; init; }
+    public string? Description { get; init; }
 
     /// <summary> The order in the test suite </summary>
     public int DisplayOrder { get; init; }

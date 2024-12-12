@@ -64,25 +64,25 @@ public sealed class TestRailTimespanJsonConverter : JsonConverter<TimeSpan>
         var days = value.Days % 7;
         var weeks = value.Days / 7;
         var stringBuilder = new StringBuilder();
-        if (seconds > 0)
+        if (weeks > 0)
         {
-            stringBuilder.Append(CultureInfo.InvariantCulture, $" {seconds}s");
-        }
-        if (minutes > 0)
-        {
-            stringBuilder.Append(CultureInfo.InvariantCulture, $" {minutes}m");
-        }
-        if (hours > 0)
-        {
-            stringBuilder.Append(CultureInfo.InvariantCulture, $" {hours}h");
+            stringBuilder.Append(CultureInfo.InvariantCulture, $" {weeks}w");
         }
         if (days > 0)
         {
             stringBuilder.Append(CultureInfo.InvariantCulture, $" {days}d");
         }
-        if (weeks > 0)
+        if (hours > 0)
         {
-            stringBuilder.Append(CultureInfo.InvariantCulture, $" {weeks}w");
+            stringBuilder.Append(CultureInfo.InvariantCulture, $" {hours}h");
+        }
+        if (minutes > 0)
+        {
+            stringBuilder.Append(CultureInfo.InvariantCulture, $" {minutes}m");
+        }
+        if (seconds > 0)
+        {
+            stringBuilder.Append(CultureInfo.InvariantCulture, $" {seconds}s");
         }
 
         var result = stringBuilder.ToString().Trim();

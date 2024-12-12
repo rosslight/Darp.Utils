@@ -18,10 +18,10 @@ using Json;
 [JsonSerializable(typeof(GetMilestone))]
 [JsonSerializable(typeof(GetUser))]
 [JsonSerializable(typeof(AddResultRequest))]
-[JsonSerializable(typeof(GetResults))]
+[JsonSerializable(typeof(GetResultResponse))]
 internal sealed partial class SourceGenerationContext : JsonSerializerContext
 {
-    private static readonly JsonSerializerOptions CustomOptions = CreateCustomOptions();
+    public static readonly JsonSerializerOptions CustomOptions = CreateCustomOptions();
     public static SourceGenerationContext TestRail { get; } = new(new JsonSerializerOptions(CustomOptions));
 
     private static JsonSerializerOptions CreateCustomOptions()

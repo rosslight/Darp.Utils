@@ -73,7 +73,7 @@ public static partial class TestRailService
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     /// <returns> A task </returns>
     /// <seealso href="https://support.testrail.com/hc/en-us/articles/7077292642580-Cases#updatecase"/>
-    public static async Task UpdateCaseAsync(
+    public static async Task<GetCaseResponse> UpdateCaseAsync(
         this ITestRailService testRailService,
         UpdateCaseRequest request,
         CancellationToken cancellationToken = default
@@ -81,7 +81,7 @@ public static partial class TestRailService
     {
         ArgumentNullException.ThrowIfNull(testRailService);
         ArgumentNullException.ThrowIfNull(request);
-        await testRailService
+        return await testRailService
             .PostAsync(
                 $"/update_case/{(int)request.CaseId}",
                 request,
@@ -176,9 +176,9 @@ public static partial class TestRailService
     /// <param name="testId"> The ID of the test the result should be added to </param>
     /// <param name="request"> The request </param>
     /// <param name="cancellationToken"> The cancellationToken to cancel the operation </param>
-    /// <returns> A task providing the <see cref="GetResults"/> on completion </returns>
+    /// <returns> A task providing the <see cref="GetResultResponse"/> on completion </returns>
     /// <seealso href="https://support.testrail.com/hc/en-us/articles/7077819312404-Results#addresult"/>
-    public static async Task<GetResults> AddResultAsync(
+    public static async Task<GetResultResponse> AddResultAsync(
         this ITestRailService testRailService,
         TestId testId,
         AddResultRequest request,
@@ -191,7 +191,7 @@ public static partial class TestRailService
                 $"/add_result/{(int)testId}",
                 request,
                 SourceGenerationContext.TestRail.AddResultRequest,
-                SourceGenerationContext.TestRail.GetResults,
+                SourceGenerationContext.TestRail.GetResultResponse,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -226,7 +226,7 @@ public static partial class TestRailService
     public static async IAsyncEnumerable<GetRun> GetRuns(
         this ITestRailService testRailService,
         ProjectId projectId,
-        RunsFilter runsFilter,
+        RunsFilter runsFilter = RunsFilter.All,
         int chunkSize = 250,
         [EnumeratorCancellation] CancellationToken cancellationToken = default
     )

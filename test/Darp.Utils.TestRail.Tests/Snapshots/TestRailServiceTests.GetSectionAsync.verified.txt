@@ -1,0 +1,35 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            null: /api/v2/get_section/1
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          depth: 0,
+          description: null,
+          display_order: 1,
+          id: 1,
+          name: Prerequisites,
+          parent_id: null,
+          suite_id: 1
+        }
+      }
+    }
+  ],
+  Response: {
+    DisplayOrder: 1,
+    Id: 1,
+    Name: Prerequisites,
+    SuiteId: 1
+  }
+}

@@ -1,0 +1,36 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            null: /api/v2/get_milestone/1
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          completed_on: 1389968184,
+          description: ...,
+          due_on: 1391968184,
+          id: 1,
+          is_completed: true,
+          name: Release 1.5,
+          project_id: 1,
+          refs: RF-1, RF-2,
+          url: http:///testrail/index.php?/milestones/view/1
+        }
+      }
+    }
+  ],
+  Response: {
+    Id: 1,
+    Name: Release 1.5,
+    ProjectId: 1
+  }
+}

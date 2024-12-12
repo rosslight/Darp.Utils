@@ -1,0 +1,51 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            limit: 250,
+            null: /api/v2/get_tests/3,
+            offset: 0
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          offset: 0,
+          limit: 250,
+          size: 236,
+          _links: {
+            next: null,
+            prev: null
+          },
+          tests: [
+            {
+              id: 1,
+              title: Test conditional formatting with basic value range
+            },
+            {
+              id: 2,
+              title: Verify line spacing on multi-page document
+            }
+          ]
+        }
+      }
+    }
+  ],
+  Response: [
+    {
+      Id: 1,
+      Title: Test conditional formatting with basic value range
+    },
+    {
+      Id: 2,
+      Title: Verify line spacing on multi-page document
+    }
+  ]
+}

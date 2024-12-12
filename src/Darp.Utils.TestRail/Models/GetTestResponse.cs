@@ -21,7 +21,7 @@ public sealed record GetTestResponse
     public TimeSpan? EstimateForecast { get; init; }
 
     /// <summary> The unique ID of the test </summary>
-    public TestId Id { get; init; }
+    public required TestId Id { get; init; }
 
     /// <summary> The ID of the milestone that is linked to the test case </summary>
     public MilestoneId? MilestoneId { get; init; }

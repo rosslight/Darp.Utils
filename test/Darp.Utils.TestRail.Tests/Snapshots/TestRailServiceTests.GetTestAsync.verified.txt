@@ -1,0 +1,68 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            null: /api/v2/get_test/100
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          assignedto_id: 1,
+          case_id: 1,
+          custom_expected: ..,
+          custom_preconds: ..,
+          custom_steps_separated: [
+            {
+              content: Step 1,
+              expected: Expected Result 1
+            },
+            {
+              content: Step 2,
+              expected: Expected Result 2
+            }
+          ],
+          estimate: 1m 5s,
+          estimate_forecast: null,
+          id: 100,
+          priority_id: 2,
+          run_id: 1,
+          status_id: 5,
+          title: Verify line spacing on multi-page document,
+          type_id: 4
+        }
+      }
+    }
+  ],
+  Response: {
+    CaseId: 1,
+    Estimate: 00:01:05,
+    Id: 100,
+    PriorityId: 2,
+    RunId: 1,
+    StatusId: Failed,
+    Title: Verify line spacing on multi-page document,
+    TypeId: 4,
+    Properties: {
+      assignedto_id: {
+        ValueKind: Number
+      },
+      custom_expected: {
+        ValueKind: String
+      },
+      custom_preconds: {
+        ValueKind: String
+      },
+      custom_steps_separated: {
+        ValueKind: Array
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+﻿{
+  Calls: [
+    {
+      Request: {
+        Uri: {
+          Path: https://fake.com/index.php,
+          Query: {
+            email: john.doe@gurock.io,
+            null: /api/v2/get_user_by_email
+          }
+        }
+      },
+      Response: {
+        Status: 200 OK,
+        ContentHeaders: {
+          Content-Type: application/json; charset=utf-8
+        },
+        ContentStringParsed: {
+          id: 1,
+          email: john.doe@gurock.io,
+          email_notifications: true,
+          is_active: true,
+          is_admin: false,
+          name: John Doe,
+          role_id: 3,
+          role: Tester,
+          group_ids: [
+            1,
+            2,
+            3
+          ],
+          mfa_required: false
+        }
+      }
+    }
+  ],
+  Response: {
+    Id: 1,
+    Email: john.doe@gurock.io,
+    Name: John Doe
+  }
+}
