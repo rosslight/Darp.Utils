@@ -1,18 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-      <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-
-      <Description>A very simple dialog service targeting avalonia</Description>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="../../README.md" Pack="true" PackagePath="/"/>
-    </ItemGroup>
-
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Description>A very simple dialog service targeting avalonia</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 </Project>

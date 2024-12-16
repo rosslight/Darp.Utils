@@ -1,19 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-
-        <Description>Assets and default implementations for working with assets</Description>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Glob" Version="1.1.9" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <None Include="../../README.md" Pack="true" PackagePath="/"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Description>Assets and default implementations for working with assets</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Glob" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 </Project>
