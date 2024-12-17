@@ -4,5 +4,5 @@ namespace Darp.Utils.TestRail.Models;
 public enum SuiteId
 {
     /// <summary> No ID is defined </summary>
-    None = default,
+    None = 0,
 }
