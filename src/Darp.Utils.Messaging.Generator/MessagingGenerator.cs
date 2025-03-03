@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Text;
 [Generator(LanguageNames.CSharp)]
 public class MessagingGenerator : IIncrementalGenerator
 {
-    private const string MessageSinkAttributeName = "Darp.Utils.Messaging.MessageSinkAttribute";
+    public const string MessageSinkAttributeName = "Darp.Utils.Messaging.MessageSinkAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -28,12 +28,27 @@ public class MessagingGenerator : IIncrementalGenerator
     {
         foreach (IGrouping<string, TargetMethodInfo> methodInfos in targetMethodInfos.GroupBy(x => x.HintName))
         {
-            var fileName = $"{methodInfos.Key}.g.cs";
+            try
+            {
+                var fileName = $"{methodInfos.Key}.g.cs";
 
-            spc.AddSource(
-                fileName,
-                SourceText.From("partial class TestClass;", Encoding.UTF8, SourceHashAlgorithm.Sha256)
-            );
+                var success = Emitter.TryEmit(methodInfos.ToArray(), out var code, out List<Diagnostic> diagnostics);
+                foreach (Diagnostic diagnostic in diagnostics)
+                    spc.ReportDiagnostic(diagnostic);
+                if (!success)
+                    continue;
+
+                spc.AddSource(
+                    fileName,
+                    SourceText.From(code ?? string.Empty, Encoding.UTF8, SourceHashAlgorithm.Sha256)
+                );
+            }
+#pragma warning disable CA1031 // Do not catch general exception types -> better than throwing an exception
+            catch (Exception e)
+#pragma warning restore CA1031
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.GeneralError, null, e.Message));
+            }
         }
     }
 
@@ -58,4 +73,9 @@ internal readonly record struct TargetMethodInfo(
 )
 {
     public string HintName { get; } = Symbol.ContainingType.ToDisplayString();
+
+    public AttributeData SinkAttributeData =>
+        Symbol
+            .GetAttributes()
+            .First(x => x.AttributeClass?.ToDisplayString() == MessagingGenerator.MessageSinkAttributeName);
 }

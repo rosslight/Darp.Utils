@@ -23,8 +23,7 @@ public class Tests
                 private void OnSpan(ReadOnlySpan<byte> message) { }
 
                 [MessageSink]
-                private void Any<T>(T message)
-                    where T : allows ref struct { }
+                private void OnAny<T>(T message) where T : allows ref struct { }
             }
             """;
         await VerifyHelper.VerifyMessagingGenerator(code);

@@ -19,7 +19,13 @@ public static partial class VerifyHelper
     {
         var fileName =
             Path.GetFileNameWithoutExtension(callerFilePath) ?? throw new ArgumentNullException(nameof(callerFilePath));
-        return VerifyGenerator<MessagingGenerator>([source], "DBO0", fileName, version)
+        return VerifyGenerator<MessagingGenerator>(
+                sources: [source],
+                allowedDiagnosticCode: "DMGO0",
+                directory: fileName,
+                languageVersion: version,
+                preprocessorSymbols: ["NET9_0", "NET9_0_OR_GREATER"]
+            )
             .AddReferenceAssemblyMarker<MessagingGenerator>()
             .ScrubGeneratedCodeAttribute();
     }
@@ -59,11 +65,14 @@ public static partial class VerifyHelper
         string? allowedDiagnosticCode,
         string directory,
         LanguageVersion languageVersion = LanguageVersion.Default,
-        NullableContextOptions nullableContextOptions = NullableContextOptions.Enable
+        NullableContextOptions nullableContextOptions = NullableContextOptions.Enable,
+        IEnumerable<string>? preprocessorSymbols = null
     )
         where TGenerator : IIncrementalGenerator, new()
     {
-        CSharpParseOptions parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
+        CSharpParseOptions parseOptions = CSharpParseOptions
+            .Default.WithLanguageVersion(languageVersion)
+            .WithPreprocessorSymbols(preprocessorSymbols);
         SyntaxTree[] syntaxTrees = sources.Select(x => CSharpSyntaxTree.ParseText(x, parseOptions)).ToArray();
 
         // Get all references of the currently loaded assembly
