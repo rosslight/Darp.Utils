@@ -72,10 +72,25 @@ internal readonly record struct TargetMethodInfo(
     LanguageVersion LanguageVersion
 )
 {
-    public string HintName { get; } = Symbol.ContainingType.ToDisplayString();
+    public string HintName { get; } = GetFileName(Symbol.ContainingType);
 
     public AttributeData SinkAttributeData =>
         Symbol
             .GetAttributes()
             .First(x => x.AttributeClass?.ToDisplayString() == MessagingGenerator.MessageSinkAttributeName);
+
+    private static string GetFileName(INamedTypeSymbol typeSymbol)
+    {
+        var ns = typeSymbol.ContainingNamespace.IsGlobalNamespace
+            ? string.Empty
+            : typeSymbol.ContainingNamespace.ToDisplayString() + ".";
+
+        var name = typeSymbol.Name;
+
+        if (typeSymbol.TypeArguments.Length <= 0)
+            return ns + name;
+
+        var typeArgNames = string.Join("_", typeSymbol.TypeArguments.Select(arg => arg.Name));
+        return ns + name + "_" + typeArgNames;
+    }
 }

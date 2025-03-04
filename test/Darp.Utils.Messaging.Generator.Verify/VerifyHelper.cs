@@ -13,8 +13,8 @@ public static partial class VerifyHelper
 {
     public static SettingsTask VerifyMessagingGenerator(
         string source,
-        [CallerFilePath] string? callerFilePath = null,
-        LanguageVersion version = LanguageVersion.CSharp13
+        LanguageVersion version = LanguageVersion.CSharp13,
+        [CallerFilePath] string? callerFilePath = null
     )
     {
         var fileName =

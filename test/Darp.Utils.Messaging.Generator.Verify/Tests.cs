@@ -41,10 +41,10 @@ public class Tests
 
             namespace Test;
 
-            public sealed partial class TestClass<T> where T : allows ref struct
+            public sealed partial class TestClass<T1, T2> where T1 : class
             {
                 [MessageSink]
-                private void OnAny<T>(T message) { }
+                private void OnT(T1 message) { }
             }
             """;
         await VerifyHelper.VerifyMessagingGenerator(code);
