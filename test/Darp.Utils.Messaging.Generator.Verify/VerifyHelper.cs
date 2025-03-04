@@ -26,7 +26,7 @@ public static partial class VerifyHelper
                 languageVersion: version,
                 preprocessorSymbols: ["NET9_0", "NET9_0_OR_GREATER"]
             )
-            .AddReferenceAssemblyMarker<MessagingGenerator>()
+            .AddReferenceAssemblyMarker<MessageSinkAttribute>()
             .ScrubGeneratedCodeAttribute();
     }
 
@@ -129,8 +129,4 @@ public static partial class VerifyHelper
             && (allowedDiagnosticCode is null || !x.Id.StartsWith(allowedDiagnosticCode, StringComparison.Ordinal))
             && (x.Severity > DiagnosticSeverity.Warning || x.IsWarningAsError);
     }
-
-    // Do not delete! This method is required for loading Darp.Utils.Messaging
-    [MessageSink]
-    private static void _() { }
 }

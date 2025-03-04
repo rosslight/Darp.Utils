@@ -36,15 +36,18 @@ internal static class Emitter
         writer.WriteLine("{");
         writer.Indent++;
         writer.WriteMultiLine(
-            """
+            $"""
             [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+            {GetGeneratedVersionAttribute()}
+            [global::System.Obsolete("This field is not intended to be used in use code. Use 'GetMessageSink'")]
             private ___MessageSink? ___lazyMessageSink;
             """
         );
         writer.WriteLineNoTabs("");
         writer.WriteMultiLine(
-            """
+            $$"""
             /// <inheritdoc />
+            {{GetGeneratedVersionAttribute()}}
             public global::Darp.Utils.Messaging.IMessageSink GetMessageSink()
             {
                 return ___lazyMessageSink ??= new ___MessageSink(this);
@@ -120,6 +123,7 @@ internal static class Emitter
 
         if (!isValid)
             return false;
+        writer.WriteLine(GetGeneratedVersionAttribute());
         writer.WriteLine("private sealed class ___MessageSink");
         IEnumerable<string> methodParameterTypes = messageTypes
             .Where(x => !x.IsAny)
@@ -144,24 +148,24 @@ internal static class Emitter
             """
         );
         foreach (
-            IGrouping<ITypeSymbol, MethodInfo> methodGrouping in messageTypes.GroupBy(
-                x => x.TypeSymbol,
-                (IEqualityComparer<ITypeSymbol>)SymbolEqualityComparer.Default
-            )
+            IGrouping<ITypeSymbol, MethodInfo> methodGrouping in messageTypes
+                .Where(x => !x.IsAny)
+                .GroupBy(x => x.TypeSymbol, (IEqualityComparer<ITypeSymbol>)SymbolEqualityComparer.Default)
         )
         {
-            var isAny = methodGrouping.First().IsAny;
-            if (isAny)
-                EmitAnyPublishMethod(writer, methodGrouping);
-            else
-                EmitDefaultPublishMethod(writer, methodGrouping);
+            EmitDefaultPublishMethod(writer, methodGrouping);
+        }
+        MethodInfo[] anyMethods = messageTypes.Where(x => x.IsAny).ToArray();
+        if (anyMethods.Length > 0)
+        {
+            EmitAnyPublishMethod(writer, anyMethods);
         }
         writer.Indent--;
         writer.WriteLine("}");
         return isValid;
     }
 
-    private static void EmitAnyPublishMethod(IndentedTextWriter writer, IGrouping<ITypeSymbol, MethodInfo> valueTuples)
+    private static void EmitAnyPublishMethod(IndentedTextWriter writer, MethodInfo[] valueTuples)
     {
         writer.WriteLine(
             "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
@@ -241,6 +245,35 @@ internal static class Emitter
                 writer.WriteLineNoTabs("");
             else
                 writer.WriteLine(se);
+        }
+    }
+
+    private static string GetGeneratedVersionAttribute()
+    {
+        var generatorName = typeof(MessagingGenerator).Assembly.GetName().Name;
+        Version generatorVersion = typeof(MessagingGenerator).Assembly.GetName().Version;
+        return $"""[global::System.CodeDom.Compiler.GeneratedCodeAttribute("{generatorName}", "{generatorVersion}")]""";
+    }
+
+    private static IEnumerable<TSource> DistinctBy<TSource, TKey>(
+        this IEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey>? comparer = null
+    )
+    {
+        using IEnumerator<TSource> enumerator = source.GetEnumerator();
+
+        if (enumerator.MoveNext())
+        {
+            var set = new HashSet<TKey>(comparer);
+            do
+            {
+                TSource element = enumerator.Current;
+                if (set.Add(keySelector(element)))
+                {
+                    yield return element;
+                }
+            } while (enumerator.MoveNext());
         }
     }
 }
