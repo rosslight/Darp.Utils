@@ -55,6 +55,14 @@ jobs:
           dry_run: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.semantic.outputs.new_release_published == 'true'
+        name: Set .csproj versions
+        uses: vers-one/dotnet-project-version-updater@v1.7
+        with:
+          file: "src/**/*.csproj"
+          version: ${{ steps.semantic.outputs.new_release_version }}
+
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.semantic.outputs.new_release_published == 'true'
         name: Pack and push to nuget.org
         run: |
