@@ -21,8 +21,9 @@ public sealed class MessageSubject : IMessageSource, IAnyMessageSink
     {
         lock (_lock)
         {
-            foreach (IMessageSink eventReceiver in _eventReceiverProxies)
+            for (var index = _eventReceiverProxies.Count - 1; index >= 0; index--)
             {
+                IMessageSink eventReceiver = _eventReceiverProxies[index];
                 if (eventReceiver is IMessageSink<T> receiver)
                     receiver.Publish(message);
                 else if (eventReceiver is IAnyMessageSink anyReceiver)
@@ -36,7 +37,7 @@ public sealed class MessageSubject : IMessageSource, IAnyMessageSink
     {
         lock (_lock)
         {
-            _eventReceiverProxies.Add(sink);
+            _eventReceiverProxies.Insert(0, sink);
             return FuncDisposable.Create<(Lock Lock, List<IMessageSink> Sinks, IMessageSink Sink)>(
                 (_lock, _eventReceiverProxies, sink),
                 state =>
