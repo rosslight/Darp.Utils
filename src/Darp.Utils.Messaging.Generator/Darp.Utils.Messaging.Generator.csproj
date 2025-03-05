@@ -9,6 +9,8 @@
         <IncludeSymbols>false</IncludeSymbols>
         <IsRoslynComponent>true</IsRoslynComponent>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+        <Description>A SourceGenerator generating a implementation for message sources and sinks</Description>
     </PropertyGroup>
 
   <ItemGroup>

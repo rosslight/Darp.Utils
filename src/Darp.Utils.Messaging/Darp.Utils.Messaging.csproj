@@ -5,6 +5,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
+
+        <Title>Darp.Utils.Messaging</Title>
+        <Description>A source generator to generate implementation for MessageSource and MessageSinks.</Description>
+        <PackageTags>Darp;Rosslight;SourceGenerator;Messaging;MessageSource;MessageSink;IObservable;IObserver</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
