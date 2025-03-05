@@ -46,7 +46,7 @@ public class MessagingGenerator : IIncrementalGenerator
         {
             try
             {
-                var fileName = $"{methodInfos.Key}.g.cs";
+                var fileName = $"{methodInfos.Key}_Sink.g.cs";
 
                 var success = SinkEmitter.TryEmit(
                     methodInfos.ToArray(),
@@ -74,7 +74,7 @@ public class MessagingGenerator : IIncrementalGenerator
     {
         try
         {
-            var fileName = $"{targetMethodInfo.HintName}.g.cs";
+            var fileName = $"{targetMethodInfo.HintName}_Source.g.cs";
 
             var success = SourceEmitter.TryEmit(targetMethodInfo, out var code, out List<Diagnostic> diagnostics);
             foreach (Diagnostic diagnostic in diagnostics)

@@ -44,7 +44,6 @@ public sealed class MessageSinkTests
     public async Task DefaultCases_BelowNet9()
     {
         const string code = """
-            using System;
             using Darp.Utils.Messaging;
 
             namespace Test;
@@ -71,7 +70,6 @@ public sealed class MessageSinkTests
     public async Task GenericClass()
     {
         const string code = """
-            using System;
             using Darp.Utils.Messaging;
 
             namespace Test;
@@ -80,6 +78,28 @@ public sealed class MessageSinkTests
             {
                 [MessageSink]
                 private void OnT(T1 message) { }
+            }
+            """;
+        await VerifyHelper.VerifyMessagingGenerator(code);
+    }
+
+    [Fact]
+    public async Task TestSubject()
+    {
+        const string code = """
+            using Darp.Utils.Messaging;
+
+            namespace Test;
+
+            [MessageSource]
+            public sealed partial class TestSubject
+            {
+                [MessageSink]
+                public void Publish<T>(T message)
+            #if NET9_0_OR_GREATER
+                    where T : allows ref struct
+            #endif
+                { }
             }
             """;
         await VerifyHelper.VerifyMessagingGenerator(code);
