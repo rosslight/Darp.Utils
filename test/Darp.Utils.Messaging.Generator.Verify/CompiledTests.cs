@@ -95,6 +95,7 @@ internal partial class TestStringHandler
 [MessageSource]
 internal partial class TestMessageSource
 {
+    [MessageSink]
     public void Publish<T>(T message)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
