@@ -62,5 +62,7 @@ public sealed record GetCaseResponse
 
     /// <summary> User defined properties </summary>
     [JsonExtensionData]
+#pragma warning disable CA2227 // Collection properties should be read only is ignored because the json serializes requires a settable collection
     public Dictionary<string, JsonElement> Properties { get; set; } = [];
+#pragma warning restore CA2227
 }
