@@ -2,6 +2,7 @@ namespace Darp.Utils.TestRail.Models;
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <summary> The model of the test </summary>
@@ -46,6 +47,6 @@ public sealed record GetTestResponse
     /// <summary> User defined properties </summary>
     [JsonExtensionData]
 #pragma warning disable CA2227 // Collection properties should be read only is ignored because the json serializes requires a settable collection
-    public Dictionary<string, object> Properties { get; set; } = [];
+    public Dictionary<string, JsonElement> Properties { get; set; } = [];
 #pragma warning restore CA2227
 }
