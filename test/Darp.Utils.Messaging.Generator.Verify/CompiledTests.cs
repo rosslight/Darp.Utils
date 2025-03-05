@@ -2,7 +2,7 @@ namespace Darp.Utils.Messaging.Generator.Verify;
 
 using FluentAssertions;
 
-#if False
+#if True
 
 public sealed class CompiledTests
 {
@@ -96,64 +96,9 @@ internal partial class TestStringHandler
 internal partial class TestMessageSource
 {
     public void Publish<T>(T message)
-        where T : allows ref struct => PublishMessage(message);
-}
-
-internal partial class TestMessageSource : global::Darp.Utils.Messaging.IMessageSource
-{
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Darp.Utils.Messaging.Generator", "0.0.0.0")]
-    [global::System.Obsolete("This field is not intended to be used in use code")]
-    private readonly global::System.Collections.Generic.List<global::Darp.Utils.Messaging.IMessageSink> ___messageSinks =
-        new global::System.Collections.Generic.List<global::Darp.Utils.Messaging.IMessageSink>();
-
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Darp.Utils.Messaging.Generator", "0.0.0.0")]
-    [global::System.Obsolete("This field is not intended to be used in use code")]
-#if NET9_0_OR_GREATER
-    private readonly global::System.Threading.Lock ___lock = new Lock();
-#else
-    private readonly object ___lock = new object();
-#endif
-
-    /// <summary> Publish a new message </summary>
-    /// <param name="message"> The message to be published </param>
-    /// <typeparam name="T"> The type of the message to be published </typeparam>
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Darp.Utils.Messaging.Generator", "0.0.0.0")]
-    protected void PublishMessage<T>(in T message)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
-    {
-        lock (___lock)
-        {
-            for (var index = ___messageSinks.Count - 1; index >= 0; index--)
-            {
-                global::Darp.Utils.Messaging.IMessageSink eventReceiver = ___messageSinks[index];
-                if (eventReceiver is global::Darp.Utils.Messaging.IMessageSink<T> receiver)
-                    receiver.Publish(message);
-                else if (eventReceiver is global::Darp.Utils.Messaging.IAnyMessageSink anyReceiver)
-                    anyReceiver.Publish(message);
-            }
-        }
-    }
-
-    /// <inheritdoc />
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Darp.Utils.Messaging.Generator", "0.0.0.0")]
-    public global::System.IDisposable Subscribe(global::Darp.Utils.Messaging.IMessageSink sink)
-    {
-        lock (___lock)
-        {
-            ___messageSinks.Insert(0, sink);
-            return global::Darp.Utils.Messaging.FuncDisposable.Create(
-                (_lock: ___lock, _eventReceiverProxies: ___messageSinks, sink),
-                state =>
-                {
-                    lock (state._lock)
-                        state._eventReceiverProxies.Remove(state.sink);
-                }
-            );
-        }
-    }
+        => PublishMessage(message);
 }
 #endif

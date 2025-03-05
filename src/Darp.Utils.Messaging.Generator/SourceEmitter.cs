@@ -29,6 +29,8 @@ internal static class SourceEmitter
 
         var typeName = sourceInfo.Symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
         var publishModifier = sourceInfo.Symbol.IsSealed ? "private" : "protected";
+        var lockType = sourceInfo.IsCompiledWithNet9OrGreater ? "global::System.Threading.Lock" : "object";
+        var refStructConstraint = sourceInfo.IsCompiledWithNet9OrGreater ? " where T : allows ref struct" : "";
         writer.WriteMultiLine(
             $$"""
             partial class {{typeName}} : global::Darp.Utils.Messaging.IMessageSource
@@ -42,20 +44,13 @@ internal static class SourceEmitter
                 [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
                 {{GetGeneratedVersionAttribute()}}
                 [global::System.Obsolete("This field is not intended to be used in use code")]
-            #if NET9_0_OR_GREATER
-                private readonly global::System.Threading.Lock ___lock = new global::System.Threading.Lock();
-            #else
-                private readonly object ___lock = new object();
-            #endif
+                private readonly {{lockType}} ___lock = new {{lockType}}();
 
                 /// <summary> Publish a new message </summary>
                 /// <param name="message"> The message to be published </param>
                 /// <typeparam name="T"> The type of the message to be published </typeparam>
                 {{GetGeneratedVersionAttribute()}}
-                {{publishModifier}} void PublishMessage<T>(in T message)
-            #if NET9_0_OR_GREATER
-                    where T : allows ref struct
-            #endif
+                {{publishModifier}} void PublishMessage<T>(in T message){{refStructConstraint}}
                 {
                     lock (___lock)
                     {

@@ -21,7 +21,7 @@ namespace Test
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Darp.Utils.Messaging.Generator", "GeneratorVersion")]
         private sealed class ___MessageSink
-            : global::Darp.Utils.Messaging.IMessageSink<int>, global::Darp.Utils.Messaging.IAnyMessageSink
+            : global::Darp.Utils.Messaging.IMessageSink<int>, global::Darp.Utils.Messaging.IMessageSink<global::System.ReadOnlySpan<byte>>, global::Darp.Utils.Messaging.IAnyMessageSink
         {
             private readonly TestClass _parent;
 
@@ -37,10 +37,13 @@ namespace Test
                 OnIntStatic(message);
             }
             [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public void Publish(in global::System.ReadOnlySpan<byte> message)
+            {
+                _parent.OnSpan(message);
+            }
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void Publish<T>(in T message)
-#if NET9_0_OR_GREATER
                 where T : allows ref struct
-#endif
             {
                 _parent.OnAny(message);
                 OnAnyStatic(message);

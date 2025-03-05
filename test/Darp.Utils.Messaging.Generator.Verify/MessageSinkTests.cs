@@ -1,6 +1,6 @@
 ﻿namespace Darp.Utils.Messaging.Generator.Verify;
 
-public sealed class Tests
+public sealed class MessageSinkTests
 {
 #if NET9_0_OR_GREATER
     [Fact]

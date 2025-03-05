@@ -17,8 +17,4 @@
       <PackageReference Include="Verify.Xunit" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Snapshots\Tests\" />
-    </ItemGroup>
-
 </Project>

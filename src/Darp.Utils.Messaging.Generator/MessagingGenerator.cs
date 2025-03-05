@@ -93,18 +93,20 @@ public class MessagingGenerator : IIncrementalGenerator
     private static SinkMethodInfo GetSinkMethodInfo(GeneratorAttributeSyntaxContext context, CancellationToken _)
     {
         var compilation = context.SemanticModel.Compilation as CSharpCompilation;
-        AttributeData attribute = context.Attributes.First(x => x.ToString() == MessageSinkAttributeName);
         var compiledWithNet9OrGreater =
             compilation?.SyntaxTrees[0].Options.PreprocessorSymbolNames.Contains("NET9_0_OR_GREATER") is true;
+        AttributeData attribute = context.Attributes.First(x => x.ToString() == MessageSinkAttributeName);
         var type = (IMethodSymbol)context.TargetSymbol;
         return new SinkMethodInfo(type, attribute, compiledWithNet9OrGreater);
     }
 
     private static SourceTypeInfo GetSourceTypeInfo(GeneratorAttributeSyntaxContext context, CancellationToken _)
     {
-        AttributeData attribute = context.Attributes.First(x => x.ToString() == MessageSourceAttributeName);
+        var compilation = context.SemanticModel.Compilation as CSharpCompilation;
+        var compiledWithNet9OrGreater =
+            compilation?.SyntaxTrees[0].Options.PreprocessorSymbolNames.Contains("NET9_0_OR_GREATER") is true;
         var type = (INamedTypeSymbol)context.TargetSymbol;
-        return new SourceTypeInfo(type, attribute);
+        return new SourceTypeInfo(type, compiledWithNet9OrGreater);
     }
 }
 
@@ -117,7 +119,7 @@ internal readonly record struct SinkMethodInfo(
     public string HintName { get; } = Symbol.ContainingType.GetFileName();
 }
 
-internal readonly record struct SourceTypeInfo(INamedTypeSymbol Symbol, AttributeData SinkAttributeData)
+internal readonly record struct SourceTypeInfo(INamedTypeSymbol Symbol, bool IsCompiledWithNet9OrGreater)
 {
     public string HintName { get; } = Symbol.GetFileName();
 }

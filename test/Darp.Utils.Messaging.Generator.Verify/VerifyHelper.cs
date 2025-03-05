@@ -120,7 +120,10 @@ public static partial class VerifyHelper
                 "generated sources throw:\n{0}",
                 string.Join("\n", driver.GetRunResult().GeneratedTrees.ToReadableString())
             );
-        return Verifier.Verify(driver).UseDirectory(Path.Join("Snapshots", directory));
+        return Verifier
+            .Verify(driver)
+            .UseDirectory(Path.Join("Snapshots", directory))
+            .UniqueForTargetFrameworkAndVersion();
     }
 
     private static string ToReadableString(this ImmutableArray<SyntaxTree> syntaxTrees)

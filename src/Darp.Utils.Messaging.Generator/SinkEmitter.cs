@@ -80,6 +80,7 @@ internal static class SinkEmitter
     {
         List<MethodInfo> messageTypes = [];
         var isValid = true;
+        var isCompiledWithNet9OrGreater = methods[0].IsCompiledWithNet9OrGreater;
         foreach (SinkMethodInfo targetMethodInfo in methods)
         {
             var isStatic = targetMethodInfo.Symbol.IsStatic;
@@ -109,8 +110,7 @@ internal static class SinkEmitter
                     continue;
                 }
                 var allowsRefStruct =
-                    targetMethodInfo.Symbol.TypeParameters[0].AllowsRefLikeType
-                    || !targetMethodInfo.IsCompiledWithNet9OrGreater;
+                    targetMethodInfo.Symbol.TypeParameters[0].AllowsRefLikeType || !isCompiledWithNet9OrGreater;
                 if (!allowsRefStruct || targetMethodInfo.Symbol.TypeParameters[0].ConstraintTypes.Length > 0)
                 {
                     isValid = false;
@@ -151,7 +151,7 @@ internal static class SinkEmitter
             {
                 _parent = parent;
             }
-
+            
             """
         );
         foreach (
@@ -165,22 +165,25 @@ internal static class SinkEmitter
         MethodInfo[] anyMethods = messageTypes.Where(x => x.IsAny).ToArray();
         if (anyMethods.Length > 0)
         {
-            EmitAnyPublishMethod(writer, anyMethods);
+            EmitAnyPublishMethod(writer, anyMethods, isCompiledWithNet9OrGreater);
         }
         writer.Indent--;
         writer.WriteLine("}");
         return isValid;
     }
 
-    private static void EmitAnyPublishMethod(IndentedTextWriter writer, MethodInfo[] valueTuples)
+    private static void EmitAnyPublishMethod(
+        IndentedTextWriter writer,
+        MethodInfo[] valueTuples,
+        bool isCompiledWithNet9OrGreater
+    )
     {
         writer.WriteLine(
             "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
         );
         writer.WriteLine("public void Publish<T>(in T message)");
-        writer.WriteLineNoTabs("#if NET9_0_OR_GREATER");
-        writer.WriteLine("    where T : allows ref struct");
-        writer.WriteLineNoTabs("#endif");
+        if (isCompiledWithNet9OrGreater)
+            writer.WriteLine("    where T : allows ref struct");
         writer.WriteLine("{");
         writer.Indent++;
         foreach ((_, var isStatic, ITypeSymbol _, IMethodSymbol methodSymbol) in valueTuples)
