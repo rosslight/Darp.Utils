@@ -17,6 +17,11 @@ public static partial class VerifyHelper
         [CallerFilePath] string? callerFilePath = null
     )
     {
+#if NET9_0_OR_GREATER
+        IEnumerable<string> preprocessorSymbols = ["NET9_0_OR_GREATER"];
+#else
+        IEnumerable<string> preprocessorSymbols = [];
+#endif
         var fileName =
             Path.GetFileNameWithoutExtension(callerFilePath) ?? throw new ArgumentNullException(nameof(callerFilePath));
         return VerifyGenerator<MessagingGenerator>(
@@ -24,7 +29,7 @@ public static partial class VerifyHelper
                 allowedDiagnosticCode: "DMGO0",
                 directory: fileName,
                 languageVersion: version,
-                preprocessorSymbols: ["NET9_0", "NET9_0_OR_GREATER"]
+                preprocessorSymbols: preprocessorSymbols
             )
             .AddReferenceAssemblyMarker<MessageSinkAttribute>()
             .ScrubGeneratedCodeAttribute();
@@ -104,7 +109,7 @@ public static partial class VerifyHelper
         driver = driver.RunGeneratorsAndUpdateCompilation(
             compilation,
             out Compilation newCompilation,
-            out ImmutableArray<Diagnostic> diagnostics
+            out ImmutableArray<Diagnostic> _
         );
         // Assert that there are no compilation errors (except for CS5001 which informs about the missing program entry)
         newCompilation

@@ -37,7 +37,7 @@ public sealed class MessageSubject : IMessageSource, IAnyMessageSink
         lock (_lock)
         {
             _eventReceiverProxies.Add(sink);
-            return new FuncDisposable<(Lock Lock, List<IMessageSink> Sinks, IMessageSink Sink)>(
+            return FuncDisposable.Create<(Lock Lock, List<IMessageSink> Sinks, IMessageSink Sink)>(
                 (_lock, _eventReceiverProxies, sink),
                 state =>
                 {

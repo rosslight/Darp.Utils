@@ -7,32 +7,52 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
+#pragma warning disable CA1031 // Do not catch general exception types -> better than throwing an exception
+
 [Generator(LanguageNames.CSharp)]
 public class MessagingGenerator : IIncrementalGenerator
 {
     public const string MessageSinkAttributeName = "Darp.Utils.Messaging.MessageSinkAttribute";
+    public const string MessageSourceAttributeName = "Darp.Utils.Messaging.MessageSourceAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Only target specific attributes
-        IncrementalValuesProvider<TargetMethodInfo> messageSinkProvider =
+        // Target MessageSink attribute
+        IncrementalValuesProvider<SinkMethodInfo> messageSinkProvider =
             context.SyntaxProvider.ForAttributeWithMetadataName(
                 MessageSinkAttributeName,
                 static (node, _) => node is MethodDeclarationSyntax,
-                GetMethodeInfo
+                GetSinkMethodInfo
             );
-        context.RegisterSourceOutput(messageSinkProvider.Collect(), Execute);
+        context.RegisterSourceOutput(messageSinkProvider.Collect(), ExecuteSinkMethods);
+
+        // Target MessageSink attribute
+        IncrementalValuesProvider<SourceTypeInfo> messageSourceProvider =
+            context.SyntaxProvider.ForAttributeWithMetadataName(
+                MessageSourceAttributeName,
+                static (node, _) =>
+                    node is ClassDeclarationSyntax or RecordDeclarationSyntax or StructDeclarationSyntax,
+                GetSourceTypeInfo
+            );
+        context.RegisterSourceOutput(messageSourceProvider, ExecuteSourceTypes);
     }
 
-    private static void Execute(SourceProductionContext spc, ImmutableArray<TargetMethodInfo> targetMethodInfos)
+    private static void ExecuteSinkMethods(
+        SourceProductionContext spc,
+        ImmutableArray<SinkMethodInfo> targetMethodInfos
+    )
     {
-        foreach (IGrouping<string, TargetMethodInfo> methodInfos in targetMethodInfos.GroupBy(x => x.HintName))
+        foreach (IGrouping<string, SinkMethodInfo> methodInfos in targetMethodInfos.GroupBy(x => x.HintName))
         {
             try
             {
                 var fileName = $"{methodInfos.Key}.g.cs";
 
-                var success = Emitter.TryEmit(methodInfos.ToArray(), out var code, out List<Diagnostic> diagnostics);
+                var success = SinkEmitter.TryEmit(
+                    methodInfos.ToArray(),
+                    out var code,
+                    out List<Diagnostic> diagnostics
+                );
                 foreach (Diagnostic diagnostic in diagnostics)
                     spc.ReportDiagnostic(diagnostic);
                 if (!success)
@@ -43,54 +63,61 @@ public class MessagingGenerator : IIncrementalGenerator
                     SourceText.From(code ?? string.Empty, Encoding.UTF8, SourceHashAlgorithm.Sha256)
                 );
             }
-#pragma warning disable CA1031 // Do not catch general exception types -> better than throwing an exception
             catch (Exception e)
-#pragma warning restore CA1031
             {
                 spc.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.GeneralError, null, e.Message));
             }
         }
     }
 
-    private static TargetMethodInfo GetMethodeInfo(
-        GeneratorAttributeSyntaxContext context,
-        CancellationToken cancellationToken
-    )
+    private static void ExecuteSourceTypes(SourceProductionContext spc, SourceTypeInfo targetMethodInfo)
+    {
+        try
+        {
+            var fileName = $"{targetMethodInfo.HintName}.g.cs";
+
+            var success = SourceEmitter.TryEmit(targetMethodInfo, out var code, out List<Diagnostic> diagnostics);
+            foreach (Diagnostic diagnostic in diagnostics)
+                spc.ReportDiagnostic(diagnostic);
+            if (!success)
+                return;
+
+            spc.AddSource(fileName, SourceText.From(code ?? string.Empty, Encoding.UTF8, SourceHashAlgorithm.Sha256));
+        }
+        catch (Exception e)
+        {
+            spc.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.GeneralError, null, e.Message));
+        }
+    }
+
+    private static SinkMethodInfo GetSinkMethodInfo(GeneratorAttributeSyntaxContext context, CancellationToken _)
     {
         var compilation = context.SemanticModel.Compilation as CSharpCompilation;
-        LanguageVersion languageVersion = compilation?.LanguageVersion ?? LanguageVersion.CSharp1;
-
+        AttributeData attribute = context.Attributes.First(x => x.ToString() == MessageSinkAttributeName);
+        var compiledWithNet9OrGreater =
+            compilation?.SyntaxTrees[0].Options.PreprocessorSymbolNames.Contains("NET9_0_OR_GREATER") is true;
         var type = (IMethodSymbol)context.TargetSymbol;
-        var node = (MethodDeclarationSyntax)context.TargetNode;
-        return new TargetMethodInfo(type, node, languageVersion);
+        return new SinkMethodInfo(type, attribute, compiledWithNet9OrGreater);
+    }
+
+    private static SourceTypeInfo GetSourceTypeInfo(GeneratorAttributeSyntaxContext context, CancellationToken _)
+    {
+        AttributeData attribute = context.Attributes.First(x => x.ToString() == MessageSourceAttributeName);
+        var type = (INamedTypeSymbol)context.TargetSymbol;
+        return new SourceTypeInfo(type, attribute);
     }
 }
 
-internal readonly record struct TargetMethodInfo(
+internal readonly record struct SinkMethodInfo(
     IMethodSymbol Symbol,
-    MethodDeclarationSyntax Syntax,
-    LanguageVersion LanguageVersion
+    AttributeData SinkAttributeData,
+    bool IsCompiledWithNet9OrGreater
 )
 {
-    public string HintName { get; } = GetFileName(Symbol.ContainingType);
+    public string HintName { get; } = Symbol.ContainingType.GetFileName();
+}
 
-    public AttributeData SinkAttributeData =>
-        Symbol
-            .GetAttributes()
-            .First(x => x.AttributeClass?.ToDisplayString() == MessagingGenerator.MessageSinkAttributeName);
-
-    private static string GetFileName(INamedTypeSymbol typeSymbol)
-    {
-        var ns = typeSymbol.ContainingNamespace.IsGlobalNamespace
-            ? string.Empty
-            : typeSymbol.ContainingNamespace.ToDisplayString() + ".";
-
-        var name = typeSymbol.Name;
-
-        if (typeSymbol.TypeArguments.Length <= 0)
-            return ns + name;
-
-        var typeArgNames = string.Join("_", typeSymbol.TypeArguments.Select(arg => arg.Name));
-        return ns + name + "_" + typeArgNames;
-    }
+internal readonly record struct SourceTypeInfo(INamedTypeSymbol Symbol, AttributeData SinkAttributeData)
+{
+    public string HintName { get; } = Symbol.GetFileName();
 }

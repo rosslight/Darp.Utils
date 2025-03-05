@@ -3,6 +3,7 @@ namespace Darp.Utils.Messaging.Generator;
 using System.CodeDom.Compiler;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
+using static RoslynHelper;
 using MethodInfo = (
     bool IsAny,
     bool IsStatic,
@@ -10,10 +11,10 @@ using MethodInfo = (
     Microsoft.CodeAnalysis.IMethodSymbol MethodSymbol
 );
 
-internal static class Emitter
+internal static class SinkEmitter
 {
     public static bool TryEmit(
-        TargetMethodInfo[] methods,
+        SinkMethodInfo[] methods,
         [NotNullWhen(true)] out string? code,
         out List<Diagnostic> diagnostics
     )
@@ -73,13 +74,13 @@ internal static class Emitter
     private static bool TryEmitMessageSink(
         IndentedTextWriter writer,
         INamedTypeSymbol parentTypeSymbol,
-        TargetMethodInfo[] methods,
+        SinkMethodInfo[] methods,
         List<Diagnostic> diagnostics
     )
     {
         List<MethodInfo> messageTypes = [];
         var isValid = true;
-        foreach (TargetMethodInfo targetMethodInfo in methods)
+        foreach (SinkMethodInfo targetMethodInfo in methods)
         {
             var isStatic = targetMethodInfo.Symbol.IsStatic;
             var isAny = false;
@@ -107,7 +108,9 @@ internal static class Emitter
                     );
                     continue;
                 }
-                var allowsRefStruct = targetMethodInfo.Symbol.TypeParameters[0].AllowsRefLikeType;
+                var allowsRefStruct =
+                    targetMethodInfo.Symbol.TypeParameters[0].AllowsRefLikeType
+                    || !targetMethodInfo.IsCompiledWithNet9OrGreater;
                 if (!allowsRefStruct || targetMethodInfo.Symbol.TypeParameters[0].ConstraintTypes.Length > 0)
                 {
                     isValid = false;
@@ -148,7 +151,7 @@ internal static class Emitter
             {
                 _parent = parent;
             }
-            
+
             """
         );
         foreach (
@@ -212,50 +215,5 @@ internal static class Emitter
         }
         writer.Indent--;
         writer.WriteLine("}");
-    }
-
-    private static void EmitOptionalNamespaceStart(IndentedTextWriter writer, INamedTypeSymbol symbol)
-    {
-        var typeNamespace = symbol.GetNamespace();
-        if (string.IsNullOrWhiteSpace(typeNamespace))
-            return;
-        writer.WriteLine($"namespace {typeNamespace}");
-        writer.WriteLine("{");
-        writer.Indent++;
-    }
-
-    private static void EmitOptionalNamespaceEnd(IndentedTextWriter writer, INamedTypeSymbol symbol)
-    {
-        var typeNamespace = symbol.GetNamespace();
-        if (string.IsNullOrWhiteSpace(typeNamespace))
-            return;
-        writer.Indent--;
-        writer.WriteLine("}");
-    }
-
-    private static string? GetNamespace(this ITypeSymbol symbol)
-    {
-        if (symbol.ContainingNamespace.IsGlobalNamespace)
-            return null;
-        var typeNamespace = symbol.ContainingNamespace.ToDisplayString();
-        return string.IsNullOrWhiteSpace(typeNamespace) ? null : typeNamespace;
-    }
-
-    private static void WriteMultiLine(this IndentedTextWriter writer, string multiLineString)
-    {
-        foreach (var se in multiLineString.Split(["\r\n", "\n"], StringSplitOptions.None))
-        {
-            if (string.IsNullOrWhiteSpace(se))
-                writer.WriteLineNoTabs("");
-            else
-                writer.WriteLine(se);
-        }
-    }
-
-    private static string GetGeneratedVersionAttribute()
-    {
-        var generatorName = typeof(MessagingGenerator).Assembly.GetName().Name;
-        Version generatorVersion = typeof(MessagingGenerator).Assembly.GetName().Version;
-        return $"""[global::System.CodeDom.Compiler.GeneratedCodeAttribute("{generatorName}", "{generatorVersion}")]""";
     }
 }

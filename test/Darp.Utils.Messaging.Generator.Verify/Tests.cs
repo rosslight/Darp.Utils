@@ -1,9 +1,11 @@
 ﻿namespace Darp.Utils.Messaging.Generator.Verify;
 
-public class Tests
+public sealed class Tests
 {
+#if NET9_0_OR_GREATER
     [Fact]
-    public async Task DefaultCases()
+#endif
+    public async Task DefaultCases_Net9()
     {
         const string code = """
             using System;
@@ -23,10 +25,43 @@ public class Tests
                 private void OnSpan(ReadOnlySpan<byte> message) { }
 
                 [MessageSink]
-                private void OnAny<T>(T message) where T : allows ref struct { }
+                private void OnAny<T>(T message)
+                    where T : allows ref struct
+                { }
 
                 [MessageSink]
-                private static void OnAnyStatic<T>(T message) where T : allows ref struct { }
+                private static void OnAnyStatic<T>(T message)
+                    where T : allows ref struct
+                { }
+            }
+            """;
+        await VerifyHelper.VerifyMessagingGenerator(code);
+    }
+
+#if !NET9_0_OR_GREATER
+    [Fact]
+#endif
+    public async Task DefaultCases_BelowNet9()
+    {
+        const string code = """
+            using System;
+            using Darp.Utils.Messaging;
+
+            namespace Test;
+
+            public sealed partial class TestClass
+            {
+                [MessageSink]
+                private void OnInt(int message) { }
+
+                [MessageSink]
+                private static void OnIntStatic(int message) { }
+
+                [MessageSink]
+                private void OnAny<T>(T message) { }
+
+                [MessageSink]
+                private static void OnAnyStatic<T>(T message) { }
             }
             """;
         await VerifyHelper.VerifyMessagingGenerator(code);
