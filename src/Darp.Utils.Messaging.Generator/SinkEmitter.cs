@@ -178,9 +178,6 @@ internal static class SinkEmitter
         bool isCompiledWithNet9OrGreater
     )
     {
-        writer.WriteLine(
-            "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
-        );
         writer.WriteLine("public void Publish<T>(in T message)");
         if (isCompiledWithNet9OrGreater)
             writer.WriteLine("    where T : allows ref struct");
@@ -203,9 +200,6 @@ internal static class SinkEmitter
     )
     {
         var typeNameString = valueTuples.Key.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-        writer.WriteLine(
-            "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
-        );
         writer.WriteLine($"public void Publish(in {typeNameString} message)");
         writer.WriteLine("{");
         writer.Indent++;

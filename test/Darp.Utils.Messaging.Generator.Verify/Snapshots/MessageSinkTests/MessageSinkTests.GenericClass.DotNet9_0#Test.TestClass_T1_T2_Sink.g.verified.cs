@@ -30,7 +30,6 @@ namespace Test
                 _parent = parent;
             }
 
-            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void Publish(in T1 message)
             {
                 _parent.OnT(message);

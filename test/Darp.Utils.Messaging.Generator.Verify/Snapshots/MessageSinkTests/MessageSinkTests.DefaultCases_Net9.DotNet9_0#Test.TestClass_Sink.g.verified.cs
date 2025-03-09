@@ -30,18 +30,15 @@ namespace Test
                 _parent = parent;
             }
 
-            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void Publish(in int message)
             {
                 _parent.OnInt(message);
                 OnIntStatic(message);
             }
-            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void Publish(in global::System.ReadOnlySpan<byte> message)
             {
                 _parent.OnSpan(message);
             }
-            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void Publish<T>(in T message)
                 where T : allows ref struct
             {
