@@ -3,15 +3,18 @@ namespace Darp.Utils.Dialog.DialogData;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel.__Internals;
+using static Helper.Strings;
 
 /// <summary> Data for InputDialogs </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public sealed partial class InputDialogViewModel : ObservableValidator, IDialogData<string>
 {
     /// <summary> Initialize a new instance </summary>
-    [RequiresUnreferencedCode(
-        "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
-    )]
+#pragma warning disable CS0618 // Type or member is obsolete
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
+#pragma warning restore CS0618 // Type or member is obsolete
     public InputDialogViewModel()
     {
         ValidateAllProperties();
@@ -28,6 +31,10 @@ public sealed partial class InputDialogViewModel : ObservableValidator, IDialogD
     [NotifyDataErrorInfo]
     [Required]
     [CustomValidation(typeof(InputDialogViewModel), nameof(ValidateInput))]
+#pragma warning disable CS0618 // Type or member is obsolete
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
+#pragma warning restore CS0618 // Type or member is obsolete
     private string? _input;
 
     /// <summary> The watermark to show on the <see cref="Input"/> field </summary>

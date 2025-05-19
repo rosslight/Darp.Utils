@@ -3,7 +3,9 @@ namespace Darp.Utils.Dialog.DialogData;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel.__Internals;
 using CommunityToolkit.Mvvm.Input;
+using static Helper.Strings;
 
 /// <summary> Current step of the <see cref="UsernamePasswordViewModel"/> dialog </summary>
 public enum UsernamePasswordStep
@@ -53,6 +55,10 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     [NotifyDataErrorInfo]
     [Required]
     [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidateUsername))]
+#pragma warning disable CS0618 // Type or member is obsolete
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
+#pragma warning restore CS0618 // Type or member is obsolete
     private string? _username;
 
     /// <summary> The password </summary>
@@ -60,12 +66,17 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     [NotifyDataErrorInfo]
     [Required]
     [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidatePassword))]
+#pragma warning disable CS0618 // Type or member is obsolete
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
+#pragma warning restore CS0618 // Type or member is obsolete
     private string? _password;
 
     /// <summary> Initialize a new instance </summary>
-    [RequiresUnreferencedCode(
-        "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
-    )]
+#pragma warning disable CS0618 // Type or member is obsolete
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
+#pragma warning restore CS0618 // Type or member is obsolete
     public UsernamePasswordViewModel()
     {
         ErrorsChanged += (_, _) => OnPropertyChanged(nameof(IsCurrentStepValid));
