@@ -50,9 +50,10 @@ jobs:
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         name: Get release version
         id: semantic
-        uses: cycjimmy/semantic-release-action@v4.1.1
+        uses: cycjimmy/semantic-release-action@v4
         with:
           dry_run: true
+          semantic_version: 24.2.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -86,8 +87,9 @@ jobs:
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.semantic.outputs.new_release_published == 'true'
         name: Semantic Release
         id: release
-        uses: cycjimmy/semantic-release-action@v4.1.1
+        uses: cycjimmy/semantic-release-action@v4
         with:
+          semantic_version: 24.2.3
           extra_plugins: |
             @semantic-release/commit-analyzer
             @semantic-release/release-notes-generator
