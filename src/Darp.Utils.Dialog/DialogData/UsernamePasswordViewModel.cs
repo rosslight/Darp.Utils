@@ -26,7 +26,6 @@ public enum UsernamePasswordStep
 public record UsernamePasswordData(string Username, string Password);
 
 /// <summary> Wraps username password dialog information </summary>
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class UsernamePasswordViewModel : ObservableValidator, IDialogData<UsernamePasswordData>
 {
     /// <summary> The delegate to validate a password </summary>
@@ -40,41 +39,10 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
         CancellationToken cancellationToken
     );
 
-    private UsernamePasswordStep _step = UsernamePasswordStep.RequestUsername;
-
-    /// <summary> The message to be displayed when the username is requested </summary>
-    [ObservableProperty]
-    private string? _enterUsernameMessage;
-
-    /// <summary> The message to be displayed when the password is requested </summary>
-    [ObservableProperty]
-    private string? _enterPasswordMessage;
-
-    /// <summary> The username </summary>
-    [ObservableProperty]
-    [NotifyDataErrorInfo]
-    [Required]
-    [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidateUsername))]
-#pragma warning disable CS0618 // Type or member is obsolete
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
-#pragma warning restore CS0618 // Type or member is obsolete
-    private string? _username;
-
-    /// <summary> The password </summary>
-    [ObservableProperty]
-    [NotifyDataErrorInfo]
-    [Required]
-    [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidatePassword))]
-#pragma warning disable CS0618 // Type or member is obsolete
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
-#pragma warning restore CS0618 // Type or member is obsolete
-    private string? _password;
-
     /// <summary> Initialize a new instance </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(UsernamePasswordViewModel))]
+#pragma warning disable CS0618 // Type or member is obsolete
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
 #pragma warning restore CS0618 // Type or member is obsolete
     public UsernamePasswordViewModel()
@@ -82,6 +50,30 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
         ErrorsChanged += (_, _) => OnPropertyChanged(nameof(IsCurrentStepValid));
         ValidateAllProperties();
     }
+
+    /// <summary> The message to be displayed when the username is requested </summary>
+    [ObservableProperty]
+    public partial string? EnterUsernameMessage { get; set; }
+
+    /// <summary> The message to be displayed when the password is requested </summary>
+    [ObservableProperty]
+    public partial string? EnterPasswordMessage { get; set; }
+
+    /// <summary> The username </summary>
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidateUsername))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    public partial string? Username { get; set; }
+
+    /// <summary> The password </summary>
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidatePassword))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    public partial string? Password { get; set; }
 
     /// <summary> An optional function which is used to check the validity of the password </summary>
     public ValidatePasswordAsync? CheckHandler { get; set; }
@@ -92,16 +84,16 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     /// <summary> The current step when entering a password </summary>
     public UsernamePasswordStep Step
     {
-        get => _step;
+        get;
         private set
         {
-            if (!SetProperty(ref _step, value))
+            if (!SetProperty(ref field, value))
                 return;
             OnPropertyChanged(nameof(IsUsernameSet));
             OnPropertyChanged(nameof(IsPasswordSet));
             OnPropertyChanged(nameof(IsCurrentStepValid));
         }
-    }
+    } = UsernamePasswordStep.RequestUsername;
 
     /// <summary> Returns whether the username was set </summary>
     public bool IsUsernameSet => Step > UsernamePasswordStep.RequestUsername;
@@ -137,9 +129,7 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     private void RequestUsernameStep()
     {
         if (Step is not UsernamePasswordStep.RequestPassword)
-        {
             return;
-        }
         Step = UsernamePasswordStep.RequestUsername;
     }
 
@@ -177,7 +167,7 @@ public partial class UsernamePasswordViewModel : ObservableValidator, IDialogDat
     {
         if (Step is not UsernamePasswordStep.Done || string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
         {
-            resultData = default;
+            resultData = null;
             return false;
         }
         resultData = new UsernamePasswordData(Username, Password);

@@ -1,6 +1,5 @@
 namespace Darp.Utils.Dialog;
 
-using System.Diagnostics.CodeAnalysis;
 using Darp.Utils.Dialog.Helper;
 using DialogData;
 
@@ -47,14 +46,28 @@ public static class DialogServiceExtensions
     }
 
     /// <summary>
+    /// Show a new messagebox dialog builder based on a ContentDialog. The content is the given message
+    /// </summary>
+    /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
+    /// <param name="title"> The title of the dialog </param>
+    /// <param name="message"> The message to be shown </param>
+    /// <param name="isSelectable"> If true, a selectable TextBlock will be used to show the message </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
+    public static Task<ContentDialogResult<MessageBoxViewModel>> ShowMessageBoxDialogAsync(
+        this IDialogService dialogService,
+        string title,
+        string message,
+        bool isSelectable = true,
+        CancellationToken cancellationToken = default
+    ) => dialogService.CreateMessageBoxDialog(title, message, isSelectable).ShowAsync(cancellationToken);
+
+    /// <summary>
     /// Create a new input dialog builder based on a ContentDialog. The content is an optional message and the input
     /// </summary>
     /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
     /// <param name="title"> The title of the dialog </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    [RequiresUnreferencedCode(
-        "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
-    )]
     public static IContentDialogBuilder<UsernamePasswordViewModel> CreateUsernamePasswordDialog(
         this IDialogService dialogService,
         string title
@@ -82,12 +95,22 @@ public static class DialogServiceExtensions
     /// </summary>
     /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
     /// <param name="title"> The title of the dialog </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
+    public static Task<ContentDialogResult<UsernamePasswordViewModel>> ShowUsernamePasswordDialogAsync(
+        this IDialogService dialogService,
+        string title,
+        CancellationToken cancellationToken = default
+    ) => dialogService.CreateUsernamePasswordDialog(title).ShowAsync(cancellationToken);
+
+    /// <summary>
+    /// Create a new input dialog builder based on a ContentDialog. The content is an optional message and the input
+    /// </summary>
+    /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
+    /// <param name="title"> The title of the dialog </param>
     /// <param name="message"> The optional message to be shown on top of the input </param>
     /// <param name="isMessageSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    [RequiresUnreferencedCode(
-        "This method requires the generated CommunityToolkit. Mvvm. ComponentModel.__Internals.__ObservableValidatorExtensions type not to be removed to use the fast path"
-    )]
     public static IContentDialogBuilder<InputDialogViewModel> CreateInputDialog(
         this IDialogService dialogService,
         string title,
@@ -103,6 +126,23 @@ public static class DialogServiceExtensions
             .SetCloseButton("Cancel")
             .SetPrimaryButton("Ok", dialogData.WhenPropertyChanged(x => x.HasErrors, x => !x));
     }
+
+    /// <summary>
+    /// Show a new input dialog builder based on a ContentDialog. The content is an optional message and the input
+    /// </summary>
+    /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
+    /// <param name="title"> The title of the dialog </param>
+    /// <param name="message"> The optional message to be shown on top of the input </param>
+    /// <param name="isMessageSelectable"> If true, a selectable TextBlock will be used to show the message </param>
+    /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
+    /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
+    public static Task<ContentDialogResult<InputDialogViewModel>> ShowInputDialogAsyc(
+        this IDialogService dialogService,
+        string title,
+        string? message = null,
+        bool isMessageSelectable = false,
+        CancellationToken cancellationToken = default
+    ) => dialogService.CreateInputDialog(title, message, isMessageSelectable).ShowAsync(cancellationToken);
 
     /// <summary>
     /// Create a new <see cref="IDialogService"/> with the dialog root set to <typeparamref name="TDialogRoot"/>

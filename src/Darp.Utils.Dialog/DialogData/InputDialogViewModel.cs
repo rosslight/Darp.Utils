@@ -11,8 +11,9 @@ using static Helper.Strings;
 public sealed partial class InputDialogViewModel : ObservableValidator, IDialogData<string>
 {
     /// <summary> Initialize a new instance </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(InputDialogViewModel))]
+#pragma warning disable CS0618 // Type or member is obsolete
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
 #pragma warning restore CS0618 // Type or member is obsolete
     public InputDialogViewModel()
@@ -31,11 +32,8 @@ public sealed partial class InputDialogViewModel : ObservableValidator, IDialogD
     [NotifyDataErrorInfo]
     [Required]
     [CustomValidation(typeof(InputDialogViewModel), nameof(ValidateInput))]
-#pragma warning disable CS0618 // Type or member is obsolete
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
-#pragma warning restore CS0618 // Type or member is obsolete
-    private string? _input;
+    public partial string? Input { get; set; }
 
     /// <summary> The watermark to show on the <see cref="Input"/> field </summary>
     public string? InputWatermark { get; internal set; }
