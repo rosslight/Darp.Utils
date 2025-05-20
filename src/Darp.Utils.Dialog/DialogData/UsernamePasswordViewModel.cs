@@ -23,10 +23,10 @@ public enum UsernamePasswordStep
 /// <summary> The data resulting of a call to the username password dialog </summary>
 /// <param name="Username"> The value of <see cref="UsernamePasswordViewModel.Username"/> </param>
 /// <param name="Password"> The value of <see cref="UsernamePasswordViewModel.Password"/> </param>
-public record UsernamePasswordData(string Username, string Password);
+public sealed record UsernamePasswordData(string Username, string Password);
 
 /// <summary> Wraps username password dialog information </summary>
-public partial class UsernamePasswordViewModel : ObservableValidator, IDialogData<UsernamePasswordData>
+public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDialogData<UsernamePasswordData>
 {
     /// <summary> The delegate to validate a password </summary>
     /// <param name="username"> The username </param>
