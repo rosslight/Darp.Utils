@@ -39,7 +39,7 @@ file sealed class ConfigurationObservable<TConfig, T>(
             if (args.PropertyName is not nameof(IConfigurationService<>.Config))
                 return;
             T newValue = _valueSelector(_configurationService.Config);
-            if (!EqualityComparer<T>.Default.Equals(_currentValue, newValue))
+            if (EqualityComparer<T>.Default.Equals(_currentValue, newValue))
                 return;
             observer.OnNext(newValue);
             _currentValue = newValue;
