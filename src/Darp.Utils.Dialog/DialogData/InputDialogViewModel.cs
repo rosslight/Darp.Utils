@@ -7,8 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel.__Internals;
 using static Helper.Strings;
 
 /// <summary> Data for InputDialogs </summary>
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public sealed partial class InputDialogViewModel : ObservableValidator, IDialogData<string>
+public sealed class InputDialogViewModel : ObservableValidator, IDialogData<string>
 {
     /// <summary> Initialize a new instance </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
@@ -28,12 +27,14 @@ public sealed partial class InputDialogViewModel : ObservableValidator, IDialogD
     public bool IsMessageSelectable { get; init; }
 
     /// <summary> The input which can be set in the dialog </summary>
-    [ObservableProperty]
-    [NotifyDataErrorInfo]
     [Required]
     [CustomValidation(typeof(InputDialogViewModel), nameof(ValidateInput))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-    public partial string? Input { get; set; }
+    public string? Input
+    {
+        get;
+        set => SetProperty(ref field, value, validate: true);
+    }
 
     /// <summary> The watermark to show on the <see cref="Input"/> field </summary>
     public string? InputWatermark { get; internal set; }
@@ -52,7 +53,7 @@ public sealed partial class InputDialogViewModel : ObservableValidator, IDialogD
     {
         ArgumentNullException.ThrowIfNull(context);
         var instance = (InputDialogViewModel)context.ObjectInstance;
-        return instance.ValidateInputCallback?.Invoke(input);
+        return instance.ValidateInputCallback?.Invoke(input) ?? ValidationResult.Success;
     }
 
     /// <inheritdoc />
