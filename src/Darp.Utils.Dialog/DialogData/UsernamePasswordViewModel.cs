@@ -72,10 +72,10 @@ public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDi
     /// <summary> The password </summary>
     [Required]
     [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidatePassword))]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
     public string? Password
     {
         get;
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
         set => SetProperty(ref field, value, validate: true);
     }
 

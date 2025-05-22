@@ -1,6 +1,7 @@
 namespace Darp.Utils.Dialog.FluentAvalonia.DialogData;
 
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Darp.Utils.Dialog.DialogData;
 
 /// <summary> A view for <see cref="InputDialogViewModel"/> </summary>
@@ -25,6 +26,9 @@ public partial class InputDialogView : UserControl
             InputBox.PasswordChar = '*';
             InputBox.Classes.Add("revealPasswordButton");
         }
+
+        Dispatcher.UIThread.Post(() => InputBox.Focus());
+
         base.OnInitialized();
     }
 }

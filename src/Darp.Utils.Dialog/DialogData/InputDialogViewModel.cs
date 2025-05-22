@@ -29,10 +29,10 @@ public sealed class InputDialogViewModel : ObservableValidator, IDialogData<stri
     /// <summary> The input which can be set in the dialog </summary>
     [Required]
     [CustomValidation(typeof(InputDialogViewModel), nameof(ValidateInput))]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
     public string? Input
     {
         get;
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
         set => SetProperty(ref field, value, validate: true);
     }
 
