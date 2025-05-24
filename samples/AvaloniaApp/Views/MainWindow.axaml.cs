@@ -1,12 +1,10 @@
 namespace AvaloniaApp.Views;
 
-using Avalonia.Controls;
 using AvaloniaApp.ViewModels;
+using Darp.Utils.Avalonia;
 
-public partial class MainWindow : Window
+public partial class MainWindow : WindowBase<MainWindowViewModel>
 {
-    public required MainWindowViewModel ViewModel { get; init; }
-
     public MainWindow()
     {
         InitializeComponent();

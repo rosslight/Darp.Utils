@@ -57,6 +57,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             .ShowAsync(cancellationToken);
         if (!result.IsPrimary || !result.TryGetResultData(out UsernamePasswordData? x))
             return;
-        await _dialogService.CreateMessageBoxDialog(x.Username, x.Password).ShowAsync(cancellationToken);
+        await _dialogService.ShowMessageBoxDialogAsync(x.Username, x.Password, cancellationToken: cancellationToken);
     }
 }

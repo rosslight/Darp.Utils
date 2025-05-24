@@ -8,6 +8,8 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ResxSourceGenerator_SkipShowResxFilesInHierarchy>true</ResxSourceGenerator_SkipShowResxFilesInHierarchy>
     <ResxSourceGenerator_EmitDebugInformation>false</ResxSourceGenerator_EmitDebugInformation>
+    <PublishAot>true</PublishAot>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />
@@ -24,6 +26,7 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Darp.Utils.Avalonia\Darp.Utils.Avalonia.csproj" />
     <ProjectReference Include="..\..\src\Darp.Utils.Dialog.FluentAvalonia\Darp.Utils.Dialog.FluentAvalonia.csproj" />
     <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj" OutputItemType="Analyzer" />
     <EmbeddedResource Update="Localization\Resources.resx" EmitFormatMethods="true" Public="true" />
