@@ -20,34 +20,26 @@ public sealed class ConfigurationService<TConfig>(
 ) : IConfigurationService<TConfig>
     where TConfig : new()
 {
-    private readonly string _configFileName = configFileName;
+    private const string JsonTypeResolverUnreferencedCode =
+        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved.";
+    private const string JsonTypeResolverDynamicCode =
+        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications.";
 
-    //private readonly IReadOnlyAssetsService _defaultAssetsService;
+    private readonly string _configFileName = configFileName;
     private readonly IAssetsService _configurationAssetsService = configurationAssetsService;
-    private TConfig _config = new();
-    private bool _isLoaded;
-    private bool _isDisposed;
-    private readonly SemaphoreSlim _semaphore = new(1);
     private readonly JsonTypeInfo<TConfig> _configTypeInfo = typeInfo;
+    private readonly SemaphoreSlim _semaphore = new(1);
 
     /// <summary> Instantiate a new Configuration service </summary>
     /// <param name="configFileName">The name of the config file</param>
     /// <param name="configurationAssetsService">The assets service to be read from or written to</param>
-    [RequiresUnreferencedCode(
-        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
-    )]
-    [RequiresDynamicCode(
-        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
-    )]
+    [RequiresUnreferencedCode(JsonTypeResolverUnreferencedCode)]
+    [RequiresDynamicCode(JsonTypeResolverDynamicCode)]
     public ConfigurationService(string configFileName, IAssetsService configurationAssetsService)
         : this(configFileName, configurationAssetsService, CreateDefaultJsonTypeInfo()) { }
 
-    [RequiresUnreferencedCode(
-        "JSON serialization and deserialization might require types that cannot be statically analyzed. Use the overload that takes a JsonTypeInfo or JsonSerializerContext, or make sure all of the required types are preserved."
-    )]
-    [RequiresDynamicCode(
-        "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
-    )]
+    [RequiresUnreferencedCode(JsonTypeResolverUnreferencedCode)]
+    [RequiresDynamicCode(JsonTypeResolverDynamicCode)]
     private static JsonTypeInfo<TConfig> CreateDefaultJsonTypeInfo()
     {
         var options = new JsonSerializerOptions
@@ -64,23 +56,23 @@ public sealed class ConfigurationService<TConfig>(
     /// <inheritdoc />
     public bool IsLoaded
     {
-        get => _isLoaded;
-        private set => SetField(ref _isLoaded, value);
+        get;
+        private set => SetField(ref field, value);
     }
 
     /// <inheritdoc />
     public bool IsDisposed
     {
-        get => _isDisposed;
-        private set => SetField(ref _isDisposed, value);
+        get;
+        private set => SetField(ref field, value);
     }
 
     /// <inheritdoc />
     public TConfig Config
     {
-        get => _config;
-        private set => SetField(ref _config, value);
-    }
+        get;
+        private set => SetField(ref field, value);
+    } = new();
 
     /// <inheritdoc />
     public string Path => System.IO.Path.Join(_configurationAssetsService.BasePath, _configFileName);
@@ -130,9 +122,7 @@ public sealed class ConfigurationService<TConfig>(
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
-        {
             return;
-        }
         field = value;
         OnPropertyChanged(propertyName);
     }
