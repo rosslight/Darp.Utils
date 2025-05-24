@@ -2,8 +2,8 @@ namespace Darp.Utils.Tests.Assets;
 
 using System.Text.Json;
 using Common;
-using FluentAssertions;
 using NSubstitute;
+using Shouldly;
 using Utils.Assets;
 using Utils.Assets.Abstractions;
 
@@ -32,8 +32,8 @@ public sealed class AssetsExtensionTests
         );
 
         // Assert
-        result.Should().NotBeNull();
-        result.Name.Should().Be("Test");
+        result.ShouldNotBeNull();
+        result.Name.ShouldBe("Test");
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class AssetsExtensionTests
             await readOnlyService.DeserializeJsonAsync<TestObject>("test.json", cancellationToken: cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>();
+        await act.ShouldThrowAsync<Exception>();
     }
 
     [Fact]
@@ -73,8 +73,8 @@ public sealed class AssetsExtensionTests
         );
 
         // Assert
-        resultObject.Should().NotBeNull();
-        resultObject?.Name.Should().Be("Test");
+        resultObject.ShouldNotBeNull();
+        resultObject.Name.ShouldBe("Test");
     }
 
     [Fact]
@@ -95,10 +95,10 @@ public sealed class AssetsExtensionTests
 
         // Assert
         var memoryStream = new MemoryStream(buffer.TrimBufferEnd());
-        memoryStream.Length.Should().BeGreaterThan(0);
+        memoryStream.Length.ShouldBeGreaterThan(0);
         using var reader = new StreamReader(memoryStream);
         var content = await reader.ReadToEndAsync();
-        content.Should().Be("Test data");
+        content.ShouldBe("Test data");
     }
 
     [Fact]
@@ -119,10 +119,10 @@ public sealed class AssetsExtensionTests
 
         // Assert
         var memoryStream = new MemoryStream(buffer.TrimBufferEnd());
-        memoryStream.Length.Should().BeGreaterThan(0);
+        memoryStream.Length.ShouldBeGreaterThan(0);
         using var reader = new StreamReader(memoryStream);
         var content = await reader.ReadToEndAsync();
-        content.Should().Be("Test data");
+        content.ShouldBe("Test data");
     }
 
     private sealed class TestObject

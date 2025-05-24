@@ -1,6 +1,6 @@
 namespace Darp.Utils.Tests.Assets;
 
-using FluentAssertions;
+using Shouldly;
 using Utils.Assets;
 
 public sealed class EmbeddedResourceAssetsServiceTests
@@ -21,7 +21,7 @@ public sealed class EmbeddedResourceAssetsServiceTests
         var content = await _service.ReadTextAsync(testFileName);
 
         // Assert
-        content.Should().BeEquivalentTo(expectedContent);
+        content.ShouldBe(expectedContent);
     }
 
     private const string FileName1 = "Assets/File1.txt";
@@ -41,7 +41,7 @@ public sealed class EmbeddedResourceAssetsServiceTests
         IEnumerable<string> foundFiles = _service.EnumerateFiles(searchPattern);
 
         // Assert
-        foundFiles.Should().BeEquivalentTo(expectedFiles);
+        foundFiles.ShouldBe(expectedFiles);
     }
 
     [Theory]
@@ -56,6 +56,6 @@ public sealed class EmbeddedResourceAssetsServiceTests
         var exists = _service.Exists(path);
 
         // Assert
-        exists.Should().Be(shouldExist);
+        exists.ShouldBe(shouldExist);
     }
 }

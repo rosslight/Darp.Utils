@@ -1,7 +1,7 @@
 namespace Darp.Utils.Tests.Assets;
 
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
 using Utils.Assets;
 
 public sealed class DependencyInjectionTests
@@ -18,7 +18,7 @@ public sealed class DependencyInjectionTests
         IEmbeddedResourceAssetsService service = provider.GetRequiredService<IEmbeddedResourceAssetsService>();
 
         // Assert
-        service.BasePath.Should().Be("Darp/Utils/Tests/Assets");
+        service.BasePath.ShouldBe("Darp/Utils/Tests/Assets");
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class DependencyInjectionTests
         IFolderAssetsService service = provider.GetRequiredService<IFolderAssetsService>();
 
         // Assert
-        service.BasePath.Should().Be($"{tempFolder}/{relativePath}");
+        service.BasePath.ShouldBe($"{tempFolder}/{relativePath}");
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class DependencyInjectionTests
         IAppDataAssetsService service = provider.GetRequiredService<IAppDataAssetsService>();
 
         // Assert
-        service.BasePath.Should().Be($"{appDataPath}/{relativePath}");
+        service.BasePath.ShouldBe($"{appDataPath}/{relativePath}");
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class DependencyInjectionTests
         IProgramDataAssetsService service = provider.GetRequiredService<IProgramDataAssetsService>();
 
         // Assert
-        service.BasePath.Should().Be($"{programDataPath}/{relativePath}");
+        service.BasePath.ShouldBe($"{programDataPath}/{relativePath}");
     }
 
     [Fact]
@@ -83,6 +83,6 @@ public sealed class DependencyInjectionTests
         IBaseDirectoryAssetsService service = provider.GetRequiredService<IBaseDirectoryAssetsService>();
 
         // Assert
-        service.BasePath.Should().Be($"{AppDomain.CurrentDomain.BaseDirectory.Replace('\\', '/')}".TrimEnd('/'));
+        service.BasePath.ShouldBe($"{AppDomain.CurrentDomain.BaseDirectory.Replace('\\', '/')}".TrimEnd('/'));
     }
 }

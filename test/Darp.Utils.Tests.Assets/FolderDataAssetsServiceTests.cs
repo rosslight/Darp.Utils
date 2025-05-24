@@ -1,7 +1,8 @@
 namespace Darp.Utils.Tests.Assets;
 
 using System.Reactive.Disposables;
-using FluentAssertions;
+using Shouldly;
+using Shouldly.ShouldlyExtensionMethods;
 using Utils.Assets;
 
 public sealed class FolderDataAssetsServiceTests
@@ -35,7 +36,7 @@ public sealed class FolderDataAssetsServiceTests
         var appDataService = new FolderAssetsService(tempDirectory, relativePath);
 
         // Assert
-        appDataService.BasePath.Should().Be(joinedPath);
+        appDataService.BasePath.ShouldBe(joinedPath);
     }
 
     [Fact]
@@ -47,13 +48,13 @@ public sealed class FolderDataAssetsServiceTests
         using IDisposable dis = CreateTemporaryFolderAssetsService(out IFolderAssetsService appDataService);
 
         // Act
-        appDataService.Exists(testFileName).Should().BeFalse();
+        appDataService.Exists(testFileName).ShouldBeFalse();
         await appDataService.SerializeJsonAsync(testFileName, testData);
-        appDataService.Exists(testFileName).Should().BeTrue();
+        appDataService.Exists(testFileName).ShouldBeTrue();
         TestData readData = await appDataService.DeserializeJsonAsync<TestData>(testFileName);
 
         // Assert
-        readData.Should().BeEquivalentTo(testData);
+        readData.ShouldBe(testData);
     }
 
     [Fact]
@@ -73,7 +74,7 @@ public sealed class FolderDataAssetsServiceTests
         Func<Task> act = async () => await appDataService.DeserializeJsonAsync<TestData>(testFileName);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>();
+        await act.ShouldThrowAsync<Exception>();
     }
 
     private const string FileName1 = "test1.json";
@@ -101,7 +102,7 @@ public sealed class FolderDataAssetsServiceTests
         IEnumerable<string> foundFiles = appDataService.EnumerateFiles(searchPattern);
 
         // Assert
-        foundFiles.Should().BeEquivalentTo(expectedFiles);
+        foundFiles.ShouldBe(expectedFiles);
     }
 
     [Fact]
@@ -115,10 +116,10 @@ public sealed class FolderDataAssetsServiceTests
         // Act and Assert
         await appDataService.WriteTextAsync(FileName1, dummyContent, FileAttributes.ReadOnly);
         FileAttributes attributesAfterCreation = File.GetAttributes(file1Path);
-        attributesAfterCreation.Should().HaveFlag(FileAttributes.ReadOnly);
+        attributesAfterCreation.ShouldHaveFlag(FileAttributes.ReadOnly);
         await appDataService.WriteTextAsync(FileName1, dummyContent, FileAttributes.Normal);
         FileAttributes attributesAfterUpdate1 = File.GetAttributes(file1Path);
-        attributesAfterUpdate1.Should().NotHaveFlag(FileAttributes.ReadOnly);
+        attributesAfterUpdate1.ShouldNotHaveFlag(FileAttributes.ReadOnly);
     }
 }
 
