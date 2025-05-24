@@ -6,7 +6,7 @@ using Abstractions;
 using GlobExpressions;
 
 /// <summary> An In-Memory Assets service </summary>
-public sealed class MemoryAssetsService(string basePath) : IAssetsService
+public class MemoryAssetsService(string basePath) : IAssetsService
 {
     private readonly ConcurrentDictionary<string, byte[]> _storage = new(StringComparer.Ordinal);
 
