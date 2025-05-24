@@ -19,6 +19,8 @@ Currently implemented:
 - `IBaseDirectoryAssetsService`: Read from the base directory of the App's executable
 - `IEmbeddedResourceAssetsService`: Read files marked as `EmbeddedResource` of a specific Assembly
 
+Additionally, there is a `MemoryAssetsService` that can be used during testing
+
 Example:
 ```csharp
 // Add EmbeddedResources and AppData assets to the DI Container
