@@ -92,6 +92,16 @@ await dialogService.CreateContentDialog("Title", viewModel)
     .ShowAsync();
 ```
 
+## Darp.Utils.Avalonia
+[![NuGet](https://img.shields.io/nuget/v/Darp.Utils.Avalonia.svg)](https://www.nuget.org/packages/Darp.Utils.Avalonia)
+[![Downloads](https://img.shields.io/nuget/dt/Darp.Utils.Avalonia)](https://www.nuget.org/packages/Darp.Utils.Avalonia)
+
+A collection of classes and methods to help reduce the boilerplate when working with Avalonia. These contain:
+
+- `ViewLocatorBase`: Resolve views at compile-time
+- `UserControlBase`, `WindowBase`: Add a `ViewModel` property to have typed access to the DataContext
+- `AvaloniaHelpers`: A collection of helper methods
+
 ## Darp.Utils.ResxSourceGenerator
 [![NuGet](https://img.shields.io/nuget/v/Darp.Utils.ResxSourceGenerator.svg)](https://www.nuget.org/packages/Darp.Utils.ResxSourceGenerator)
 [![Downloads](https://img.shields.io/nuget/dt/Darp.Utils.ResxSourceGenerator)](https://www.nuget.org/packages/Darp.Utils.ResxSourceGenerator)
