@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Messaging.Genera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Messaging.Generator", "src\Darp.Utils.Messaging.Generator\Darp.Utils.Messaging.Generator.csproj", "{DE3F9B9C-2DF5-4EB8-9CA6-F325C756A972}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Darp.Utils.Avalonia", "src\Darp.Utils.Avalonia\Darp.Utils.Avalonia.csproj", "{9247AAED-D0B0-4053-810A-318838692851}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

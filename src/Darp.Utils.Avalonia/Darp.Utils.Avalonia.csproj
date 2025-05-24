@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <TargetFramework>net9.0</TargetFramework>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <IsAotCompatible>true</IsAotCompatible>
+      <LangVersion>preview</LangVersion>
+      <Description>A collection of helpful classes and methods when working with Avalonia</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Avalonia" />
+    </ItemGroup>
+
+</Project>
