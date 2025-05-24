@@ -22,7 +22,7 @@ public sealed class AssetsExtensionTests
         // Arrange
         IReadOnlyAssetsService readOnlyService = Substitute.For<IReadOnlyAssetsService>();
         var stream = new MemoryStream(TestConfig);
-        readOnlyService.GetReadOnlySteam(Arg.Any<string>()).Returns(stream);
+        readOnlyService.GetReadOnlyStream(Arg.Any<string>()).Returns(stream);
         CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
@@ -41,7 +41,7 @@ public sealed class AssetsExtensionTests
     {
         // Arrange
         IReadOnlyAssetsService readOnlyService = Substitute.For<IReadOnlyAssetsService>();
-        readOnlyService.GetReadOnlySteam(Arg.Any<string>()).Returns(new MemoryStream());
+        readOnlyService.GetReadOnlyStream(Arg.Any<string>()).Returns(new MemoryStream());
         CancellationToken cancellationToken = CancellationToken.None;
 
         // Act
@@ -87,7 +87,7 @@ public sealed class AssetsExtensionTests
         var buffer = new byte[100];
         var targetStream = new MemoryStream(buffer);
 
-        sourceService.GetReadOnlySteam(Arg.Any<string>()).Returns(sourceStream);
+        sourceService.GetReadOnlyStream(Arg.Any<string>()).Returns(sourceStream);
         targetService.GetWriteOnlySteam(Arg.Any<string>()).Returns(targetStream);
 
         // Act
@@ -111,7 +111,7 @@ public sealed class AssetsExtensionTests
         var buffer = new byte[100];
         var targetStream = new MemoryStream(buffer);
 
-        sourceService.GetReadOnlySteam(Arg.Any<string>()).Returns(sourceStream);
+        sourceService.GetReadOnlyStream(Arg.Any<string>()).Returns(sourceStream);
         targetService.GetWriteOnlySteam(Arg.Any<string>(), Arg.Any<FileAttributes>()).Returns(targetStream);
 
         // Act

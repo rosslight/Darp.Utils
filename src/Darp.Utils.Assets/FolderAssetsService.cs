@@ -41,7 +41,7 @@ public class FolderAssetsService(string folderPath, string relativePath) : IFold
     }
 
     /// <inheritdoc />
-    public Stream GetReadOnlySteam(string path) => File.OpenRead(Path.Join(BasePath, path));
+    public Stream GetReadOnlyStream(string path) => File.OpenRead(Path.Join(BasePath, path));
 
     /// <inheritdoc />
     public Stream GetWriteOnlySteam(string path)

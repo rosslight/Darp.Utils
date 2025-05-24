@@ -21,5 +21,5 @@ public interface IReadOnlyAssetsService
     /// <summary> Opens an existing asset for reading. </summary>
     /// <param name="path">The path to read from</param>
     /// <returns>A read-only Stream on the specified <paramref name="path"/>.</returns>
-    public Stream GetReadOnlySteam(string path);
+    public Stream GetReadOnlyStream(string path);
 }

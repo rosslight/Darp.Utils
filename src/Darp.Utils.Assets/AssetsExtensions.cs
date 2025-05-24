@@ -52,7 +52,7 @@ public static class AssetsExtensions
     )
     {
         ArgumentNullException.ThrowIfNull(sourceAssetsService);
-        Stream stream = sourceAssetsService.GetReadOnlySteam(path);
+        Stream stream = sourceAssetsService.GetReadOnlyStream(path);
         await using (stream.ConfigureAwait(false))
         {
             return await JsonSerializer.DeserializeAsync(stream, typeInfo, cancellationToken).ConfigureAwait(false)
@@ -133,7 +133,7 @@ public static class AssetsExtensions
     {
         ArgumentNullException.ThrowIfNull(sourceAssetsService);
         ArgumentNullException.ThrowIfNull(targetAssetsService);
-        Stream sourceStream = sourceAssetsService.GetReadOnlySteam(sourcePath);
+        Stream sourceStream = sourceAssetsService.GetReadOnlyStream(sourcePath);
         Stream targetStream = targetAssetsService.GetWriteOnlySteam(targetPath);
         await using (sourceStream.ConfigureAwait(false))
         await using (targetStream.ConfigureAwait(false))
@@ -164,7 +164,7 @@ public static class AssetsExtensions
     {
         ArgumentNullException.ThrowIfNull(sourceAssetsService);
         ArgumentNullException.ThrowIfNull(targetAssetsService);
-        Stream sourceStream = sourceAssetsService.GetReadOnlySteam(sourcePath);
+        Stream sourceStream = sourceAssetsService.GetReadOnlyStream(sourcePath);
         Stream targetStream = targetAssetsService.GetWriteOnlySteam(targetPath, fileAttributes);
         await using (sourceStream.ConfigureAwait(false))
         await using (targetStream.ConfigureAwait(false))
@@ -185,7 +185,7 @@ public static class AssetsExtensions
     )
     {
         ArgumentNullException.ThrowIfNull(targetAssetsService);
-        Stream stream = targetAssetsService.GetReadOnlySteam(path);
+        Stream stream = targetAssetsService.GetReadOnlyStream(path);
         var writer = new StreamReader(stream);
         await using (stream.ConfigureAwait(false))
         using (writer)

@@ -22,7 +22,7 @@ public class MemoryAssetsServiceTests
     [Fact]
     public void GetReadOnlySteam_MissingFile_ThrowsFileNotFoundException()
     {
-        Should.Throw<FileNotFoundException>(() => _service.GetReadOnlySteam("nonexistent.txt"));
+        Should.Throw<FileNotFoundException>(() => _service.GetReadOnlyStream("nonexistent.txt"));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class MemoryAssetsServiceTests
         _service.Exists(path.ToUpper(CultureInfo.InvariantCulture)).ShouldBeFalse(); // case-sensitive
 
         // Read
-        using (Stream readStream = _service.GetReadOnlySteam(path))
+        using (Stream readStream = _service.GetReadOnlyStream(path))
         using (var reader = new StreamReader(readStream, Encoding.UTF8))
         {
             var readContent = reader.ReadToEnd();
@@ -67,7 +67,7 @@ public class MemoryAssetsServiceTests
             w2.Write(updated, 0, updated.Length);
 
         // Read back
-        using (Stream r = _service.GetReadOnlySteam(path))
+        using (Stream r = _service.GetReadOnlyStream(path))
         {
             var buffer = new byte[updated.Length];
             var read = r.Read(buffer);
@@ -106,7 +106,7 @@ public class MemoryAssetsServiceTests
             ws.Write(bytes, 0, bytes.Length);
 
         // Attempt to write to read-only
-        using Stream rs = _service.GetReadOnlySteam(path);
+        using Stream rs = _service.GetReadOnlyStream(path);
         Should.Throw<NotSupportedException>(() => rs.WriteByte(0));
     }
 

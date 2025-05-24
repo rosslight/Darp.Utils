@@ -43,7 +43,7 @@ public class EmbeddedResourceAssetsService(Assembly assembly) : IEmbeddedResourc
     }
 
     /// <inheritdoc />
-    public Stream GetReadOnlySteam(string path)
+    public Stream GetReadOnlyStream(string path)
     {
         var uri = GetPath(path);
         return _assembly.GetManifestResourceStream(uri)

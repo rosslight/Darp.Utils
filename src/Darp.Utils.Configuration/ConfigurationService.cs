@@ -87,7 +87,7 @@ public sealed class ConfigurationService<TConfig>(
             return Config;
         }
 
-        Stream stream = _configurationAssetsService.GetReadOnlySteam(_configFileName);
+        Stream stream = _configurationAssetsService.GetReadOnlyStream(_configFileName);
         await using (stream.ConfigureAwait(false))
         {
             Config =

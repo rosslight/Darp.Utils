@@ -32,7 +32,7 @@ public class MemoryAssetsService(string basePath) : IAssetsService
     }
 
     /// <inheritdoc />
-    public Stream GetReadOnlySteam(string path)
+    public Stream GetReadOnlyStream(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
