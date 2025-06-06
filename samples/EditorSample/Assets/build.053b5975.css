@@ -303,6 +303,27 @@ body {
   display: flex;
 }
 
+#editor-container {
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.mirrorsharp {
+  height: 100%;
+}
+
+.cm-editor {
+  width: 100%;
+  height: 100%;
+}
+
+.cm-scroller {
+  overflow: auto;
+}
+
 a {
   text-decoration: none;
 }
@@ -314,6 +335,8 @@ a:hover {
 .CodeMirror {
   border: 1px solid #ddd;
   flex-grow: 1;
+  width: 100%;
   margin-top: 10px;
+  height: auto !important;
 }
 /*# sourceMappingURL=build.053b5975.css.map */

@@ -32808,54 +32808,29 @@ function $3d87cea90826daf5$export$2e2bcd8739ae039(container, options) {
 }
 
 
-const $7996c9b92ef7fb2f$var$getCode = (language, mode)=>{
-    if (mode === 'script') return 'var messages = Context.Messages;';
-    else if (language == 'C#') return `using System;
 
-        class C {
-            const int C2 = 5;
-            string f;
-            string P { get; set; }
-            event EventHandler e;
-            event EventHandler E { add {} remove {} }
 
-            C() {
-            }
-
-            void M(int p) {
-                var l = p;
-            }
-        }
-
-        class G<T> {
-        }`.replace(/(\r\n|\r|\n)/g, '\r\n') // Parcel changes newlines to LF
-    .replace(/^        /gm, '');
-    else if (language === 'F#') return '[<EntryPoint>]\r\nlet main argv = \r\n    0';
-    else if (language === 'IL') return '.class private auto ansi \'<Module>\'\r\n{\r\n}';
-};
-const $7996c9b92ef7fb2f$var$getLanguageAndCode = ()=>{
-    const params = window.location.hash.replace(/^\#/, '').split('&').reduce((result, item)=>{
-        const [key, value] = item.split('=');
-        result[key] = value;
-        return result;
-    }, {});
-    const language = (params['language'] || 'CSharp').replace('Sharp', '#');
-    const mode = params['mode'] || 'regular';
-    const code = $7996c9b92ef7fb2f$var$getCode(language, mode);
-    return {
-        language: language,
-        mode: mode,
-        code: code
-    };
-};
-const $7996c9b92ef7fb2f$var$initial = $7996c9b92ef7fb2f$var$getLanguageAndCode();
 const $7996c9b92ef7fb2f$var$ms = (0, $3d87cea90826daf5$export$2e2bcd8739ae039)(document.getElementById('editor-container'), {
     serviceUrl: window.location.href.replace(/^http(s?:\/\/[^/]+).*$/i, 'ws$1/mirrorsharp'),
     language: "C#",
-    text: $7996c9b92ef7fb2f$var$initial.code,
+    text: "// Enter code here!",
     serverOptions: {
         'x-mode': "script"
+    },
+    codeMirror: {
+        extensions: [
+            (0, $adcdfc900dd74c5f$export$1a8cf111682eaa7d)(),
+            (0, $8fc44fe4551a8c09$export$afa855cbfaff27f2).allowMultipleSelections.of(true)
+        ]
     }
+});
+// Ensure editor resizes when window resizes
+window.addEventListener('resize', ()=>{
+    // Force editor to update layout
+    setTimeout(()=>{
+        const editorView = $7996c9b92ef7fb2f$var$ms.getCodeMirror();
+        if (editorView) editorView.requestMeasure();
+    }, 0);
 });
 const $7996c9b92ef7fb2f$var$setTheme = (theme)=>{
     $7996c9b92ef7fb2f$var$ms.setTheme(theme);
