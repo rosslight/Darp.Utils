@@ -15,17 +15,6 @@ const ms = mirrorsharp(document.getElementById('editor-container'), {
     }
 });
 
-// Ensure editor resizes when window resizes
-window.addEventListener('resize', () => {
-    // Force editor to update layout
-    setTimeout(() => {
-        const editorView = ms.getCodeMirror();
-        if (editorView) {
-            editorView.requestMeasure();
-        }
-    }, 0);
-});
-
 const setTheme = (theme) => {
     ms.setTheme(theme)
 }
