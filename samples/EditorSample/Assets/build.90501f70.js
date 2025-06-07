@@ -32824,18 +32824,18 @@ const $7996c9b92ef7fb2f$var$ms = (0, $3d87cea90826daf5$export$2e2bcd8739ae039)(d
         ]
     }
 });
-// Ensure editor resizes when window resizes
-window.addEventListener('resize', ()=>{
-    // Force editor to update layout
-    setTimeout(()=>{
-        const editorView = $7996c9b92ef7fb2f$var$ms.getCodeMirror();
-        if (editorView) editorView.requestMeasure();
-    }, 0);
-});
 const $7996c9b92ef7fb2f$var$setTheme = (theme)=>{
     $7996c9b92ef7fb2f$var$ms.setTheme(theme);
 };
 window.setTheme = $7996c9b92ef7fb2f$var$setTheme;
+// Getter and setter to be called from .Net
+window.setMsText = (text)=>$7996c9b92ef7fb2f$var$ms.setText(text);
+window.getMsText = ()=>$7996c9b92ef7fb2f$var$ms.getText();
+window.setMsLanguage = (language)=>$7996c9b92ef7fb2f$var$ms.setLanguage(language);
+window.getMsLanguage = ()=>$7996c9b92ef7fb2f$var$ms.getLanguage();
+const $7996c9b92ef7fb2f$var$setMsTheme = (theme)=>$7996c9b92ef7fb2f$var$ms.setTheme(theme);
+window.setMsTheme = (theme)=>$7996c9b92ef7fb2f$var$setMsTheme(theme);
+window.getMsTheme = ()=>$7996c9b92ef7fb2f$var$ms.setTheme();
 
 
 //# sourceMappingURL=build.90501f70.js.map

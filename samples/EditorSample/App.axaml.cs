@@ -1,13 +1,14 @@
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using EditorSample.ViewModels;
 using EditorSample.Views;
 
 namespace EditorSample;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 public partial class App : Application
 {
@@ -23,13 +24,18 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit.
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
+            var viewModel = new MainWindowViewModel();
+            _ = viewModel.CodeMirror.StartBackendAsync(
+                onBuild: builder => builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole()),
+                options => options.SetScriptMode()
+            );
+            desktop.MainWindow = new MainWindow { DataContext = viewModel };
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void DisableAvaloniaDataAnnotationValidation()
+    private static void DisableAvaloniaDataAnnotationValidation()
     {
         // Get an array of plugins to remove
         var dataValidationPluginsToRemove = BindingPlugins

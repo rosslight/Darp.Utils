@@ -20,3 +20,15 @@ const setTheme = (theme) => {
 }
 
 window.setTheme = setTheme;
+
+// Getter and setter to be called from .Net
+
+window.setMsText = (text) => ms.setText(text)
+window.getMsText = () => ms.getText()
+
+window.setMsLanguage = (language) => ms.setLanguage(language)
+window.getMsLanguage = () => ms.getLanguage()
+
+const setMsTheme = (theme) => ms.setTheme(theme);
+
+window.setMsTheme = (theme) => setMsTheme(theme);

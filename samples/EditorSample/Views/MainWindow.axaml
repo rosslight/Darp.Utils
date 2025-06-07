@@ -3,13 +3,13 @@
         xmlns:vm="using:EditorSample.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:webViewControl="clr-namespace:WebViewControl;assembly=WebViewControl.Avalonia"
+        xmlns:views="clr-namespace:EditorSample.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="EditorSample.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="EditorSample">
-
+        Title="EditorSample"
+        RequestedThemeVariant="Dark">
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
@@ -17,10 +17,9 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*">
-        <Button Click="Button_OnClick">Do something</Button>
-        <ScrollViewer Grid.Row="1">
-            <webViewControl:WebView Name="EditorView" />
-        </ScrollViewer>
+        <Button Click="Button_OnClick" Name="Button" >Do something</Button>
+        <views:CodeMirrorEditor Grid.Row="1" Name="Editor"
+                                Address="{CompiledBinding CodeMirror.Address, Mode=OneWay}"
+        />
     </Grid>
-
 </Window>
