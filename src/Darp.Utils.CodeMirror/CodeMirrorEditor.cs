@@ -1,10 +1,9 @@
-namespace EditorSample.Views;
+namespace Darp.Utils.CodeMirror;
 
 using System.Text.Json;
 using System.Web;
 using Avalonia;
 using Avalonia.Data;
-using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using WebViewControl;
@@ -18,31 +17,29 @@ public enum CodeMirrorLanguage
     PHP,
 }
 
-public partial class CodeMirrorEditor : WebView
+/// <summary> The CodeMirror Editor </summary>
+public sealed class CodeMirrorEditor : WebView
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(100);
 
+    /// <summary> Defines the <see cref="EditorText"/> property. </summary>
     public static readonly StyledProperty<string> EditorTextProperty = AvaloniaProperty.Register<
         CodeMirrorEditor,
         string
     >(nameof(EditorText), defaultValue: string.Empty, defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary> Defines the <see cref="IsEditorLoaded"/> property. </summary>
     public static readonly DirectProperty<CodeMirrorEditor, bool> IsEditorLoadedProperty =
         AvaloniaProperty.RegisterDirect<CodeMirrorEditor, bool>(
             nameof(IsEditorLoaded),
             editor => editor.IsEditorLoaded
         );
 
+    /// <summary> Gets or sets the text of the editor </summary>
     public string EditorText
     {
         get => GetValue(EditorTextProperty);
         set => SetValue(EditorTextProperty, value);
-    }
-
-    private static void OnTextChanging(CodeMirrorEditor sender, bool before)
-    {
-        if (!before && sender.IsEditorLoaded)
-            sender.SetEditorText(sender.EditorText);
     }
 
     /// <summary> Gets or sets the language of the editor </summary>
@@ -52,15 +49,17 @@ public partial class CodeMirrorEditor : WebView
         set => ExecuteScriptFunction("setMsLanguage", CodeMirrorLanguageToString(value));
     }
 
+    /// <summary> True, if the WebView successfully navigated to the Editor Page </summary>
     public bool IsEditorLoaded
     {
         get;
         private set => SetAndRaise(IsEditorLoadedProperty, ref field, value);
     }
 
+    /// <summary> Initializes a new CodeMirror Editor </summary>
+    /// <remarks> To actually show the editor, navigate to the address where the editor view is hosted </remarks>
     public CodeMirrorEditor()
     {
-        InitializeComponent();
         EditorTextProperty.Changed.Subscribe(
             new CodeMirrorEditorObserver((editor, newText) => editor.SetEditorText(newText))
         );
@@ -111,20 +110,15 @@ public partial class CodeMirrorEditor : WebView
 
     private Task<CodeMirrorLanguage> GetEditorLanguageAsync() =>
         EvaluateScript<string>("getMsLanguage", timeout: DefaultTimeout)
-            .ContinueWith(task => StringToCodeMirrorLanguage(task.Result));
+            .ContinueWith(task => StringToCodeMirrorLanguage(task.Result), TaskScheduler.Default);
 
     /// <summary> Set the text of the editor </summary>
     /// <param name="text"> The text to set </param>
     public void SetEditorText(string text)
     {
         var escapedText = HttpUtility.JavaScriptStringEncode(text);
-        return;
         ExecuteScript($"""window.setMsText("{escapedText}");""");
     }
-
-    /// <summary> Get the current text inside the editor </summary>
-    /// <returns> A task which completes with the text </returns>
-    public Task<string> GetEditorTextAsync() => EvaluateScript<string>("getMsText", timeout: DefaultTimeout);
 
     private static CodeMirrorLanguage StringToCodeMirrorLanguage(string language) =>
         language switch

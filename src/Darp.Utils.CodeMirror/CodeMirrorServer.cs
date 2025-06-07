@@ -1,4 +1,4 @@
-namespace EditorSample.ViewModels;
+namespace Darp.Utils.CodeMirror;
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -9,28 +9,18 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
 using MirrorSharp;
 using MirrorSharp.Advanced;
 using MirrorSharp.AspNetCore;
 
-public sealed class CodeMirrorService : INotifyPropertyChanged, IAsyncDisposable
+/// <summary> The CodeMirror Backend Service definition </summary>
+public interface ICodeMirrorService : INotifyPropertyChanged, IAsyncDisposable
 {
-    private WebApplication? _webApplication;
+    /// <summary> The address of the index.html file to show the editor </summary>
+    public string Address { get; }
 
-    public string Address
-    {
-        get;
-        private set => SetField(ref field, value);
-    } = string.Empty;
-
-    public bool IsRunning
-    {
-        get;
-        private set => SetField(ref field, value);
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
+    /// <summary> True, if the server is running </summary>
+    public bool IsRunning { get; }
 
     /// <summary> Start the backend server. Completion of the returned task indicates that the webservice was started successfully </summary>
     /// <param name="onBuild"> A callback with the WebApplicationBuild. Can be used to register e.g. logging </param>
@@ -38,6 +28,37 @@ public sealed class CodeMirrorService : INotifyPropertyChanged, IAsyncDisposable
     /// <param name="isDebugLoggingEnabled"> If true, logging in case of errors is enabled </param>
     /// <param name="cancellationToken"> The cancellationToken to cancel the starting operation </param>
     /// <exception cref="InvalidOperationException"> Thrown if the server is not started on a valid address </exception>
+    public Task StartBackendAsync(
+        Action<WebApplicationBuilder>? onBuild = null,
+        Action<MirrorSharpCSharpOptions>? onConfigureCSharp = null,
+        bool isDebugLoggingEnabled = false,
+        CancellationToken cancellationToken = default
+    );
+}
+
+/// <summary> The implementation of a CodeMirror Backend Service </summary>
+public sealed class CodeMirrorService : ICodeMirrorService
+{
+    private WebApplication? _webApplication;
+
+    /// <inheritdoc />
+    public string Address
+    {
+        get;
+        private set => SetField(ref field, value);
+    } = string.Empty;
+
+    /// <inheritdoc />
+    public bool IsRunning
+    {
+        get;
+        private set => SetField(ref field, value);
+    }
+
+    /// <inheritdoc />
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <inheritdoc />
     public async Task StartBackendAsync(
         Action<WebApplicationBuilder>? onBuild = null,
         Action<MirrorSharpCSharpOptions>? onConfigureCSharp = null,
@@ -56,7 +77,10 @@ public sealed class CodeMirrorService : INotifyPropertyChanged, IAsyncDisposable
         _webApplication = builder.Build();
 
         // Serve the embedded Assets/ folder
-        var assetsProvider = new EmbeddedFileProvider(typeof(CodeMirrorService).Assembly, "EditorSample.Assets");
+        var assetsProvider = new EmbeddedFileProvider(
+            typeof(CodeMirrorService).Assembly,
+            "Darp.Utils.CodeMirror.Assets"
+        );
         _webApplication.UseStaticFiles(new StaticFileOptions { FileProvider = assetsProvider });
 
         // MirrorSharp WebSocket endpoint
@@ -69,7 +93,7 @@ public sealed class CodeMirrorService : INotifyPropertyChanged, IAsyncDisposable
         }
         _webApplication.MapMirrorSharp("/mirrorsharp", options);
 
-        await _webApplication.StartAsync(cancellationToken);
+        await _webApplication.StartAsync(cancellationToken).ConfigureAwait(false);
 
         _webApplication.Lifetime.ApplicationStopping.Register(() => Dispatcher.UIThread.Post(() => IsRunning = false));
         var chosenAddress =
@@ -89,11 +113,12 @@ public sealed class CodeMirrorService : INotifyPropertyChanged, IAsyncDisposable
         return addressesFeature?.Addresses ?? [];
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         if (_webApplication is null)
             return;
-        await _webApplication.DisposeAsync();
+        await _webApplication.DisposeAsync().ConfigureAwait(false);
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
@@ -106,25 +131,5 @@ public sealed class CodeMirrorService : INotifyPropertyChanged, IAsyncDisposable
         field = value;
         OnPropertyChanged(propertyName);
         return true;
-    }
-}
-
-file sealed class ExceptionLogger(ILogger<ExceptionLogger>? logger) : IExceptionLogger
-{
-    private readonly ILogger<ExceptionLogger>? _logger = logger;
-
-    public void LogException(Exception exception, IWorkSession session)
-    {
-        if (_logger is null || !_logger.IsEnabled(LogLevel.Error))
-            return;
-        using IDisposable? _ = _logger.BeginScope(
-            new Dictionary<string, object>
-            {
-                [nameof(IWorkSession.IsRoslyn)] = session.IsRoslyn,
-                [nameof(IWorkSession.LanguageName)] = session.LanguageName,
-                [nameof(IWorkSession.ExtensionData)] = session.ExtensionData,
-            }
-        );
-        _logger?.LogError(exception, "CodeMirror with exception: {Message}", exception.Message);
     }
 }

@@ -2,10 +2,14 @@ namespace AvaloniaApp.ViewModels;
 
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Darp.Utils.CodeMirror;
 using Darp.Utils.Dialog;
 using Darp.Utils.Dialog.DialogData;
 using Localization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
@@ -13,6 +17,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public Resources I18N { get; } = Resources.Default;
 
     public string Greeting => I18N.FormatAsd_Ff("f", "ff");
+
+    public ICodeMirrorService CodeMirror { get; } = new CodeMirrorService();
+
+    [ObservableProperty]
+    public partial string Text { get; set; } = "// Enter your C# here!";
 
     public MainWindowViewModel(IDialogService dialogService)
     {

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+      <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="MirrorSharp.AspNetCore" />
+    <PackageReference Include="WebViewControl-Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets/*.html" />
+    <EmbeddedResource Include="Assets/*.css" />
+    <EmbeddedResource Include="Assets/*.js" />
+  </ItemGroup>
+
+</Project>
