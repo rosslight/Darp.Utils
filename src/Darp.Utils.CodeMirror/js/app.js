@@ -16,7 +16,7 @@ const contentChangedListener = EditorView.updateListener.of(update => {
         logString("docChanged", txt)
         // invoke the .NET callback to be registered on navigation
         if (window.msTextChanged && window.msTextChanged.invoke)
-            window.msTextChanged.invoke(JSON.stringify(txt).slice(1, -1));
+            window.msTextChanged.invoke(txt);
     }
 });
 
@@ -61,9 +61,10 @@ window.setMsText = (text) => {
       console.log("Do not set text. State is equal");
       return;
     }
+    console.log(`Not Equal`)
     logString("currentMsText", currentText)
-    console.log(`Equal: ${currentText === text}`)
     logString("setMsText", text)
+    text = text.replaceAll("\r\n", "\n").replaceAll("\n", "\r\n")
     ms.setText(text)
 }
 window.getMsLanguage = () => ms.getLanguage()

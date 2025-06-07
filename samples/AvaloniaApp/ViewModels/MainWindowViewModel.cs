@@ -8,8 +8,6 @@ using Darp.Utils.CodeMirror;
 using Darp.Utils.Dialog;
 using Darp.Utils.Dialog.DialogData;
 using Localization;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 public sealed partial class MainWindowViewModel : ViewModelBase
 {

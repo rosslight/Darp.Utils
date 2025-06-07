@@ -29,9 +29,11 @@
                 Command="{CompiledBinding OpenUsernamePasswordCommand}" MinWidth="100"/>
         <Button Content="Toggle Theme"
                 Click="ToggleTheme_OnClick" MinWidth="100"/>
-        <TextBox Text="{CompiledBinding Text}" NewLine="\n" AcceptsReturn="True"/>
-        <codeMirror:CodeMirrorEditor MinHeight="400"
-                                     EditorText="{CompiledBinding Text}"
-                                     Address="{CompiledBinding CodeMirror.Address}"/>
+        <Grid ColumnDefinitions="*,*">
+            <TextBox Grid.Column="0" Text="{CompiledBinding Text}" AcceptsReturn="True"/>
+            <codeMirror:CodeMirrorEditor Grid.Column="1" MinHeight="400"
+                                         EditorText="{CompiledBinding Text}"
+                                         Address="{CompiledBinding CodeMirror.Address}"/>
+        </Grid>
     </StackPanel>
 </Window>

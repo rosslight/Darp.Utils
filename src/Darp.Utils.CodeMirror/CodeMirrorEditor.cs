@@ -1,6 +1,5 @@
 namespace Darp.Utils.CodeMirror;
 
-using System.Text.Json;
 using System.Web;
 using Avalonia;
 using Avalonia.Data;
@@ -21,6 +20,7 @@ public enum CodeMirrorLanguage
 public sealed class CodeMirrorEditor : WebView
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(100);
+    private Lock _updateEditorTextLock = new();
 
     /// <summary> Defines the <see cref="EditorText"/> property. </summary>
     public static readonly StyledProperty<string> EditorTextProperty = AvaloniaProperty.Register<
@@ -61,7 +61,17 @@ public sealed class CodeMirrorEditor : WebView
     public CodeMirrorEditor()
     {
         EditorTextProperty.Changed.Subscribe(
-            new CodeMirrorEditorObserver((editor, newText) => editor.SetEditorText(newText))
+            new CodeMirrorEditorObserver(
+                (editor, newText) =>
+                {
+                    if (_updateEditorTextLock.IsHeldByCurrentThread)
+                    {
+                        Console.WriteLine("Do not set!");
+                        return;
+                    }
+                    editor.SetEditorText(newText);
+                }
+            )
         );
         ActualThemeVariantChanged += (_, _) =>
         {
@@ -81,9 +91,12 @@ public sealed class CodeMirrorEditor : WebView
 
             void OnTextChanged(string newText)
             {
-                var x = JsonSerializer.Deserialize<string>($"\"{newText}\"") ?? string.Empty;
-                DebugLog("OnTextChanged", x);
-                Dispatcher.UIThread.Post(() => EditorText = x);
+                DebugLog("OnTextChanged", newText);
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    lock (_updateEditorTextLock)
+                        EditorText = newText;
+                });
             }
         };
     }
