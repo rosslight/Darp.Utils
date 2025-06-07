@@ -6,7 +6,8 @@
     "build": "parcel build index.html --dist-dir ./../Assets --no-optimize --no-cache --no-content-hash"
   },
   "dependencies": {
-    "mirrorsharp-codemirror-6-preview": "^1.0.0"
+    "mirrorsharp-codemirror-6-preview": "^1.0.0",
+    "@codemirror/search": "^6.5.11"
   },
   "devDependencies": {
     "parcel": "^2.8.2"

@@ -32810,32 +32810,1375 @@ function $3d87cea90826daf5$export$2e2bcd8739ae039(container, options) {
 
 
 
+
+
+
+
+const $c0c3865585ff1584$var$basicNormalize = typeof String.prototype.normalize == "function" ? (x)=>x.normalize("NFKD") : (x)=>x;
+/**
+A search cursor provides an iterator over text matches in a
+document.
+*/ class $c0c3865585ff1584$export$4989b254f32490be {
+    /**
+    Create a text cursor. The query is the search string, `from` to
+    `to` provides the region to search.
+    
+    When `normalize` is given, it will be called, on both the query
+    string and the content it is matched against, before comparing.
+    You can, for example, create a case-insensitive search by
+    passing `s => s.toLowerCase()`.
+    
+    Text is always normalized with
+    [`.normalize("NFKD")`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)
+    (when supported).
+    */ constructor(text, query, from = 0, to = text.length, normalize, test){
+        this.test = test;
+        /**
+        The current match (only holds a meaningful value after
+        [`next`](https://codemirror.net/6/docs/ref/#search.SearchCursor.next) has been called and when
+        `done` is false).
+        */ this.value = {
+            from: 0,
+            to: 0
+        };
+        /**
+        Whether the end of the iterated region has been reached.
+        */ this.done = false;
+        this.matches = [];
+        this.buffer = "";
+        this.bufferPos = 0;
+        this.iter = text.iterRange(from, to);
+        this.bufferStart = from;
+        this.normalize = normalize ? (x)=>normalize($c0c3865585ff1584$var$basicNormalize(x)) : $c0c3865585ff1584$var$basicNormalize;
+        this.query = this.normalize(query);
+    }
+    peek() {
+        if (this.bufferPos == this.buffer.length) {
+            this.bufferStart += this.buffer.length;
+            this.iter.next();
+            if (this.iter.done) return -1;
+            this.bufferPos = 0;
+            this.buffer = this.iter.value;
+        }
+        return (0, $8fc44fe4551a8c09$export$42977f40461e1360)(this.buffer, this.bufferPos);
+    }
+    /**
+    Look for the next match. Updates the iterator's
+    [`value`](https://codemirror.net/6/docs/ref/#search.SearchCursor.value) and
+    [`done`](https://codemirror.net/6/docs/ref/#search.SearchCursor.done) properties. Should be called
+    at least once before using the cursor.
+    */ next() {
+        while(this.matches.length)this.matches.pop();
+        return this.nextOverlapping();
+    }
+    /**
+    The `next` method will ignore matches that partially overlap a
+    previous match. This method behaves like `next`, but includes
+    such matches.
+    */ nextOverlapping() {
+        for(;;){
+            let next = this.peek();
+            if (next < 0) {
+                this.done = true;
+                return this;
+            }
+            let str = (0, $8fc44fe4551a8c09$export$73bfc63873071f74)(next), start = this.bufferStart + this.bufferPos;
+            this.bufferPos += (0, $8fc44fe4551a8c09$export$a870abf234f6353c)(next);
+            let norm = this.normalize(str);
+            if (norm.length) for(let i = 0, pos = start;; i++){
+                let code = norm.charCodeAt(i);
+                let match = this.match(code, pos, this.bufferPos + this.bufferStart);
+                if (i == norm.length - 1) {
+                    if (match) {
+                        this.value = match;
+                        return this;
+                    }
+                    break;
+                }
+                if (pos == start && i < str.length && str.charCodeAt(i) == code) pos++;
+            }
+        }
+    }
+    match(code, pos, end) {
+        let match = null;
+        for(let i = 0; i < this.matches.length; i += 2){
+            let index = this.matches[i], keep = false;
+            if (this.query.charCodeAt(index) == code) {
+                if (index == this.query.length - 1) match = {
+                    from: this.matches[i + 1],
+                    to: end
+                };
+                else {
+                    this.matches[i]++;
+                    keep = true;
+                }
+            }
+            if (!keep) {
+                this.matches.splice(i, 2);
+                i -= 2;
+            }
+        }
+        if (this.query.charCodeAt(0) == code) {
+            if (this.query.length == 1) match = {
+                from: pos,
+                to: end
+            };
+            else this.matches.push(1, pos);
+        }
+        if (match && this.test && !this.test(match.from, match.to, this.buffer, this.bufferStart)) match = null;
+        return match;
+    }
+}
+if (typeof Symbol != "undefined") $c0c3865585ff1584$export$4989b254f32490be.prototype[Symbol.iterator] = function() {
+    return this;
+};
+const $c0c3865585ff1584$var$empty = {
+    from: -1,
+    to: -1,
+    match: /*@__PURE__*/ /.*/.exec("")
+};
+const $c0c3865585ff1584$var$baseFlags = "gm" + (/x/.unicode == null ? "" : "u");
+/**
+This class is similar to [`SearchCursor`](https://codemirror.net/6/docs/ref/#search.SearchCursor)
+but searches for a regular expression pattern instead of a plain
+string.
+*/ class $c0c3865585ff1584$export$234e2283eb9dcd35 {
+    /**
+    Create a cursor that will search the given range in the given
+    document. `query` should be the raw pattern (as you'd pass it to
+    `new RegExp`).
+    */ constructor(text, query, options, from = 0, to = text.length){
+        this.text = text;
+        this.to = to;
+        this.curLine = "";
+        /**
+        Set to `true` when the cursor has reached the end of the search
+        range.
+        */ this.done = false;
+        /**
+        Will contain an object with the extent of the match and the
+        match object when [`next`](https://codemirror.net/6/docs/ref/#search.RegExpCursor.next)
+        sucessfully finds a match.
+        */ this.value = $c0c3865585ff1584$var$empty;
+        if (/\\[sWDnr]|\n|\r|\[\^/.test(query)) return new $c0c3865585ff1584$var$MultilineRegExpCursor(text, query, options, from, to);
+        this.re = new RegExp(query, $c0c3865585ff1584$var$baseFlags + ((options === null || options === void 0 ? void 0 : options.ignoreCase) ? "i" : ""));
+        this.test = options === null || options === void 0 ? void 0 : options.test;
+        this.iter = text.iter();
+        let startLine = text.lineAt(from);
+        this.curLineStart = startLine.from;
+        this.matchPos = $c0c3865585ff1584$var$toCharEnd(text, from);
+        this.getLine(this.curLineStart);
+    }
+    getLine(skip) {
+        this.iter.next(skip);
+        if (this.iter.lineBreak) this.curLine = "";
+        else {
+            this.curLine = this.iter.value;
+            if (this.curLineStart + this.curLine.length > this.to) this.curLine = this.curLine.slice(0, this.to - this.curLineStart);
+            this.iter.next();
+        }
+    }
+    nextLine() {
+        this.curLineStart = this.curLineStart + this.curLine.length + 1;
+        if (this.curLineStart > this.to) this.curLine = "";
+        else this.getLine(0);
+    }
+    /**
+    Move to the next match, if there is one.
+    */ next() {
+        for(let off = this.matchPos - this.curLineStart;;){
+            this.re.lastIndex = off;
+            let match = this.matchPos <= this.to && this.re.exec(this.curLine);
+            if (match) {
+                let from = this.curLineStart + match.index, to = from + match[0].length;
+                this.matchPos = $c0c3865585ff1584$var$toCharEnd(this.text, to + (from == to ? 1 : 0));
+                if (from == this.curLineStart + this.curLine.length) this.nextLine();
+                if ((from < to || from > this.value.to) && (!this.test || this.test(from, to, match))) {
+                    this.value = {
+                        from: from,
+                        to: to,
+                        match: match
+                    };
+                    return this;
+                }
+                off = this.matchPos - this.curLineStart;
+            } else if (this.curLineStart + this.curLine.length < this.to) {
+                this.nextLine();
+                off = 0;
+            } else {
+                this.done = true;
+                return this;
+            }
+        }
+    }
+}
+const $c0c3865585ff1584$var$flattened = /*@__PURE__*/ new WeakMap();
+// Reusable (partially) flattened document strings
+class $c0c3865585ff1584$var$FlattenedDoc {
+    constructor(from, text){
+        this.from = from;
+        this.text = text;
+    }
+    get to() {
+        return this.from + this.text.length;
+    }
+    static get(doc, from, to) {
+        let cached = $c0c3865585ff1584$var$flattened.get(doc);
+        if (!cached || cached.from >= to || cached.to <= from) {
+            let flat = new $c0c3865585ff1584$var$FlattenedDoc(from, doc.sliceString(from, to));
+            $c0c3865585ff1584$var$flattened.set(doc, flat);
+            return flat;
+        }
+        if (cached.from == from && cached.to == to) return cached;
+        let { text: text, from: cachedFrom } = cached;
+        if (cachedFrom > from) {
+            text = doc.sliceString(from, cachedFrom) + text;
+            cachedFrom = from;
+        }
+        if (cached.to < to) text += doc.sliceString(cached.to, to);
+        $c0c3865585ff1584$var$flattened.set(doc, new $c0c3865585ff1584$var$FlattenedDoc(cachedFrom, text));
+        return new $c0c3865585ff1584$var$FlattenedDoc(from, text.slice(from - cachedFrom, to - cachedFrom));
+    }
+}
+class $c0c3865585ff1584$var$MultilineRegExpCursor {
+    constructor(text, query, options, from, to){
+        this.text = text;
+        this.to = to;
+        this.done = false;
+        this.value = $c0c3865585ff1584$var$empty;
+        this.matchPos = $c0c3865585ff1584$var$toCharEnd(text, from);
+        this.re = new RegExp(query, $c0c3865585ff1584$var$baseFlags + ((options === null || options === void 0 ? void 0 : options.ignoreCase) ? "i" : ""));
+        this.test = options === null || options === void 0 ? void 0 : options.test;
+        this.flat = $c0c3865585ff1584$var$FlattenedDoc.get(text, from, this.chunkEnd(from + 5000 /* Chunk.Base */ ));
+    }
+    chunkEnd(pos) {
+        return pos >= this.to ? this.to : this.text.lineAt(pos).to;
+    }
+    next() {
+        for(;;){
+            let off = this.re.lastIndex = this.matchPos - this.flat.from;
+            let match = this.re.exec(this.flat.text);
+            // Skip empty matches directly after the last match
+            if (match && !match[0] && match.index == off) {
+                this.re.lastIndex = off + 1;
+                match = this.re.exec(this.flat.text);
+            }
+            if (match) {
+                let from = this.flat.from + match.index, to = from + match[0].length;
+                // If a match goes almost to the end of a noncomplete chunk, try
+                // again, since it'll likely be able to match more
+                if ((this.flat.to >= this.to || match.index + match[0].length <= this.flat.text.length - 10) && (!this.test || this.test(from, to, match))) {
+                    this.value = {
+                        from: from,
+                        to: to,
+                        match: match
+                    };
+                    this.matchPos = $c0c3865585ff1584$var$toCharEnd(this.text, to + (from == to ? 1 : 0));
+                    return this;
+                }
+            }
+            if (this.flat.to == this.to) {
+                this.done = true;
+                return this;
+            }
+            // Grow the flattened doc
+            this.flat = $c0c3865585ff1584$var$FlattenedDoc.get(this.text, this.flat.from, this.chunkEnd(this.flat.from + this.flat.text.length * 2));
+        }
+    }
+}
+if (typeof Symbol != "undefined") $c0c3865585ff1584$export$234e2283eb9dcd35.prototype[Symbol.iterator] = $c0c3865585ff1584$var$MultilineRegExpCursor.prototype[Symbol.iterator] = function() {
+    return this;
+};
+function $c0c3865585ff1584$var$validRegExp(source) {
+    try {
+        new RegExp(source, $c0c3865585ff1584$var$baseFlags);
+        return true;
+    } catch (_a) {
+        return false;
+    }
+}
+function $c0c3865585ff1584$var$toCharEnd(text, pos) {
+    if (pos >= text.length) return pos;
+    let line = text.lineAt(pos), next;
+    while(pos < line.to && (next = line.text.charCodeAt(pos - line.from)) >= 0xDC00 && next < 0xE000)pos++;
+    return pos;
+}
+function $c0c3865585ff1584$var$createLineDialog(view) {
+    let line = String(view.state.doc.lineAt(view.state.selection.main.head).number);
+    let input = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("input", {
+        class: "cm-textfield",
+        name: "line",
+        value: line
+    });
+    let dom = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("form", {
+        class: "cm-gotoLine",
+        onkeydown: (event)=>{
+            if (event.keyCode == 27) {
+                event.preventDefault();
+                view.dispatch({
+                    effects: $c0c3865585ff1584$var$dialogEffect.of(false)
+                });
+                view.focus();
+            } else if (event.keyCode == 13) {
+                event.preventDefault();
+                go();
+            }
+        },
+        onsubmit: (event)=>{
+            event.preventDefault();
+            go();
+        }
+    }, (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("label", view.state.phrase("Go to line"), ": ", input), " ", (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("button", {
+        class: "cm-button",
+        type: "submit"
+    }, view.state.phrase("go")), (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("button", {
+        name: "close",
+        onclick: ()=>{
+            view.dispatch({
+                effects: $c0c3865585ff1584$var$dialogEffect.of(false)
+            });
+            view.focus();
+        },
+        "aria-label": view.state.phrase("close"),
+        type: "button"
+    }, [
+        "\xd7"
+    ]));
+    function go() {
+        let match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input.value);
+        if (!match) return;
+        let { state: state } = view, startLine = state.doc.lineAt(state.selection.main.head);
+        let [, sign, ln, cl, percent] = match;
+        let col = cl ? +cl.slice(1) : 0;
+        let line = ln ? +ln : startLine.number;
+        if (ln && percent) {
+            let pc = line / 100;
+            if (sign) pc = pc * (sign == "-" ? -1 : 1) + startLine.number / state.doc.lines;
+            line = Math.round(state.doc.lines * pc);
+        } else if (ln && sign) line = line * (sign == "-" ? -1 : 1) + startLine.number;
+        let docLine = state.doc.line(Math.max(1, Math.min(state.doc.lines, line)));
+        let selection = (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).cursor(docLine.from + Math.max(0, Math.min(col, docLine.length)));
+        view.dispatch({
+            effects: [
+                $c0c3865585ff1584$var$dialogEffect.of(false),
+                (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).scrollIntoView(selection.from, {
+                    y: 'center'
+                })
+            ],
+            selection: selection
+        });
+        view.focus();
+    }
+    return {
+        dom: dom
+    };
+}
+const $c0c3865585ff1584$var$dialogEffect = /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$95000d4efaa4321f).define();
+const $c0c3865585ff1584$var$dialogField = /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$34381b1ce2130245).define({
+    create () {
+        return true;
+    },
+    update (value, tr) {
+        for (let e of tr.effects)if (e.is($c0c3865585ff1584$var$dialogEffect)) value = e.value;
+        return value;
+    },
+    provide: (f)=>(0, $adcdfc900dd74c5f$export$e89c3c9af31c1e3b).from(f, (val)=>val ? $c0c3865585ff1584$var$createLineDialog : null)
+});
+/**
+Command that shows a dialog asking the user for a line number, and
+when a valid position is provided, moves the cursor to that line.
+
+Supports line numbers, relative line offsets prefixed with `+` or
+`-`, document percentages suffixed with `%`, and an optional
+column position by adding `:` and a second number after the line
+number.
+*/ const $c0c3865585ff1584$export$5d5b784f9a618ec3 = (view)=>{
+    let panel = (0, $adcdfc900dd74c5f$export$7361ed18ff57179e)(view, $c0c3865585ff1584$var$createLineDialog);
+    if (!panel) {
+        let effects = [
+            $c0c3865585ff1584$var$dialogEffect.of(true)
+        ];
+        if (view.state.field($c0c3865585ff1584$var$dialogField, false) == null) effects.push((0, $8fc44fe4551a8c09$export$95000d4efaa4321f).appendConfig.of([
+            $c0c3865585ff1584$var$dialogField,
+            $c0c3865585ff1584$var$baseTheme$1
+        ]));
+        view.dispatch({
+            effects: effects
+        });
+        panel = (0, $adcdfc900dd74c5f$export$7361ed18ff57179e)(view, $c0c3865585ff1584$var$createLineDialog);
+    }
+    if (panel) panel.dom.querySelector("input").select();
+    return true;
+};
+const $c0c3865585ff1584$var$baseTheme$1 = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).baseTheme({
+    ".cm-panel.cm-gotoLine": {
+        padding: "2px 6px 4px",
+        position: "relative",
+        "& label": {
+            fontSize: "80%"
+        },
+        "& [name=close]": {
+            position: "absolute",
+            top: "0",
+            bottom: "0",
+            right: "4px",
+            backgroundColor: "inherit",
+            border: "none",
+            font: "inherit",
+            padding: "0"
+        }
+    }
+});
+const $c0c3865585ff1584$var$defaultHighlightOptions = {
+    highlightWordAroundCursor: false,
+    minSelectionLength: 1,
+    maxMatches: 100,
+    wholeWords: false
+};
+const $c0c3865585ff1584$var$highlightConfig = /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$ef7d5e9b79fa1504).define({
+    combine (options) {
+        return (0, $8fc44fe4551a8c09$export$4e19c0b693794a7e)(options, $c0c3865585ff1584$var$defaultHighlightOptions, {
+            highlightWordAroundCursor: (a, b)=>a || b,
+            minSelectionLength: Math.min,
+            maxMatches: Math.min
+        });
+    }
+});
+/**
+This extension highlights text that matches the selection. It uses
+the `"cm-selectionMatch"` class for the highlighting. When
+`highlightWordAroundCursor` is enabled, the word at the cursor
+itself will be highlighted with `"cm-selectionMatch-main"`.
+*/ function $c0c3865585ff1584$export$f14efe56171a2e02(options) {
+    let ext = [
+        $c0c3865585ff1584$var$defaultTheme,
+        $c0c3865585ff1584$var$matchHighlighter
+    ];
+    if (options) ext.push($c0c3865585ff1584$var$highlightConfig.of(options));
+    return ext;
+}
+const $c0c3865585ff1584$var$matchDeco = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$10e30b733df217ea).mark({
+    class: "cm-selectionMatch"
+});
+const $c0c3865585ff1584$var$mainMatchDeco = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$10e30b733df217ea).mark({
+    class: "cm-selectionMatch cm-selectionMatch-main"
+});
+// Whether the characters directly outside the given positions are non-word characters
+function $c0c3865585ff1584$var$insideWordBoundaries(check, state, from, to) {
+    return (from == 0 || check(state.sliceDoc(from - 1, from)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word) && (to == state.doc.length || check(state.sliceDoc(to, to + 1)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word);
+}
+// Whether the characters directly at the given positions are word characters
+function $c0c3865585ff1584$var$insideWord(check, state, from, to) {
+    return check(state.sliceDoc(from, from + 1)) == (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word && check(state.sliceDoc(to - 1, to)) == (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word;
+}
+const $c0c3865585ff1584$var$matchHighlighter = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$44d5eccfd62adda7).fromClass(class {
+    constructor(view){
+        this.decorations = this.getDeco(view);
+    }
+    update(update) {
+        if (update.selectionSet || update.docChanged || update.viewportChanged) this.decorations = this.getDeco(update.view);
+    }
+    getDeco(view) {
+        let conf = view.state.facet($c0c3865585ff1584$var$highlightConfig);
+        let { state: state } = view, sel = state.selection;
+        if (sel.ranges.length > 1) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+        let range = sel.main, query, check = null;
+        if (range.empty) {
+            if (!conf.highlightWordAroundCursor) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+            let word = state.wordAt(range.head);
+            if (!word) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+            check = state.charCategorizer(range.head);
+            query = state.sliceDoc(word.from, word.to);
+        } else {
+            let len = range.to - range.from;
+            if (len < conf.minSelectionLength || len > 200) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+            if (conf.wholeWords) {
+                query = state.sliceDoc(range.from, range.to); // TODO: allow and include leading/trailing space?
+                check = state.charCategorizer(range.head);
+                if (!($c0c3865585ff1584$var$insideWordBoundaries(check, state, range.from, range.to) && $c0c3865585ff1584$var$insideWord(check, state, range.from, range.to))) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+            } else {
+                query = state.sliceDoc(range.from, range.to);
+                if (!query) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+            }
+        }
+        let deco = [];
+        for (let part of view.visibleRanges){
+            let cursor = new $c0c3865585ff1584$export$4989b254f32490be(state.doc, query, part.from, part.to);
+            while(!cursor.next().done){
+                let { from: from, to: to } = cursor.value;
+                if (!check || $c0c3865585ff1584$var$insideWordBoundaries(check, state, from, to)) {
+                    if (range.empty && from <= range.from && to >= range.to) deco.push($c0c3865585ff1584$var$mainMatchDeco.range(from, to));
+                    else if (from >= range.to || to <= range.from) deco.push($c0c3865585ff1584$var$matchDeco.range(from, to));
+                    if (deco.length > conf.maxMatches) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+                }
+            }
+        }
+        return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).set(deco);
+    }
+}, {
+    decorations: (v)=>v.decorations
+});
+const $c0c3865585ff1584$var$defaultTheme = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).baseTheme({
+    ".cm-selectionMatch": {
+        backgroundColor: "#99ff7780"
+    },
+    ".cm-searchMatch .cm-selectionMatch": {
+        backgroundColor: "transparent"
+    }
+});
+// Select the words around the cursors.
+const $c0c3865585ff1584$var$selectWord = ({ state: state, dispatch: dispatch })=>{
+    let { selection: selection } = state;
+    let newSel = (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).create(selection.ranges.map((range)=>state.wordAt(range.head) || (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).cursor(range.head)), selection.mainIndex);
+    if (newSel.eq(selection)) return false;
+    dispatch(state.update({
+        selection: newSel
+    }));
+    return true;
+};
+// Find next occurrence of query relative to last cursor. Wrap around
+// the document if there are no more matches.
+function $c0c3865585ff1584$var$findNextOccurrence(state, query) {
+    let { main: main, ranges: ranges } = state.selection;
+    let word = state.wordAt(main.head), fullWord = word && word.from == main.from && word.to == main.to;
+    for(let cycled = false, cursor = new $c0c3865585ff1584$export$4989b254f32490be(state.doc, query, ranges[ranges.length - 1].to);;){
+        cursor.next();
+        if (cursor.done) {
+            if (cycled) return null;
+            cursor = new $c0c3865585ff1584$export$4989b254f32490be(state.doc, query, 0, Math.max(0, ranges[ranges.length - 1].from - 1));
+            cycled = true;
+        } else {
+            if (cycled && ranges.some((r)=>r.from == cursor.value.from)) continue;
+            if (fullWord) {
+                let word = state.wordAt(cursor.value.from);
+                if (!word || word.from != cursor.value.from || word.to != cursor.value.to) continue;
+            }
+            return cursor.value;
+        }
+    }
+}
+/**
+Select next occurrence of the current selection. Expand selection
+to the surrounding word when the selection is empty.
+*/ const $c0c3865585ff1584$export$dd0e64cebe05ee17 = ({ state: state, dispatch: dispatch })=>{
+    let { ranges: ranges } = state.selection;
+    if (ranges.some((sel)=>sel.from === sel.to)) return $c0c3865585ff1584$var$selectWord({
+        state: state,
+        dispatch: dispatch
+    });
+    let searchedText = state.sliceDoc(ranges[0].from, ranges[0].to);
+    if (state.selection.ranges.some((r)=>state.sliceDoc(r.from, r.to) != searchedText)) return false;
+    let range = $c0c3865585ff1584$var$findNextOccurrence(state, searchedText);
+    if (!range) return false;
+    dispatch(state.update({
+        selection: state.selection.addRange((0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).range(range.from, range.to), false),
+        effects: (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).scrollIntoView(range.to)
+    }));
+    return true;
+};
+const $c0c3865585ff1584$var$searchConfigFacet = /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$ef7d5e9b79fa1504).define({
+    combine (configs) {
+        return (0, $8fc44fe4551a8c09$export$4e19c0b693794a7e)(configs, {
+            top: false,
+            caseSensitive: false,
+            literal: false,
+            regexp: false,
+            wholeWord: false,
+            createPanel: (view)=>new $c0c3865585ff1584$var$SearchPanel(view),
+            scrollToMatch: (range)=>(0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).scrollIntoView(range)
+        });
+    }
+});
+/**
+Add search state to the editor configuration, and optionally
+configure the search extension.
+([`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel) will automatically
+enable this if it isn't already on).
+*/ function $c0c3865585ff1584$export$d76128d007d19019(config) {
+    return config ? [
+        $c0c3865585ff1584$var$searchConfigFacet.of(config),
+        $c0c3865585ff1584$var$searchExtensions
+    ] : $c0c3865585ff1584$var$searchExtensions;
+}
+/**
+A search query. Part of the editor's search state.
+*/ class $c0c3865585ff1584$export$4bc63ef50ec3954e {
+    /**
+    Create a query object.
+    */ constructor(config){
+        this.search = config.search;
+        this.caseSensitive = !!config.caseSensitive;
+        this.literal = !!config.literal;
+        this.regexp = !!config.regexp;
+        this.replace = config.replace || "";
+        this.valid = !!this.search && (!this.regexp || $c0c3865585ff1584$var$validRegExp(this.search));
+        this.unquoted = this.unquote(this.search);
+        this.wholeWord = !!config.wholeWord;
+    }
+    /**
+    @internal
+    */ unquote(text) {
+        return this.literal ? text : text.replace(/\\([nrt\\])/g, (_, ch)=>ch == "n" ? "\n" : ch == "r" ? "\r" : ch == "t" ? "\t" : "\\");
+    }
+    /**
+    Compare this query to another query.
+    */ eq(other) {
+        return this.search == other.search && this.replace == other.replace && this.caseSensitive == other.caseSensitive && this.regexp == other.regexp && this.wholeWord == other.wholeWord;
+    }
+    /**
+    @internal
+    */ create() {
+        return this.regexp ? new $c0c3865585ff1584$var$RegExpQuery(this) : new $c0c3865585ff1584$var$StringQuery(this);
+    }
+    /**
+    Get a search cursor for this query, searching through the given
+    range in the given state.
+    */ getCursor(state, from = 0, to) {
+        let st = state.doc ? state : (0, $8fc44fe4551a8c09$export$afa855cbfaff27f2).create({
+            doc: state
+        });
+        if (to == null) to = st.doc.length;
+        return this.regexp ? $c0c3865585ff1584$var$regexpCursor(this, st, from, to) : $c0c3865585ff1584$var$stringCursor(this, st, from, to);
+    }
+}
+class $c0c3865585ff1584$var$QueryType {
+    constructor(spec){
+        this.spec = spec;
+    }
+}
+function $c0c3865585ff1584$var$stringCursor(spec, state, from, to) {
+    return new $c0c3865585ff1584$export$4989b254f32490be(state.doc, spec.unquoted, from, to, spec.caseSensitive ? undefined : (x)=>x.toLowerCase(), spec.wholeWord ? $c0c3865585ff1584$var$stringWordTest(state.doc, state.charCategorizer(state.selection.main.head)) : undefined);
+}
+function $c0c3865585ff1584$var$stringWordTest(doc, categorizer) {
+    return (from, to, buf, bufPos)=>{
+        if (bufPos > from || bufPos + buf.length < to) {
+            bufPos = Math.max(0, from - 2);
+            buf = doc.sliceString(bufPos, Math.min(doc.length, to + 2));
+        }
+        return (categorizer($c0c3865585ff1584$var$charBefore(buf, from - bufPos)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word || categorizer($c0c3865585ff1584$var$charAfter(buf, from - bufPos)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word) && (categorizer($c0c3865585ff1584$var$charAfter(buf, to - bufPos)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word || categorizer($c0c3865585ff1584$var$charBefore(buf, to - bufPos)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word);
+    };
+}
+class $c0c3865585ff1584$var$StringQuery extends $c0c3865585ff1584$var$QueryType {
+    constructor(spec){
+        super(spec);
+    }
+    nextMatch(state, curFrom, curTo) {
+        let cursor = $c0c3865585ff1584$var$stringCursor(this.spec, state, curTo, state.doc.length).nextOverlapping();
+        if (cursor.done) {
+            let end = Math.min(state.doc.length, curFrom + this.spec.unquoted.length);
+            cursor = $c0c3865585ff1584$var$stringCursor(this.spec, state, 0, end).nextOverlapping();
+        }
+        return cursor.done || cursor.value.from == curFrom && cursor.value.to == curTo ? null : cursor.value;
+    }
+    // Searching in reverse is, rather than implementing an inverted search
+    // cursor, done by scanning chunk after chunk forward.
+    prevMatchInRange(state, from, to) {
+        for(let pos = to;;){
+            let start = Math.max(from, pos - 10000 /* FindPrev.ChunkSize */  - this.spec.unquoted.length);
+            let cursor = $c0c3865585ff1584$var$stringCursor(this.spec, state, start, pos), range = null;
+            while(!cursor.nextOverlapping().done)range = cursor.value;
+            if (range) return range;
+            if (start == from) return null;
+            pos -= 10000 /* FindPrev.ChunkSize */ ;
+        }
+    }
+    prevMatch(state, curFrom, curTo) {
+        let found = this.prevMatchInRange(state, 0, curFrom);
+        if (!found) found = this.prevMatchInRange(state, Math.max(0, curTo - this.spec.unquoted.length), state.doc.length);
+        return found && (found.from != curFrom || found.to != curTo) ? found : null;
+    }
+    getReplacement(_result) {
+        return this.spec.unquote(this.spec.replace);
+    }
+    matchAll(state, limit) {
+        let cursor = $c0c3865585ff1584$var$stringCursor(this.spec, state, 0, state.doc.length), ranges = [];
+        while(!cursor.next().done){
+            if (ranges.length >= limit) return null;
+            ranges.push(cursor.value);
+        }
+        return ranges;
+    }
+    highlight(state, from, to, add) {
+        let cursor = $c0c3865585ff1584$var$stringCursor(this.spec, state, Math.max(0, from - this.spec.unquoted.length), Math.min(to + this.spec.unquoted.length, state.doc.length));
+        while(!cursor.next().done)add(cursor.value.from, cursor.value.to);
+    }
+}
+function $c0c3865585ff1584$var$regexpCursor(spec, state, from, to) {
+    return new $c0c3865585ff1584$export$234e2283eb9dcd35(state.doc, spec.search, {
+        ignoreCase: !spec.caseSensitive,
+        test: spec.wholeWord ? $c0c3865585ff1584$var$regexpWordTest(state.charCategorizer(state.selection.main.head)) : undefined
+    }, from, to);
+}
+function $c0c3865585ff1584$var$charBefore(str, index) {
+    return str.slice((0, $8fc44fe4551a8c09$export$a0fa439fd515e1ed)(str, index, false), index);
+}
+function $c0c3865585ff1584$var$charAfter(str, index) {
+    return str.slice(index, (0, $8fc44fe4551a8c09$export$a0fa439fd515e1ed)(str, index));
+}
+function $c0c3865585ff1584$var$regexpWordTest(categorizer) {
+    return (_from, _to, match)=>!match[0].length || (categorizer($c0c3865585ff1584$var$charBefore(match.input, match.index)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word || categorizer($c0c3865585ff1584$var$charAfter(match.input, match.index)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word) && (categorizer($c0c3865585ff1584$var$charAfter(match.input, match.index + match[0].length)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word || categorizer($c0c3865585ff1584$var$charBefore(match.input, match.index + match[0].length)) != (0, $8fc44fe4551a8c09$export$239a3d59567c1401).Word);
+}
+class $c0c3865585ff1584$var$RegExpQuery extends $c0c3865585ff1584$var$QueryType {
+    nextMatch(state, curFrom, curTo) {
+        let cursor = $c0c3865585ff1584$var$regexpCursor(this.spec, state, curTo, state.doc.length).next();
+        if (cursor.done) cursor = $c0c3865585ff1584$var$regexpCursor(this.spec, state, 0, curFrom).next();
+        return cursor.done ? null : cursor.value;
+    }
+    prevMatchInRange(state, from, to) {
+        for(let size = 1;; size++){
+            let start = Math.max(from, to - size * 10000 /* FindPrev.ChunkSize */ );
+            let cursor = $c0c3865585ff1584$var$regexpCursor(this.spec, state, start, to), range = null;
+            while(!cursor.next().done)range = cursor.value;
+            if (range && (start == from || range.from > start + 10)) return range;
+            if (start == from) return null;
+        }
+    }
+    prevMatch(state, curFrom, curTo) {
+        return this.prevMatchInRange(state, 0, curFrom) || this.prevMatchInRange(state, curTo, state.doc.length);
+    }
+    getReplacement(result) {
+        return this.spec.unquote(this.spec.replace).replace(/\$([$&]|\d+)/g, (m, i)=>{
+            if (i == "&") return result.match[0];
+            if (i == "$") return "$";
+            for(let l = i.length; l > 0; l--){
+                let n = +i.slice(0, l);
+                if (n > 0 && n < result.match.length) return result.match[n] + i.slice(l);
+            }
+            return m;
+        });
+    }
+    matchAll(state, limit) {
+        let cursor = $c0c3865585ff1584$var$regexpCursor(this.spec, state, 0, state.doc.length), ranges = [];
+        while(!cursor.next().done){
+            if (ranges.length >= limit) return null;
+            ranges.push(cursor.value);
+        }
+        return ranges;
+    }
+    highlight(state, from, to, add) {
+        let cursor = $c0c3865585ff1584$var$regexpCursor(this.spec, state, Math.max(0, from - 250 /* RegExp.HighlightMargin */ ), Math.min(to + 250 /* RegExp.HighlightMargin */ , state.doc.length));
+        while(!cursor.next().done)add(cursor.value.from, cursor.value.to);
+    }
+}
+/**
+A state effect that updates the current search query. Note that
+this only has an effect if the search state has been initialized
+(by including [`search`](https://codemirror.net/6/docs/ref/#search.search) in your configuration or
+by running [`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel) at least
+once).
+*/ const $c0c3865585ff1584$export$2cd1e14773f5e71b = /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$95000d4efaa4321f).define();
+const $c0c3865585ff1584$var$togglePanel = /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$95000d4efaa4321f).define();
+const $c0c3865585ff1584$var$searchState = /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$34381b1ce2130245).define({
+    create (state) {
+        return new $c0c3865585ff1584$var$SearchState($c0c3865585ff1584$var$defaultQuery(state).create(), null);
+    },
+    update (value, tr) {
+        for (let effect of tr.effects){
+            if (effect.is($c0c3865585ff1584$export$2cd1e14773f5e71b)) value = new $c0c3865585ff1584$var$SearchState(effect.value.create(), value.panel);
+            else if (effect.is($c0c3865585ff1584$var$togglePanel)) value = new $c0c3865585ff1584$var$SearchState(value.query, effect.value ? $c0c3865585ff1584$var$createSearchPanel : null);
+        }
+        return value;
+    },
+    provide: (f)=>(0, $adcdfc900dd74c5f$export$e89c3c9af31c1e3b).from(f, (val)=>val.panel)
+});
+/**
+Get the current search query from an editor state.
+*/ function $c0c3865585ff1584$export$1664b92369554829(state) {
+    let curState = state.field($c0c3865585ff1584$var$searchState, false);
+    return curState ? curState.query.spec : $c0c3865585ff1584$var$defaultQuery(state);
+}
+/**
+Query whether the search panel is open in the given editor state.
+*/ function $c0c3865585ff1584$export$453cecf1765eeb62(state) {
+    var _a;
+    return ((_a = state.field($c0c3865585ff1584$var$searchState, false)) === null || _a === void 0 ? void 0 : _a.panel) != null;
+}
+class $c0c3865585ff1584$var$SearchState {
+    constructor(query, panel){
+        this.query = query;
+        this.panel = panel;
+    }
+}
+const $c0c3865585ff1584$var$matchMark = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$10e30b733df217ea).mark({
+    class: "cm-searchMatch"
+}), $c0c3865585ff1584$var$selectedMatchMark = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$10e30b733df217ea).mark({
+    class: "cm-searchMatch cm-searchMatch-selected"
+});
+const $c0c3865585ff1584$var$searchHighlighter = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$44d5eccfd62adda7).fromClass(class {
+    constructor(view){
+        this.view = view;
+        this.decorations = this.highlight(view.state.field($c0c3865585ff1584$var$searchState));
+    }
+    update(update) {
+        let state = update.state.field($c0c3865585ff1584$var$searchState);
+        if (state != update.startState.field($c0c3865585ff1584$var$searchState) || update.docChanged || update.selectionSet || update.viewportChanged) this.decorations = this.highlight(state);
+    }
+    highlight({ query: query, panel: panel }) {
+        if (!panel || !query.spec.valid) return (0, $adcdfc900dd74c5f$export$10e30b733df217ea).none;
+        let { view: view } = this;
+        let builder = new (0, $8fc44fe4551a8c09$export$89e09ce03c7e8594)();
+        for(let i = 0, ranges = view.visibleRanges, l = ranges.length; i < l; i++){
+            let { from: from, to: to } = ranges[i];
+            while(i < l - 1 && to > ranges[i + 1].from - 500 /* RegExp.HighlightMargin */ )to = ranges[++i].to;
+            query.highlight(view.state, from, to, (from, to)=>{
+                let selected = view.state.selection.ranges.some((r)=>r.from == from && r.to == to);
+                builder.add(from, to, selected ? $c0c3865585ff1584$var$selectedMatchMark : $c0c3865585ff1584$var$matchMark);
+            });
+        }
+        return builder.finish();
+    }
+}, {
+    decorations: (v)=>v.decorations
+});
+function $c0c3865585ff1584$var$searchCommand(f) {
+    return (view)=>{
+        let state = view.state.field($c0c3865585ff1584$var$searchState, false);
+        return state && state.query.spec.valid ? f(view, state) : $c0c3865585ff1584$export$8894af164d40b422(view);
+    };
+}
+/**
+Open the search panel if it isn't already open, and move the
+selection to the first match after the current main selection.
+Will wrap around to the start of the document when it reaches the
+end.
+*/ const $c0c3865585ff1584$export$ebdf538520f8717 = /*@__PURE__*/ $c0c3865585ff1584$var$searchCommand((view, { query: query })=>{
+    let { to: to } = view.state.selection.main;
+    let next = query.nextMatch(view.state, to, to);
+    if (!next) return false;
+    let selection = (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).single(next.from, next.to);
+    let config = view.state.facet($c0c3865585ff1584$var$searchConfigFacet);
+    view.dispatch({
+        selection: selection,
+        effects: [
+            $c0c3865585ff1584$var$announceMatch(view, next),
+            config.scrollToMatch(selection.main, view)
+        ],
+        userEvent: "select.search"
+    });
+    $c0c3865585ff1584$var$selectSearchInput(view);
+    return true;
+});
+/**
+Move the selection to the previous instance of the search query,
+before the current main selection. Will wrap past the start
+of the document to start searching at the end again.
+*/ const $c0c3865585ff1584$export$eef4841c27f82c55 = /*@__PURE__*/ $c0c3865585ff1584$var$searchCommand((view, { query: query })=>{
+    let { state: state } = view, { from: from } = state.selection.main;
+    let prev = query.prevMatch(state, from, from);
+    if (!prev) return false;
+    let selection = (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).single(prev.from, prev.to);
+    let config = view.state.facet($c0c3865585ff1584$var$searchConfigFacet);
+    view.dispatch({
+        selection: selection,
+        effects: [
+            $c0c3865585ff1584$var$announceMatch(view, prev),
+            config.scrollToMatch(selection.main, view)
+        ],
+        userEvent: "select.search"
+    });
+    $c0c3865585ff1584$var$selectSearchInput(view);
+    return true;
+});
+/**
+Select all instances of the search query.
+*/ const $c0c3865585ff1584$export$5d21cfc86ff1ce1d = /*@__PURE__*/ $c0c3865585ff1584$var$searchCommand((view, { query: query })=>{
+    let ranges = query.matchAll(view.state, 1000);
+    if (!ranges || !ranges.length) return false;
+    view.dispatch({
+        selection: (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).create(ranges.map((r)=>(0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).range(r.from, r.to))),
+        userEvent: "select.search.matches"
+    });
+    return true;
+});
+/**
+Select all instances of the currently selected text.
+*/ const $c0c3865585ff1584$export$6f1c98d8556667b5 = ({ state: state, dispatch: dispatch })=>{
+    let sel = state.selection;
+    if (sel.ranges.length > 1 || sel.main.empty) return false;
+    let { from: from, to: to } = sel.main;
+    let ranges = [], main = 0;
+    for(let cur = new $c0c3865585ff1584$export$4989b254f32490be(state.doc, state.sliceDoc(from, to)); !cur.next().done;){
+        if (ranges.length > 1000) return false;
+        if (cur.value.from == from) main = ranges.length;
+        ranges.push((0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).range(cur.value.from, cur.value.to));
+    }
+    dispatch(state.update({
+        selection: (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).create(ranges, main),
+        userEvent: "select.search.matches"
+    }));
+    return true;
+};
+/**
+Replace the current match of the search query.
+*/ const $c0c3865585ff1584$export$f9afe47535eaf3d2 = /*@__PURE__*/ $c0c3865585ff1584$var$searchCommand((view, { query: query })=>{
+    let { state: state } = view, { from: from, to: to } = state.selection.main;
+    if (state.readOnly) return false;
+    let match = query.nextMatch(state, from, from);
+    if (!match) return false;
+    let next = match;
+    let changes = [], selection, replacement;
+    let effects = [];
+    if (next.from == from && next.to == to) {
+        replacement = state.toText(query.getReplacement(next));
+        changes.push({
+            from: next.from,
+            to: next.to,
+            insert: replacement
+        });
+        next = query.nextMatch(state, next.from, next.to);
+        effects.push((0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).announce.of(state.phrase("replaced match on line $", state.doc.lineAt(from).number) + "."));
+    }
+    let changeSet = view.state.changes(changes);
+    if (next) {
+        selection = (0, $8fc44fe4551a8c09$export$3bb1bd44aee62999).single(next.from, next.to).map(changeSet);
+        effects.push($c0c3865585ff1584$var$announceMatch(view, next));
+        effects.push(state.facet($c0c3865585ff1584$var$searchConfigFacet).scrollToMatch(selection.main, view));
+    }
+    view.dispatch({
+        changes: changeSet,
+        selection: selection,
+        effects: effects,
+        userEvent: "input.replace"
+    });
+    return true;
+});
+/**
+Replace all instances of the search query with the given
+replacement.
+*/ const $c0c3865585ff1584$export$b8b3234b4edfc4c2 = /*@__PURE__*/ $c0c3865585ff1584$var$searchCommand((view, { query: query })=>{
+    if (view.state.readOnly) return false;
+    let changes = query.matchAll(view.state, 1e9).map((match)=>{
+        let { from: from, to: to } = match;
+        return {
+            from: from,
+            to: to,
+            insert: query.getReplacement(match)
+        };
+    });
+    if (!changes.length) return false;
+    let announceText = view.state.phrase("replaced $ matches", changes.length) + ".";
+    view.dispatch({
+        changes: changes,
+        effects: (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).announce.of(announceText),
+        userEvent: "input.replace.all"
+    });
+    return true;
+});
+function $c0c3865585ff1584$var$createSearchPanel(view) {
+    return view.state.facet($c0c3865585ff1584$var$searchConfigFacet).createPanel(view);
+}
+function $c0c3865585ff1584$var$defaultQuery(state, fallback) {
+    var _a, _b, _c, _d, _e;
+    let sel = state.selection.main;
+    let selText = sel.empty || sel.to > sel.from + 100 ? "" : state.sliceDoc(sel.from, sel.to);
+    if (fallback && !selText) return fallback;
+    let config = state.facet($c0c3865585ff1584$var$searchConfigFacet);
+    return new $c0c3865585ff1584$export$4bc63ef50ec3954e({
+        search: ((_a = fallback === null || fallback === void 0 ? void 0 : fallback.literal) !== null && _a !== void 0 ? _a : config.literal) ? selText : selText.replace(/\n/g, "\\n"),
+        caseSensitive: (_b = fallback === null || fallback === void 0 ? void 0 : fallback.caseSensitive) !== null && _b !== void 0 ? _b : config.caseSensitive,
+        literal: (_c = fallback === null || fallback === void 0 ? void 0 : fallback.literal) !== null && _c !== void 0 ? _c : config.literal,
+        regexp: (_d = fallback === null || fallback === void 0 ? void 0 : fallback.regexp) !== null && _d !== void 0 ? _d : config.regexp,
+        wholeWord: (_e = fallback === null || fallback === void 0 ? void 0 : fallback.wholeWord) !== null && _e !== void 0 ? _e : config.wholeWord
+    });
+}
+function $c0c3865585ff1584$var$getSearchInput(view) {
+    let panel = (0, $adcdfc900dd74c5f$export$7361ed18ff57179e)(view, $c0c3865585ff1584$var$createSearchPanel);
+    return panel && panel.dom.querySelector("[main-field]");
+}
+function $c0c3865585ff1584$var$selectSearchInput(view) {
+    let input = $c0c3865585ff1584$var$getSearchInput(view);
+    if (input && input == view.root.activeElement) input.select();
+}
+/**
+Make sure the search panel is open and focused.
+*/ const $c0c3865585ff1584$export$8894af164d40b422 = (view)=>{
+    let state = view.state.field($c0c3865585ff1584$var$searchState, false);
+    if (state && state.panel) {
+        let searchInput = $c0c3865585ff1584$var$getSearchInput(view);
+        if (searchInput && searchInput != view.root.activeElement) {
+            let query = $c0c3865585ff1584$var$defaultQuery(view.state, state.query.spec);
+            if (query.valid) view.dispatch({
+                effects: $c0c3865585ff1584$export$2cd1e14773f5e71b.of(query)
+            });
+            searchInput.focus();
+            searchInput.select();
+        }
+    } else view.dispatch({
+        effects: [
+            $c0c3865585ff1584$var$togglePanel.of(true),
+            state ? $c0c3865585ff1584$export$2cd1e14773f5e71b.of($c0c3865585ff1584$var$defaultQuery(view.state, state.query.spec)) : (0, $8fc44fe4551a8c09$export$95000d4efaa4321f).appendConfig.of($c0c3865585ff1584$var$searchExtensions)
+        ]
+    });
+    return true;
+};
+/**
+Close the search panel.
+*/ const $c0c3865585ff1584$export$4c389f3929badbb8 = (view)=>{
+    let state = view.state.field($c0c3865585ff1584$var$searchState, false);
+    if (!state || !state.panel) return false;
+    let panel = (0, $adcdfc900dd74c5f$export$7361ed18ff57179e)(view, $c0c3865585ff1584$var$createSearchPanel);
+    if (panel && panel.dom.contains(view.root.activeElement)) view.focus();
+    view.dispatch({
+        effects: $c0c3865585ff1584$var$togglePanel.of(false)
+    });
+    return true;
+};
+/**
+Default search-related key bindings.
+
+ - Mod-f: [`openSearchPanel`](https://codemirror.net/6/docs/ref/#search.openSearchPanel)
+ - F3, Mod-g: [`findNext`](https://codemirror.net/6/docs/ref/#search.findNext)
+ - Shift-F3, Shift-Mod-g: [`findPrevious`](https://codemirror.net/6/docs/ref/#search.findPrevious)
+ - Mod-Alt-g: [`gotoLine`](https://codemirror.net/6/docs/ref/#search.gotoLine)
+ - Mod-d: [`selectNextOccurrence`](https://codemirror.net/6/docs/ref/#search.selectNextOccurrence)
+*/ const $c0c3865585ff1584$export$2dba96787cbe0a4a = [
+    {
+        key: "Mod-f",
+        run: $c0c3865585ff1584$export$8894af164d40b422,
+        scope: "editor search-panel"
+    },
+    {
+        key: "F3",
+        run: $c0c3865585ff1584$export$ebdf538520f8717,
+        shift: $c0c3865585ff1584$export$eef4841c27f82c55,
+        scope: "editor search-panel",
+        preventDefault: true
+    },
+    {
+        key: "Mod-g",
+        run: $c0c3865585ff1584$export$ebdf538520f8717,
+        shift: $c0c3865585ff1584$export$eef4841c27f82c55,
+        scope: "editor search-panel",
+        preventDefault: true
+    },
+    {
+        key: "Escape",
+        run: $c0c3865585ff1584$export$4c389f3929badbb8,
+        scope: "editor search-panel"
+    },
+    {
+        key: "Mod-Shift-l",
+        run: $c0c3865585ff1584$export$6f1c98d8556667b5
+    },
+    {
+        key: "Mod-Alt-g",
+        run: $c0c3865585ff1584$export$5d5b784f9a618ec3
+    },
+    {
+        key: "Mod-d",
+        run: $c0c3865585ff1584$export$dd0e64cebe05ee17,
+        preventDefault: true
+    }
+];
+class $c0c3865585ff1584$var$SearchPanel {
+    constructor(view){
+        this.view = view;
+        let query = this.query = view.state.field($c0c3865585ff1584$var$searchState).query.spec;
+        this.commit = this.commit.bind(this);
+        this.searchField = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("input", {
+            value: query.search,
+            placeholder: $c0c3865585ff1584$var$phrase(view, "Find"),
+            "aria-label": $c0c3865585ff1584$var$phrase(view, "Find"),
+            class: "cm-textfield",
+            name: "search",
+            form: "",
+            "main-field": "true",
+            onchange: this.commit,
+            onkeyup: this.commit
+        });
+        this.replaceField = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("input", {
+            value: query.replace,
+            placeholder: $c0c3865585ff1584$var$phrase(view, "Replace"),
+            "aria-label": $c0c3865585ff1584$var$phrase(view, "Replace"),
+            class: "cm-textfield",
+            name: "replace",
+            form: "",
+            onchange: this.commit,
+            onkeyup: this.commit
+        });
+        this.caseField = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("input", {
+            type: "checkbox",
+            name: "case",
+            form: "",
+            checked: query.caseSensitive,
+            onchange: this.commit
+        });
+        this.reField = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("input", {
+            type: "checkbox",
+            name: "re",
+            form: "",
+            checked: query.regexp,
+            onchange: this.commit
+        });
+        this.wordField = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("input", {
+            type: "checkbox",
+            name: "word",
+            form: "",
+            checked: query.wholeWord,
+            onchange: this.commit
+        });
+        function button(name, onclick, content) {
+            return (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("button", {
+                class: "cm-button",
+                name: name,
+                onclick: onclick,
+                type: "button"
+            }, content);
+        }
+        this.dom = (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("div", {
+            onkeydown: (e)=>this.keydown(e),
+            class: "cm-search"
+        }, [
+            this.searchField,
+            button("next", ()=>$c0c3865585ff1584$export$ebdf538520f8717(view), [
+                $c0c3865585ff1584$var$phrase(view, "next")
+            ]),
+            button("prev", ()=>$c0c3865585ff1584$export$eef4841c27f82c55(view), [
+                $c0c3865585ff1584$var$phrase(view, "previous")
+            ]),
+            button("select", ()=>$c0c3865585ff1584$export$5d21cfc86ff1ce1d(view), [
+                $c0c3865585ff1584$var$phrase(view, "all")
+            ]),
+            (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("label", null, [
+                this.caseField,
+                $c0c3865585ff1584$var$phrase(view, "match case")
+            ]),
+            (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("label", null, [
+                this.reField,
+                $c0c3865585ff1584$var$phrase(view, "regexp")
+            ]),
+            (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("label", null, [
+                this.wordField,
+                $c0c3865585ff1584$var$phrase(view, "by word")
+            ]),
+            ...view.state.readOnly ? [] : [
+                (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("br"),
+                this.replaceField,
+                button("replace", ()=>$c0c3865585ff1584$export$f9afe47535eaf3d2(view), [
+                    $c0c3865585ff1584$var$phrase(view, "replace")
+                ]),
+                button("replaceAll", ()=>$c0c3865585ff1584$export$b8b3234b4edfc4c2(view), [
+                    $c0c3865585ff1584$var$phrase(view, "replace all")
+                ])
+            ],
+            (0, $48c699d79b5392ae$export$2e2bcd8739ae039)("button", {
+                name: "close",
+                onclick: ()=>$c0c3865585ff1584$export$4c389f3929badbb8(view),
+                "aria-label": $c0c3865585ff1584$var$phrase(view, "close"),
+                type: "button"
+            }, [
+                "\xd7"
+            ])
+        ]);
+    }
+    commit() {
+        let query = new $c0c3865585ff1584$export$4bc63ef50ec3954e({
+            search: this.searchField.value,
+            caseSensitive: this.caseField.checked,
+            regexp: this.reField.checked,
+            wholeWord: this.wordField.checked,
+            replace: this.replaceField.value
+        });
+        if (!query.eq(this.query)) {
+            this.query = query;
+            this.view.dispatch({
+                effects: $c0c3865585ff1584$export$2cd1e14773f5e71b.of(query)
+            });
+        }
+    }
+    keydown(e) {
+        if ((0, $adcdfc900dd74c5f$export$bce154f45536286e)(this.view, e, "search-panel")) e.preventDefault();
+        else if (e.keyCode == 13 && e.target == this.searchField) {
+            e.preventDefault();
+            (e.shiftKey ? $c0c3865585ff1584$export$eef4841c27f82c55 : $c0c3865585ff1584$export$ebdf538520f8717)(this.view);
+        } else if (e.keyCode == 13 && e.target == this.replaceField) {
+            e.preventDefault();
+            $c0c3865585ff1584$export$f9afe47535eaf3d2(this.view);
+        }
+    }
+    update(update) {
+        for (let tr of update.transactions)for (let effect of tr.effects)if (effect.is($c0c3865585ff1584$export$2cd1e14773f5e71b) && !effect.value.eq(this.query)) this.setQuery(effect.value);
+    }
+    setQuery(query) {
+        this.query = query;
+        this.searchField.value = query.search;
+        this.replaceField.value = query.replace;
+        this.caseField.checked = query.caseSensitive;
+        this.reField.checked = query.regexp;
+        this.wordField.checked = query.wholeWord;
+    }
+    mount() {
+        this.searchField.select();
+    }
+    get pos() {
+        return 80;
+    }
+    get top() {
+        return this.view.state.facet($c0c3865585ff1584$var$searchConfigFacet).top;
+    }
+}
+function $c0c3865585ff1584$var$phrase(view, phrase) {
+    return view.state.phrase(phrase);
+}
+const $c0c3865585ff1584$var$AnnounceMargin = 30;
+const $c0c3865585ff1584$var$Break = /[\s\.,:;?!]/;
+function $c0c3865585ff1584$var$announceMatch(view, { from: from, to: to }) {
+    let line = view.state.doc.lineAt(from), lineEnd = view.state.doc.lineAt(to).to;
+    let start = Math.max(line.from, from - $c0c3865585ff1584$var$AnnounceMargin), end = Math.min(lineEnd, to + $c0c3865585ff1584$var$AnnounceMargin);
+    let text = view.state.sliceDoc(start, end);
+    if (start != line.from) {
+        for(let i = 0; i < $c0c3865585ff1584$var$AnnounceMargin; i++)if (!$c0c3865585ff1584$var$Break.test(text[i + 1]) && $c0c3865585ff1584$var$Break.test(text[i])) {
+            text = text.slice(i);
+            break;
+        }
+    }
+    if (end != lineEnd) {
+        for(let i = text.length - 1; i > text.length - $c0c3865585ff1584$var$AnnounceMargin; i--)if (!$c0c3865585ff1584$var$Break.test(text[i - 1]) && $c0c3865585ff1584$var$Break.test(text[i])) {
+            text = text.slice(0, i);
+            break;
+        }
+    }
+    return (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).announce.of(`${view.state.phrase("current match")}. ${text} ${view.state.phrase("on line")} ${line.number}.`);
+}
+const $c0c3865585ff1584$var$baseTheme = /*@__PURE__*/ (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).baseTheme({
+    ".cm-panel.cm-search": {
+        padding: "2px 6px 4px",
+        position: "relative",
+        "& [name=close]": {
+            position: "absolute",
+            top: "0",
+            right: "4px",
+            backgroundColor: "inherit",
+            border: "none",
+            font: "inherit",
+            padding: 0,
+            margin: 0
+        },
+        "& input, & button, & label": {
+            margin: ".2em .6em .2em 0"
+        },
+        "& input[type=checkbox]": {
+            marginRight: ".2em"
+        },
+        "& label": {
+            fontSize: "80%",
+            whiteSpace: "pre"
+        }
+    },
+    "&light .cm-searchMatch": {
+        backgroundColor: "#ffff0054"
+    },
+    "&dark .cm-searchMatch": {
+        backgroundColor: "#00ffff8a"
+    },
+    "&light .cm-searchMatch-selected": {
+        backgroundColor: "#ff6a0054"
+    },
+    "&dark .cm-searchMatch-selected": {
+        backgroundColor: "#ff00ff8a"
+    }
+});
+const $c0c3865585ff1584$var$searchExtensions = [
+    $c0c3865585ff1584$var$searchState,
+    /*@__PURE__*/ (0, $8fc44fe4551a8c09$export$b92464a736444411).low($c0c3865585ff1584$var$searchHighlighter),
+    $c0c3865585ff1584$var$baseTheme
+];
+
+
+
+
+
+const $7996c9b92ef7fb2f$var$contentChangedListener = (0, $adcdfc900dd74c5f$export$eece2fccabbb77c5).updateListener.of((update)=>{
+    const userTyped = update.transactions.some((tr)=>tr.annotation((0, $8fc44fe4551a8c09$export$febc5573c75cefb0).userEvent) != null);
+    if (userTyped && update.docChanged) {
+        const txt = update.state.doc.toString();
+        $7996c9b92ef7fb2f$var$logString("docChanged", txt);
+        // invoke the .NET callback to be registered on navigation
+        if (window.msTextChanged && window.msTextChanged.invoke) window.msTextChanged.invoke(JSON.stringify(txt).slice(1, -1));
+    }
+});
 const $7996c9b92ef7fb2f$var$ms = (0, $3d87cea90826daf5$export$2e2bcd8739ae039)(document.getElementById('editor-container'), {
     serviceUrl: window.location.href.replace(/^http(s?:\/\/[^/]+).*$/i, 'ws$1/mirrorsharp'),
     language: "C#",
-    text: "// Enter code here!",
-    serverOptions: {
-        'x-mode': "script"
-    },
+    text: "",
     codeMirror: {
         extensions: [
             (0, $adcdfc900dd74c5f$export$1a8cf111682eaa7d)(),
-            (0, $8fc44fe4551a8c09$export$afa855cbfaff27f2).allowMultipleSelections.of(true)
+            (0, $da68d6c3de8ebc83$export$69e4e9d3300ff824)(),
+            $7996c9b92ef7fb2f$var$contentChangedListener,
+            (0, $adcdfc900dd74c5f$export$1a8cf111682eaa7d)(),
+            (0, $adcdfc900dd74c5f$export$93b52f08bb2c759c)(),
+            (0, $adcdfc900dd74c5f$export$76dc0899547f659c)(),
+            (0, $adcdfc900dd74c5f$export$17a3d0ab3687347d)(),
+            (0, $adcdfc900dd74c5f$export$b8e3092a3bfa2062)(),
+            (0, $8fc44fe4551a8c09$export$afa855cbfaff27f2).allowMultipleSelections.of(true),
+            (0, $ba52c6c5aeb730fb$export$9bcaf6e2125ee117)(),
+            (0, $ba52c6c5aeb730fb$export$cef7edfd214be605)(),
+            (0, $adcdfc900dd74c5f$export$dd482925db1aabd3)(),
+            (0, $adcdfc900dd74c5f$export$9b6525222ac3b7fb)(),
+            (0, $adcdfc900dd74c5f$export$5043418e2ef368d5).of([
+                ...(0, $da68d6c3de8ebc83$export$9477e95792b48f4a),
+                ...(0, $3e8ac74135ec287d$export$ab2e8d0ac5d2b69e),
+                ...(0, $c0c3865585ff1584$export$2dba96787cbe0a4a),
+                ...(0, $3e8ac74135ec287d$export$ab4a28cb63e8a670),
+                ...(0, $ba52c6c5aeb730fb$export$39c52376a8936d67),
+                ...(0, $da68d6c3de8ebc83$export$2a3d759d156afab4),
+                ...(0, $6c5024497810350f$export$a21d7a0cde3cbb60)
+            ])
         ]
     }
 });
-const $7996c9b92ef7fb2f$var$setTheme = (theme)=>{
-    $7996c9b92ef7fb2f$var$ms.setTheme(theme);
-};
-window.setTheme = $7996c9b92ef7fb2f$var$setTheme;
 // Getter and setter to be called from .Net
-window.setMsText = (text)=>$7996c9b92ef7fb2f$var$ms.setText(text);
 window.getMsText = ()=>$7996c9b92ef7fb2f$var$ms.getText();
-window.setMsLanguage = (language)=>$7996c9b92ef7fb2f$var$ms.setLanguage(language);
+window.setMsText = (text)=>{
+    const currentText = $7996c9b92ef7fb2f$var$ms.getCodeMirrorView().state.doc.toString();
+    if (currentText === text) {
+        console.log("Do not set text. State is equal");
+        return;
+    }
+    $7996c9b92ef7fb2f$var$logString("currentMsText", currentText);
+    console.log(`Equal: ${currentText === text}`);
+    $7996c9b92ef7fb2f$var$logString("setMsText", text);
+    $7996c9b92ef7fb2f$var$ms.setText(text);
+};
 window.getMsLanguage = ()=>$7996c9b92ef7fb2f$var$ms.getLanguage();
-const $7996c9b92ef7fb2f$var$setMsTheme = (theme)=>$7996c9b92ef7fb2f$var$ms.setTheme(theme);
-window.setMsTheme = (theme)=>$7996c9b92ef7fb2f$var$setMsTheme(theme);
-window.getMsTheme = ()=>$7996c9b92ef7fb2f$var$ms.setTheme();
+window.setMsLanguage = (language)=>$7996c9b92ef7fb2f$var$ms.setLanguage(language);
+window.setScriptMode = (scriptMode)=>$7996c9b92ef7fb2f$var$ms.setServerOptions({
+        'x-mode': scriptMode ? "script" : "regular"
+    });
+window.setMsTheme = (theme)=>$7996c9b92ef7fb2f$var$ms.setTheme(theme);
+const $7996c9b92ef7fb2f$var$ESCAPES = {
+    ' ': '[space]',
+    '\r': '[cr]',
+    '\n': '[lf]',
+    '\t': '[tab]',
+    '\f': '[form]',
+    '\b': '[bs]',
+    '\v': '[vt]',
+    '\0': '[null]',
+    '\\': '[backslash]',
+    '"': '[dq]',
+    "'": '[sq]'
+};
+function $7996c9b92ef7fb2f$var$escapeChar(ch) {
+    if ($7996c9b92ef7fb2f$var$ESCAPES.hasOwnProperty(ch)) return $7996c9b92ef7fb2f$var$ESCAPES[ch];
+    const code = ch.charCodeAt(0);
+    // non-printable or non-ASCII
+    if (code < 32 || code > 126) return `[0x${code.toString(16).padStart(2, '0')}]`;
+    return ch;
+}
+const $7996c9b92ef7fb2f$var$logString = (start, text)=>{
+    if (text === null || text === undefined) {
+        console.log(`${start} ${text}`);
+        return;
+    }
+    if (text.length === 0) {
+        console.log(`${start} [empty]`);
+        return;
+    }
+    const escaped = Array.from(text, $7996c9b92ef7fb2f$var$escapeChar).join('');
+    console.log(`${start} ${escaped}`);
+};
 
 
 //# sourceMappingURL=build.90501f70.js.map

@@ -27,7 +27,8 @@ public partial class App : Application
             var viewModel = new MainWindowViewModel();
             _ = viewModel.CodeMirror.StartBackendAsync(
                 onBuild: builder => builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole()),
-                options => options.SetScriptMode()
+                onConfigureCSharp: options => options.SetScriptMode(),
+                isDebugLoggingEnabled: false
             );
             desktop.MainWindow = new MainWindow { DataContext = viewModel };
         }

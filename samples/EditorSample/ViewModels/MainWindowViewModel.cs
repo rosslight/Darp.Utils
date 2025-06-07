@@ -1,10 +1,12 @@
 ﻿namespace EditorSample.ViewModels;
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    public string Greeting { get; } = "Welcome to Avalonia!";
+    [ObservableProperty]
+    public partial string Text { get; set; } = "// Enter your C# here!";
 
     public CodeMirrorService CodeMirror { get; } = new();
 

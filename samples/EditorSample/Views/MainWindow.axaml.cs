@@ -4,7 +4,6 @@ namespace EditorSample.Views;
 
 using Avalonia.Interactivity;
 using Avalonia.Styling;
-using Avalonia.Threading;
 
 public partial class MainWindow : Window
 {
