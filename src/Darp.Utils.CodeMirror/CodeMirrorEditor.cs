@@ -20,6 +20,12 @@ public sealed class CodeMirrorEditor : WebView
         string
     >(nameof(EditorText), defaultValue: string.Empty, defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary> Defines the <see cref="IsEditorReadOnly"/> property. </summary>
+    public static readonly StyledProperty<bool> IsEditorReadOnlyProperty = AvaloniaProperty.Register<
+        CodeMirrorEditor,
+        bool
+    >(nameof(EditorText), defaultValue: false, defaultBindingMode: BindingMode.TwoWay);
+
     /// <summary> Defines the <see cref="IsEditorLoaded"/> property. </summary>
     public static readonly DirectProperty<CodeMirrorEditor, bool> IsEditorLoadedProperty =
         AvaloniaProperty.RegisterDirect<CodeMirrorEditor, bool>(
@@ -32,6 +38,13 @@ public sealed class CodeMirrorEditor : WebView
     {
         get => GetValue(EditorTextProperty);
         set => SetValue(EditorTextProperty, value);
+    }
+
+    /// <summary> Gets or sets whether the editor is readonly </summary>
+    public bool IsEditorReadOnly
+    {
+        get => GetValue(IsEditorReadOnlyProperty);
+        set => SetValue(IsEditorReadOnlyProperty, value);
     }
 
     /// <summary> Gets or sets the language of the editor </summary>
@@ -56,6 +69,8 @@ public sealed class CodeMirrorEditor : WebView
     /// <remarks> To actually show the editor, navigate to the address where the editor view is hosted </remarks>
     public CodeMirrorEditor()
     {
+        AllowDeveloperTools = true;
+        ShowDeveloperTools();
         ActualThemeVariantChanged += (_, _) =>
         {
             SetEditorTheme(ActualThemeVariant == ThemeVariant.Dark ? "dark" : "light");
@@ -66,7 +81,8 @@ public sealed class CodeMirrorEditor : WebView
                 return;
             OnEditorNavigation();
         };
-        EditorTextProperty.Changed.Subscribe(new CodeMirrorEditorObserver(OnEditorPropertyChanged));
+        EditorTextProperty.Changed.Subscribe(new CodeMirrorEditorObserver<string>(OnEditorPropertyChanged));
+        IsEditorReadOnlyProperty.Changed.Subscribe(new CodeMirrorEditorObserver<bool>(OnEditorReadOnlyChanged));
         return;
 
         static void OnEditorPropertyChanged(CodeMirrorEditor editor, string newText)
@@ -76,6 +92,11 @@ public sealed class CodeMirrorEditor : WebView
             if (editor._updateEditorTextLock.IsHeldByCurrentThread)
                 return;
             editor.SetEditorText(newText);
+        }
+
+        static void OnEditorReadOnlyChanged(CodeMirrorEditor editor, bool newIsReadOnly)
+        {
+            editor.SetIsEditorReadOnly(newIsReadOnly);
         }
     }
 
@@ -97,6 +118,8 @@ public sealed class CodeMirrorEditor : WebView
         }
     }
 
+    /// <summary> Set the theme of the editor </summary>
+    /// <param name="theme"> The theme to set. Might be "dark" or "light" </param>
     private void SetEditorTheme(string theme) => ExecuteScript($"""window.setMsTheme("{theme}");""");
 
     /// <summary> Set the text of the editor </summary>
@@ -108,6 +131,14 @@ public sealed class CodeMirrorEditor : WebView
             var escapedText = HttpUtility.JavaScriptStringEncode(text);
             ExecuteScript($"""window.setMsText("{escapedText}");""");
         }
+    }
+
+    /// <summary> Set the text of the editor </summary>
+    /// <param name="isReadOnly"> If true, the editor will be set to readOnly </param>
+    private void SetIsEditorReadOnly(bool isReadOnly)
+    {
+        var isReadOnlyString = isReadOnly ? "true" : "false";
+        ExecuteScript($"window.setMsIsReadOnly({isReadOnlyString});");
     }
 
     private static CodeMirrorLanguage StringToCodeMirrorLanguage(string language) =>
@@ -133,12 +164,12 @@ public sealed class CodeMirrorEditor : WebView
         };
 }
 
-file sealed class CodeMirrorEditorObserver(Action<CodeMirrorEditor, string> onChange)
-    : IObserver<AvaloniaPropertyChangedEventArgs<string>>
+file sealed class CodeMirrorEditorObserver<T>(Action<CodeMirrorEditor, T> onChange)
+    : IObserver<AvaloniaPropertyChangedEventArgs<T>>
 {
-    private readonly Action<CodeMirrorEditor, string> _onChange = onChange;
+    private readonly Action<CodeMirrorEditor, T> _onChange = onChange;
 
-    public void OnNext(AvaloniaPropertyChangedEventArgs<string> value) =>
+    public void OnNext(AvaloniaPropertyChangedEventArgs<T> value) =>
         _onChange((CodeMirrorEditor)value.Sender, value.NewValue.Value);
 
     public void OnCompleted()
