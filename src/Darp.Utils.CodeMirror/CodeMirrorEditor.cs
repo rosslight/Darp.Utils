@@ -69,8 +69,6 @@ public sealed class CodeMirrorEditor : WebView
     /// <remarks> To actually show the editor, navigate to the address where the editor view is hosted </remarks>
     public CodeMirrorEditor()
     {
-        AllowDeveloperTools = true;
-        ShowDeveloperTools();
         ActualThemeVariantChanged += (_, _) =>
         {
             SetEditorTheme(ActualThemeVariant == ThemeVariant.Dark ? "dark" : "light");

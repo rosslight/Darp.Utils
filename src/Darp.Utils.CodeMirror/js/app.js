@@ -5,15 +5,11 @@ import {defaultKeymap, historyKeymap} from "@codemirror/commands"
 import {searchKeymap} from "@codemirror/search"
 import {completionKeymap, closeBrackets, closeBracketsKeymap} from "@codemirror/autocomplete"
 import {lintKeymap} from "@codemirror/lint"
-import { Transaction, EditorState, Compartment  } from "@codemirror/state";
+import { EditorState, Compartment  } from "@codemirror/state";
 
 const contentChangedListener = EditorView.updateListener.of(update => {
-  const userTyped = update.transactions.some(tr =>
-    tr.annotation(Transaction.userEvent) != null
-  );
-  if (userTyped && update.docChanged) {
+  if (update.docChanged) {
     const txt = update.state.doc.toString();
-    logString("docChanged", txt)
     // invoke the .NET callback to be registered on navigation
     if (window.msTextChanged && window.msTextChanged.invoke)
       window.msTextChanged.invoke(txt);
@@ -60,12 +56,8 @@ window.getMsText = () => ms.getText()
 window.setMsText = (text) => {
   const currentText = ms.getCodeMirrorView().state.doc.toString()
   if (currentText === text) {
-    console.log("Do not set text. State is equal");
     return;
   }
-  console.log(`Not Equal`)
-  logString("currentMsText", currentText)
-  logString("setMsText", text)
   text = text.replaceAll("\r\n", "\n").replaceAll("\n", "\r\n")
   ms.setText(text)
 }
@@ -77,7 +69,6 @@ window.setScriptMode = (scriptMode) => ms.setServerOptions({'x-mode': scriptMode
 window.setMsTheme = (theme) => ms.setTheme(theme);
 
 window.setMsIsReadOnly = (isReadOnly) => {
-  console.log("Requesting readonly")
   const view = ms.getCodeMirrorView();
   // reconfigure the editable facet
   view.dispatch({
@@ -85,43 +76,4 @@ window.setMsIsReadOnly = (isReadOnly) => {
       EditorState.readOnly.of(isReadOnly)
     )
   });
-};
-
-const ESCAPES = {
-  ' ': '[space]',
-  '\r': '[cr]',
-  '\n': '[lf]',
-  '\t': '[tab]',
-  '\f': '[form]',
-  '\b': '[bs]',
-  '\v': '[vt]',
-  '\0': '[null]',
-  '\\': '[backslash]',
-  '"': '[dq]',
-  "'": '[sq]',
-};
-
-function escapeChar(ch) {
-  if (ESCAPES.hasOwnProperty(ch)) {
-    return ESCAPES[ch];
-  }
-  const code = ch.charCodeAt(0);
-  // non-printable or non-ASCII
-  if (code < 32 || code > 126) {
-    return `[0x${code.toString(16).padStart(2, '0')}]`;
-  }
-  return ch;
-}
-
-const logString = (start, text) => {
-  if (text === null || text === undefined) {
-    console.log(`${start} ${text}`);
-    return;
-  }
-  if (text.length === 0) {
-    console.log(`${start} [empty]`);
-    return;
-  }
-  const escaped = Array.from(text, escapeChar).join('');
-  console.log(`${start} ${escaped}`);
 };
