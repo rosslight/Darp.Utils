@@ -93,6 +93,7 @@ publish/
 # Publish Web Output
 *.Publish.xml
 *.pubxml
+**/.parcel-cache/
 
 # Windows Azure Build Output
 csx

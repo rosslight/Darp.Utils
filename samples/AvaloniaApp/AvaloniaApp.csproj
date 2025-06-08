@@ -8,7 +8,6 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ResxSourceGenerator_SkipShowResxFilesInHierarchy>true</ResxSourceGenerator_SkipShowResxFilesInHierarchy>
     <ResxSourceGenerator_EmitDebugInformation>false</ResxSourceGenerator_EmitDebugInformation>
-    <PublishAot>true</PublishAot>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -21,12 +20,19 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="FluentAvaloniaUI" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" VersionOverride="4.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="4.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="4.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" VersionOverride="4.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" VersionOverride="4.11.0" />
   </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Darp.Utils.Avalonia\Darp.Utils.Avalonia.csproj" />
+    <ProjectReference Include="..\..\src\Darp.Utils.CodeMirror\Darp.Utils.CodeMirror.csproj" />
     <ProjectReference Include="..\..\src\Darp.Utils.Dialog.FluentAvalonia\Darp.Utils.Dialog.FluentAvalonia.csproj" />
     <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj" OutputItemType="Analyzer" />
     <EmbeddedResource Update="Localization\Resources.resx" EmitFormatMethods="true" Public="true" />

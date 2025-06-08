@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:AvaloniaApp.ViewModels"
+        xmlns:codeMirror="clr-namespace:Darp.Utils.CodeMirror;assembly=Darp.Utils.CodeMirror"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AvaloniaApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -12,19 +13,33 @@
     <StackPanel>
         <TextBlock Text="{CompiledBinding Greeting}"/>
         <TextBlock Text="{CompiledBinding I18N.Asd}"/>
-        <Button Content="English"
-                Command="{CompiledBinding SetLanguageCommand}"
-                CommandParameter="en"
-                MinWidth="100"/>
-        <Button Content="German"
-                Command="{CompiledBinding SetLanguageCommand}"
-                CommandParameter="de"
-                MinWidth="100"/>
-        <Button Content="French"
-                Command="{CompiledBinding SetLanguageCommand}"
-                CommandParameter="fr"
-                MinWidth="100"/>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="English"
+                    Command="{CompiledBinding SetLanguageCommand}"
+                    CommandParameter="en"
+                    MinWidth="100"/>
+            <Button Content="German"
+                    Command="{CompiledBinding SetLanguageCommand}"
+                    CommandParameter="de"
+                    MinWidth="100"/>
+            <Button Content="French"
+                    Command="{CompiledBinding SetLanguageCommand}"
+                    CommandParameter="fr"
+                    MinWidth="100"/>
+        </StackPanel>
         <Button Content="Open username password dialog"
                 Command="{CompiledBinding OpenUsernamePasswordCommand}" MinWidth="100"/>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Toggle Theme"
+                    Click="ToggleTheme_OnClick" MinWidth="100"/>
+            <ToggleButton Content="Toogle Readonly"
+                          IsChecked="{CompiledBinding #Editor.IsEditorReadOnly}" MinWidth="100"/>
+        </StackPanel>
+        <Grid ColumnDefinitions="*,*">
+            <TextBox Text="{CompiledBinding Text}" AcceptsReturn="True"/>
+            <codeMirror:CodeMirrorEditor Grid.Column="1" MinHeight="400" Name="Editor"
+                                         EditorText="{CompiledBinding Text}"
+                                         Address="{CompiledBinding CodeMirror.Address}"/>
+        </Grid>
     </StackPanel>
 </Window>
