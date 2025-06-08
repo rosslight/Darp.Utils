@@ -62,6 +62,27 @@ TestConfig config = await service.LoadConfigurationAsync();
 await service.WriteConfigurationAsync(config with { Setting = "NewValue" });
 ```
 
+## Darp.Utils.CodeMirror
+[![NuGet](https://img.shields.io/nuget/v/Darp.Utils.CodeMirror.svg)](https://www.nuget.org/packages/Darp.Utils.CodeMirror)
+[![Downloads](https://img.shields.io/nuget/dt/Darp.Utils.CodeMirror)](https://www.nuget.org/packages/Darp.Utils.CodeMirror)
+
+A code editor control that supports C# based on a WebView with CodeMirror.
+
+First, create the backend service. It will host a minimal webserver which provides the backend.
+Afterwards, you can create the editor in the code behind or in xaml:
+
+```csharp
+ICodeMirrorService codeMirrorService = new CodeMirrorService();
+await vm.CodeMirror.StartBackendAsync(
+    onBuild: builder => builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole()),
+    onConfigureCSharp: options => options.SetScriptMode(true)
+);
+
+var editor = new CodeMirrorEditor();
+editor.Address = codeMirrorService.Address;
+editor.EditorText = "int i = 42";
+editor.IsEditorReadOnly = false;
+```
 
 ## Darp.Utils.Dialog
 [![NuGet](https://img.shields.io/nuget/v/Darp.Utils.Dialog.svg)](https://www.nuget.org/packages/Darp.Utils.Dialog)

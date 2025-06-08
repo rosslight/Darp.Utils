@@ -27,6 +27,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget
 
+      - name: Setup Node.js (needed for Darp.Utils.CodeMirror)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Frontend Dependencies
+        working-directory: ${{ github.workspace }}/src/Darp.Utils.CodeMirror/js
+        run: npm ci
+
       - name: Restore dependencies
         run:  |
           dotnet tool restore

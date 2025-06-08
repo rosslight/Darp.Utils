@@ -84,7 +84,7 @@ public sealed class CodeMirrorService : ICodeMirrorService
             // Serve the embedded Assets/ folder
             var assetsProvider = new EmbeddedFileProvider(
                 typeof(CodeMirrorService).Assembly,
-                "Darp.Utils.CodeMirror.Assets"
+                "Darp.Utils.CodeMirror.publish"
             );
             _webApplication.UseStaticFiles(new StaticFileOptions { FileProvider = assetsProvider });
 

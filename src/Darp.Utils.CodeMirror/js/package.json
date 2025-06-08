@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "parcel build index.html --dist-dir ./../Assets --no-optimize --no-cache --no-content-hash"
+    "build": "esbuild app.js app.css --bundle --outdir=../publish --minify && cp index.html ../publish"
   },
   "dependencies": {
-    "mirrorsharp-codemirror-6-preview": "^1.0.0",
-    "@codemirror/search": "^6.5.11"
+    "@codemirror/search": "^6.5.11",
+    "mirrorsharp-codemirror-6-preview": "^1.0.0"
   },
   "devDependencies": {
-    "parcel": "^2.8.2"
+    "esbuild": "^0.25.5"
   }
 }

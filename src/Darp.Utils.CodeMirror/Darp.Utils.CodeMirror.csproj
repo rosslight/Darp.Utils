@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-      <LangVersion>preview</LangVersion>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAotCompatible>false</IsAotCompatible>
+    <LangVersion>preview</LangVersion>
+    <Description>A code editor control that supports C# based on a WebView with CodeMirror</Description>
+    <PackageTags>Darp;Rosslight;Avalonia;CodeMirror;CSharp;Roslyn</PackageTags>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" />
@@ -14,9 +16,26 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets/*.html" />
-    <EmbeddedResource Include="Assets/*.css" />
-    <EmbeddedResource Include="Assets/*.js" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="publish/index.html" />
+    <EmbeddedResource Include="publish/app.css" />
+    <EmbeddedResource Include="publish/app.js" />
+  </ItemGroup>
+
+  <!-- Run your front-end build every time you do dotnet build -->
+  <Target Name="RunNpmBuild" BeforeTargets="BeforeBuild">
+    <Exec Command="npm --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="NpmExitCode"/>
+    </Exec>
+
+    <Warning Condition="'$(NpmExitCode)' != '0'"
+             Text="npm was not found on the system. Skipping 'npm run build' frontend step."/>
+
+    <Exec Condition="'$(NpmExitCode)' == '0'"
+          WorkingDirectory="$(MSBuildProjectDirectory)/js"
+          Command="npm run build" />
+  </Target>
 </Project>
