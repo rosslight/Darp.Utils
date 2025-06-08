@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using MirrorSharp;
 using MirrorSharp.Advanced;
 using MirrorSharp.AspNetCore;
@@ -75,35 +77,46 @@ public sealed class CodeMirrorService : ICodeMirrorService
         onBuild?.Invoke(builder);
 
         _webApplication = builder.Build();
-
-        // Serve the embedded Assets/ folder
-        var assetsProvider = new EmbeddedFileProvider(
-            typeof(CodeMirrorService).Assembly,
-            "Darp.Utils.CodeMirror.Assets"
-        );
-        _webApplication.UseStaticFiles(new StaticFileOptions { FileProvider = assetsProvider });
-
-        // MirrorSharp WebSocket endpoint
-        _webApplication.UseWebSockets();
-        MirrorSharpOptions options = new MirrorSharpOptions().SetupCSharp(o => onConfigureCSharp?.Invoke(o));
-        if (isDebugLoggingEnabled)
+        ILogger<CodeMirrorService> logger =
+            _webApplication.Services.GetService<ILogger<CodeMirrorService>>() ?? NullLogger<CodeMirrorService>.Instance;
+        try
         {
-            options.IncludeExceptionDetails = true;
-            options.SelfDebugEnabled = true;
+            // Serve the embedded Assets/ folder
+            var assetsProvider = new EmbeddedFileProvider(
+                typeof(CodeMirrorService).Assembly,
+                "Darp.Utils.CodeMirror.Assets"
+            );
+            _webApplication.UseStaticFiles(new StaticFileOptions { FileProvider = assetsProvider });
+
+            // MirrorSharp WebSocket endpoint
+            _webApplication.UseWebSockets();
+            MirrorSharpOptions options = new MirrorSharpOptions().SetupCSharp(o => onConfigureCSharp?.Invoke(o));
+            if (isDebugLoggingEnabled)
+            {
+                options.IncludeExceptionDetails = true;
+                options.SelfDebugEnabled = true;
+            }
+
+            _webApplication.MapMirrorSharp("/mirrorsharp", options);
+
+            await _webApplication.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            _webApplication.Lifetime.ApplicationStopping.Register(
+                () => Dispatcher.UIThread.Post(() => IsRunning = false)
+            );
+            var chosenAddress =
+                GetPorts(_webApplication.Services).FirstOrDefault()
+                ?? throw new InvalidOperationException("Server not bound to any ports");
+            Dispatcher.UIThread.Post(() =>
+            {
+                Address = $"{chosenAddress}/index.html";
+                IsRunning = true;
+            });
         }
-        _webApplication.MapMirrorSharp("/mirrorsharp", options);
-
-        await _webApplication.StartAsync(cancellationToken).ConfigureAwait(false);
-
-        _webApplication.Lifetime.ApplicationStopping.Register(() => Dispatcher.UIThread.Post(() => IsRunning = false));
-        var chosenAddress =
-            GetPorts(_webApplication.Services).FirstOrDefault()
-            ?? throw new InvalidOperationException("Server not bound to any ports");
-        Dispatcher.UIThread.Post(() =>
+        catch (Exception e)
         {
-            Address = $"{chosenAddress}/index.html";
-            IsRunning = true;
-        });
+            logger.LogCritical(e, "Could not start server because of {Message}", e.Message);
+        }
     }
 
     private static IEnumerable<string> GetPorts(IServiceProvider provider)

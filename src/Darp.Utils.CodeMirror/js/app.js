@@ -29,7 +29,6 @@ const ms = mirrorsharp(document.getElementById('editor-container'), {
             lineNumbers(),
             closeBrackets(),
             contentChangedListener,
-            lineNumbers(),
             highlightActiveLineGutter(),
             highlightSpecialChars(),
             drawSelection(),
