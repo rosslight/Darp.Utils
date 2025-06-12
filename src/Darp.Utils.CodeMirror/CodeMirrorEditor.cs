@@ -14,7 +14,7 @@ public sealed class CodeMirrorEditor : WebView
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(100);
     private readonly Lock _updateEditorTextLock = new();
-    private readonly Channel<string> _textBoxToEditorChannel;
+    private readonly Channel<string> _propertyToJsChannel;
 
     /// <summary> Defines the <see cref="EditorText"/> property. </summary>
     public static readonly StyledProperty<string> EditorTextProperty = AvaloniaProperty.Register<
@@ -77,7 +77,7 @@ public sealed class CodeMirrorEditor : WebView
             AllowSynchronousContinuations = true,
             FullMode = BoundedChannelFullMode.DropOldest,
         };
-        _textBoxToEditorChannel = Channel.CreateBounded<string>(options);
+        _propertyToJsChannel = Channel.CreateBounded<string>(options);
         ActualThemeVariantChanged += (_, _) =>
         {
             SetEditorTheme(ActualThemeVariant == ThemeVariant.Dark ? "dark" : "light");
@@ -99,7 +99,7 @@ public sealed class CodeMirrorEditor : WebView
             // We don't want to trigger in that case
             if (editor._updateEditorTextLock.IsHeldByCurrentThread)
                 return;
-            editor._textBoxToEditorChannel.Writer.TryWrite(newText);
+            editor._propertyToJsChannel.Writer.TryWrite(newText);
         }
 
         static void OnEditorReadOnlyChanged(CodeMirrorEditor editor, bool newIsReadOnly)
@@ -112,6 +112,7 @@ public sealed class CodeMirrorEditor : WebView
     {
         RegisterJavascriptObject("msTextChanged", (Action<string>)OnJsTextChanged);
         SetEditorTheme(ActualThemeVariant == ThemeVariant.Dark ? "dark" : "light");
+        _propertyToJsChannel.Writer.TryWrite(EditorText);
         IsEditorLoaded = true;
         return;
 
@@ -136,7 +137,7 @@ public sealed class CodeMirrorEditor : WebView
 
     private async Task PumpChannelAsync()
     {
-        await foreach (var script in _textBoxToEditorChannel.Reader.ReadAllAsync().ConfigureAwait(false))
+        await foreach (var script in _propertyToJsChannel.Reader.ReadAllAsync().ConfigureAwait(false))
         {
             var escapedText = HttpUtility.JavaScriptStringEncode(script);
             if (Dispatcher.UIThread.CheckAccess())
