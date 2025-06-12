@@ -8,12 +8,15 @@ import {lintKeymap} from "@codemirror/lint"
 import { EditorState, Compartment  } from "@codemirror/state";
 
 const contentChangedListener = EditorView.updateListener.of(update => {
-  if (update.docChanged) {
-    const txt = update.state.doc.toString();
-    // invoke the .NET callback to be registered on navigation
-    if (window.msTextChanged && window.msTextChanged.invoke)
-      window.msTextChanged.invoke(txt);
-  }
+  if (!update.docChanged)
+    return
+  // drop any transaction we ourselves tagged with userEvent="setValue"
+  if (update.transactions.some(tr => tr.isUserEvent("cSharpSetValue")))
+    return
+  const txt = update.state.doc.toString();
+  // function provided by Avalonia NativeWebView
+  if (window.msTextChanged && window.msTextChanged.invoke)
+    window.msTextChanged.invoke(txt);
 });
 
 const readOnlyCompartment = new Compartment();
@@ -54,13 +57,18 @@ const ms = mirrorsharp(document.getElementById('editor-container'), {
 
 window.getMsText = () => ms.getText()
 window.setMsText = (text) => {
-  const currentText = ms.getCodeMirrorView().state.doc.toString()
-  if (currentText === text) {
-    return;
-  }
-  text = text.replaceAll("\r\n", "\n").replaceAll("\n", "\r\n")
-  ms.setText(text)
+  const view = ms.getCodeMirrorView()
+  view.dispatch({
+    changes: {
+      from: 0,
+      to: view.state.doc.length,
+      insert: text
+    },
+    // tag this transaction as coming from C#
+    userEvent: "cSharpSetValue"
+  })
 }
+
 window.getMsLanguage = () => ms.getLanguage()
 window.setMsLanguage = (language) => ms.setLanguage(language)
 
