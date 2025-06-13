@@ -90,6 +90,8 @@ public sealed class CodeMirrorEditor : WebView
         };
         EditorTextProperty.Changed.Subscribe(new CodeMirrorEditorObserver<string>(OnEditorPropertyChanged));
         IsEditorReadOnlyProperty.Changed.Subscribe(new CodeMirrorEditorObserver<bool>(OnEditorReadOnlyChanged));
+        // Expected to be uncrashable because of catch inside enumeration
+        // Channel should not be closed
         _ = PumpChannelAsync();
         return;
 
@@ -112,8 +114,8 @@ public sealed class CodeMirrorEditor : WebView
     {
         RegisterJavascriptObject("msTextChanged", (Action<string>)OnJsTextChanged);
         SetEditorTheme(ActualThemeVariant == ThemeVariant.Dark ? "dark" : "light");
-        _propertyToJsChannel.Writer.TryWrite(EditorText);
         IsEditorLoaded = true;
+        _propertyToJsChannel.Writer.TryWrite(EditorText);
         return;
 
         void OnJsTextChanged(string newText)
@@ -139,15 +141,17 @@ public sealed class CodeMirrorEditor : WebView
     {
         await foreach (var script in _propertyToJsChannel.Reader.ReadAllAsync().ConfigureAwait(false))
         {
-            var escapedText = HttpUtility.JavaScriptStringEncode(script);
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                await WriteScript(escapedText).ConfigureAwait(false);
+            if (!IsEditorLoaded)
                 continue;
+            try
+            {
+                var escapedText = HttpUtility.JavaScriptStringEncode(script);
+                await WriteScript(escapedText).ConfigureAwait(false);
             }
-            await Dispatcher
-                .UIThread.InvokeAsync(async () => await WriteScript(escapedText).ConfigureAwait(false))
-                .ConfigureAwait(false);
+            catch
+            {
+                // Ignored
+            }
         }
         return;
 
