@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Assets;
-using Assets.Abstractions;
 
 /// <inheritdoc cref="IConfigurationService{TConfig}"/>
 /// <summary> Instantiate a new Configuration service </summary>
