@@ -37,7 +37,7 @@ ServiceProvider provider = new ServiceCollection()
     .BuildServiceProvider();
 
 // Example read and write operations with the app data
-IAppDataAssetsService service = provider.GetRequiredService<IAppDataAssetsService>();
+IAssetsService service = provider.GetRequiredService<IAssetsService>();
 await service.SerializeJsonAsync("test.json", new Test("value"));
 Test deserialized = await service.DeserializeJsonAsync<Test>("test.json");
 await service.WriteTextAsync("test2.txt", "some content");
