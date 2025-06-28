@@ -5,11 +5,11 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Assets;
-using Assets.Abstractions;
 using Darp.Utils.Configuration;
 using FluentAssertions;
 using FluentAssertions.Events;
 using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
 using Xunit;
 
 public sealed class ConfigurationServiceTests
@@ -143,8 +143,8 @@ public sealed class ConfigurationServiceTests
     {
         // Arrange
         ServiceProvider provider = new ServiceCollection()
-            .AddSingleton<IAssetsService>(new MemoryAssetsService(BasePath))
-            .AddConfigurationFile<TestConfig, IAssetsService>("config.json")
+            .AddMemoryAssetsService(BasePath)
+            .AddConfigurationFile<TestConfig>("config.json")
             .BuildServiceProvider();
 
         IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
@@ -156,12 +156,29 @@ public sealed class ConfigurationServiceTests
     {
         // Arrange
         ServiceProvider provider = new ServiceCollection()
-            .AddSingleton<IAssetsService>(new MemoryAssetsService(BasePath))
-            .AddConfigurationFile<TestConfig, IAssetsService>("config.json", TestConfigContext.Default.TestConfig)
+            .AddMemoryAssetsService(BasePath)
+            .AddConfigurationFile<TestConfig>("config.json", TestConfigContext.Default.TestConfig)
             .BuildServiceProvider();
 
         IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
         service.IsLoaded.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Config_WhenUsingDI_ShouldWorkWithMultipleAssets()
+    {
+        const string assetsName = "Memory2";
+        // Arrange
+        ServiceProvider provider = new ServiceCollection()
+            .AddMemoryAssetsService("some/path")
+            .AddMemoryAssetsService(assetsName, "some/other/path")
+            .AddMemoryAssetsService("Memory3", "some/other/path/yea")
+            .AddConfigurationFile<TestConfig>(assetsName, ConfigFileName, TestConfigContext.Default.TestConfig)
+            .BuildServiceProvider();
+
+        IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
+        service.IsLoaded.Should().BeFalse();
+        service.Path.ShouldBe(Path.Join("some/other/path", ConfigFileName));
     }
 }
 

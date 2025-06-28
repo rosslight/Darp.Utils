@@ -7,6 +7,22 @@ using Utils.Assets;
 public sealed class DependencyInjectionTests
 {
     [Fact]
+    public void Add_ShouldNotThrow()
+    {
+        // Arrange
+        ServiceProvider provider = new ServiceCollection()
+            .AddEmbeddedResourceAssetsService<EmbeddedResourceAssetsServiceTests>()
+            .BuildServiceProvider();
+
+        // Act
+        IAssetsFactory factory = provider.GetRequiredService<IAssetsFactory>();
+        IReadOnlyAssetsService service = factory.GetReadOnlyAssets();
+
+        // Assert
+        service.BasePath.ShouldBe("Darp/Utils/Tests/Assets");
+    }
+
+    [Fact]
     public void AddEmbeddedResourceAssetsService_ShouldNotThrow()
     {
         // Arrange
@@ -15,7 +31,7 @@ public sealed class DependencyInjectionTests
             .BuildServiceProvider();
 
         // Act
-        IEmbeddedResourceAssetsService service = provider.GetRequiredService<IEmbeddedResourceAssetsService>();
+        EmbeddedResourceAssetsService service = provider.GetRequiredService<EmbeddedResourceAssetsService>();
 
         // Assert
         service.BasePath.ShouldBe("Darp/Utils/Tests/Assets");
@@ -33,7 +49,7 @@ public sealed class DependencyInjectionTests
         tempFolder = tempFolder.Replace('\\', '/').TrimEnd('/');
 
         // Act
-        IFolderAssetsService service = provider.GetRequiredService<IFolderAssetsService>();
+        FolderAssetsService service = provider.GetRequiredService<FolderAssetsService>();
 
         // Assert
         service.BasePath.ShouldBe($"{tempFolder}/{relativePath}");
@@ -48,7 +64,7 @@ public sealed class DependencyInjectionTests
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace('\\', '/');
 
         // Act
-        IAppDataAssetsService service = provider.GetRequiredService<IAppDataAssetsService>();
+        FolderAssetsService service = provider.GetRequiredService<FolderAssetsService>();
 
         // Assert
         service.BasePath.ShouldBe($"{appDataPath}/{relativePath}");
@@ -67,7 +83,7 @@ public sealed class DependencyInjectionTests
             .Replace('\\', '/');
 
         // Act
-        IProgramDataAssetsService service = provider.GetRequiredService<IProgramDataAssetsService>();
+        FolderAssetsService service = provider.GetRequiredService<FolderAssetsService>();
 
         // Assert
         service.BasePath.ShouldBe($"{programDataPath}/{relativePath}");
@@ -80,7 +96,7 @@ public sealed class DependencyInjectionTests
         ServiceProvider provider = new ServiceCollection().AddBaseDirectoryAssetsService().BuildServiceProvider();
 
         // Act
-        IBaseDirectoryAssetsService service = provider.GetRequiredService<IBaseDirectoryAssetsService>();
+        IReadOnlyAssetsService service = provider.GetRequiredService<IReadOnlyAssetsService>();
 
         // Assert
         service.BasePath.ShouldBe($"{AppDomain.CurrentDomain.BaseDirectory.Replace('\\', '/')}".TrimEnd('/'));

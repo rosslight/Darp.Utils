@@ -5,16 +5,15 @@ using Common;
 using NSubstitute;
 using Shouldly;
 using Utils.Assets;
-using Utils.Assets.Abstractions;
 
 public sealed class AssetsExtensionTests
 {
     private static readonly byte[] TestConfig = /*lang=json,strict*/
-        """
-                                                {
-                                                   "Name":"Test"
-                                                }
-                                                """u8.ToArray();
+    """
+    {
+       "Name":"Test"
+    }
+    """u8.ToArray();
 
     [Fact]
     public async Task DeserializeJsonAsync_WhenCalled_ReturnsDeserializedObject()
@@ -56,7 +55,7 @@ public sealed class AssetsExtensionTests
     public async Task SerializeJsonAsync_WhenCalled_SerializesObject()
     {
         // Arrange
-        IWriteOnlyAssetsService writeOnlyService = Substitute.For<IWriteOnlyAssetsService>();
+        IAssetsService writeOnlyService = Substitute.For<IAssetsService>();
         var buffer = new byte[100];
         var stream = new MemoryStream(buffer);
         writeOnlyService.GetWriteOnlySteam(Arg.Any<string>()).Returns(stream);
@@ -82,7 +81,7 @@ public sealed class AssetsExtensionTests
     {
         // Arrange
         IReadOnlyAssetsService sourceService = Substitute.For<IReadOnlyAssetsService>();
-        IWriteOnlyAssetsService targetService = Substitute.For<IWriteOnlyAssetsService>();
+        IAssetsService targetService = Substitute.For<IAssetsService>();
         var sourceStream = new MemoryStream("Test data"u8.ToArray());
         var buffer = new byte[100];
         var targetStream = new MemoryStream(buffer);
@@ -106,7 +105,7 @@ public sealed class AssetsExtensionTests
     {
         // Arrange
         IReadOnlyAssetsService sourceService = Substitute.For<IReadOnlyAssetsService>();
-        IWriteOnlyFileAssetsService targetService = Substitute.For<IWriteOnlyFileAssetsService>();
+        IFolderAssetsService targetService = Substitute.For<IFolderAssetsService>();
         var sourceStream = new MemoryStream("Test data"u8.ToArray());
         var buffer = new byte[100];
         var targetStream = new MemoryStream(buffer);
