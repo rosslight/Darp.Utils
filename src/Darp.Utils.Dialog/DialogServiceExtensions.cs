@@ -136,7 +136,7 @@ public static class DialogServiceExtensions
     /// <param name="isMessageSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static Task<ContentDialogResult<InputDialogViewModel>> ShowInputDialogAsyc(
+    public static Task<ContentDialogResult<InputDialogViewModel>> ShowInputDialogAsync(
         this IDialogService dialogService,
         string title,
         string? message = null,
