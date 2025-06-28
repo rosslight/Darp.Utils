@@ -3,7 +3,6 @@ namespace Darp.Utils.Assets;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using Abstractions;
 
 /// <summary> Extensions for everything related to assets </summary>
 public static class AssetsExtensions
@@ -76,7 +75,7 @@ public static class AssetsExtensions
         "JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. Use System.Text.Json source generation for native AOT applications."
     )]
     public static Task SerializeJsonAsync<TValue>(
-        this IWriteOnlyAssetsService targetAssetsService,
+        this IAssetsService targetAssetsService,
         string path,
         TValue value,
         JsonSerializerOptions? options = null,
@@ -98,7 +97,7 @@ public static class AssetsExtensions
     /// <exception cref="NotSupportedException">There is no compatible <see cref="System.Text.Json.Serialization.JsonConverter" /> for <typeparamref name="TValue" /> or its serializable members.</exception>
     /// <returns>A task that represents the asynchronous copy operation.</returns>
     public static async Task SerializeJsonAsync<TValue>(
-        this IWriteOnlyAssetsService targetAssetsService,
+        this IAssetsService targetAssetsService,
         string path,
         TValue value,
         JsonTypeInfo<TValue> typeInfo,
@@ -126,7 +125,7 @@ public static class AssetsExtensions
     public static async Task CopyToAsync(
         this IReadOnlyAssetsService sourceAssetsService,
         string sourcePath,
-        IWriteOnlyAssetsService targetAssetsService,
+        IAssetsService targetAssetsService,
         string targetPath,
         CancellationToken cancellationToken = default
     )
@@ -156,7 +155,7 @@ public static class AssetsExtensions
     public static async Task CopyToAsync(
         this IReadOnlyAssetsService sourceAssetsService,
         string sourcePath,
-        IWriteOnlyFileAssetsService targetAssetsService,
+        IFolderAssetsService targetAssetsService,
         string targetPath,
         FileAttributes fileAttributes,
         CancellationToken cancellationToken = default
@@ -200,7 +199,7 @@ public static class AssetsExtensions
     /// <param name="content"> The content to be written to the asset </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     public static async Task WriteTextAsync(
-        this IWriteOnlyAssetsService targetAssetsService,
+        this IAssetsService targetAssetsService,
         string path,
         string content,
         CancellationToken cancellationToken = default
@@ -224,7 +223,7 @@ public static class AssetsExtensions
     /// <param name="fileAttributes"> The file attributes to be used for each file </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     public static async Task WriteTextAsync(
-        this IWriteOnlyFileAssetsService targetAssetsService,
+        this IFolderAssetsService targetAssetsService,
         string path,
         string content,
         FileAttributes fileAttributes,

@@ -2,13 +2,9 @@ namespace Darp.Utils.Assets;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using Darp.Utils.Assets.Abstractions;
 using GlobExpressions;
 
 /// <summary> An interface for reading from and writing to a predefined folder </summary>
-public interface IFolderAssetsService : IAssetsService, IWriteOnlyFileAssetsService;
-
-/// <inheritdoc />
 /// <summary> Instantiate a new <see cref="FolderAssetsService"/> with a given path relative to the <paramref name="folderPath"/> </summary>
 /// <param name="folderPath">The path to the folder </param>
 /// <param name="relativePath">The path relative to the <paramref name="folderPath"/></param>
@@ -48,9 +44,7 @@ public class FolderAssetsService(string folderPath, string relativePath) : IFold
     {
         var joinedPath = Path.Join(BasePath, path);
         if (Exists(path))
-        {
             return File.OpenWrite(joinedPath);
-        }
 
         var directoryPath =
             Path.GetDirectoryName(joinedPath) ?? throw new DirectoryNotFoundException("Could not get directory name");

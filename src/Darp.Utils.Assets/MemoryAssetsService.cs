@@ -2,7 +2,6 @@ namespace Darp.Utils.Assets;
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using Abstractions;
 using GlobExpressions;
 
 /// <summary> An In-Memory Assets service </summary>

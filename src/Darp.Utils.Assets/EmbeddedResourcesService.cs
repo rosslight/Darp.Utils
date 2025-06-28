@@ -2,15 +2,11 @@ namespace Darp.Utils.Assets;
 
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Abstractions;
 using GlobExpressions;
 
 /// <summary> An interface for reading from the embedded files of a specific assembly </summary>
-public interface IEmbeddedResourceAssetsService : IReadOnlyAssetsService;
-
-/// <inheritdoc />
 /// <param name="assembly">The assembly to be used</param>
-public class EmbeddedResourceAssetsService(Assembly assembly) : IEmbeddedResourceAssetsService
+public class EmbeddedResourceAssetsService(Assembly assembly) : IReadOnlyAssetsService
 {
     private readonly Assembly _assembly = assembly;
     private Regex? _noBasePathRegex;

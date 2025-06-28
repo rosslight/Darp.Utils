@@ -1,7 +1,7 @@
-namespace Darp.Utils.Assets.Abstractions;
+namespace Darp.Utils.Assets;
 
-/// <summary> An interface for writing to file assets </summary>
-public interface IWriteOnlyFileAssetsService : IWriteOnlyAssetsService
+/// <summary> An interface for reading from and writing to a predefined folder </summary>
+public interface IFolderAssetsService : IAssetsService
 {
     /// <summary> Opens an asset for writing and creates it if not existent. </summary>
     /// <param name="path"> The path to write to </param>

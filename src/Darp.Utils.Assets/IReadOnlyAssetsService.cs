@@ -1,4 +1,4 @@
-namespace Darp.Utils.Assets.Abstractions;
+namespace Darp.Utils.Assets;
 
 using System.Diagnostics.CodeAnalysis;
 
