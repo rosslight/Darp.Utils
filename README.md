@@ -13,20 +13,27 @@ To extend, add a new project and test project.
 A collection of simple interfaces for app assets targeting desktop apps.
 
 Currently implemented:
-- `IFolderAssetsService`: Read or write to a specific folder
-- `IAppDataAssetsService`: Read or write to the `ApplicationData`. The relativePath might be e.g. the app name.
-- `IProgramDataAssetsService`: Read or write to the `ProgramData`. The relativePath might be e.g. the app name.
-- `IBaseDirectoryAssetsService`: Read from the base directory of the App's executable
-- `IEmbeddedResourceAssetsService`: Read files marked as `EmbeddedResource` of a specific Assembly
+- `FolderAssetsService`: Read or write to a specific folder
+  DI extensions provide helpers for `ApplicationData`, `ProgramData`, and the App's BaseDirectory
+- `EmbeddedResourceAssetsService`: Read files marked as `EmbeddedResource` of a specific Assembly
+- `MemoryAssetsService`: InMemory service that can be used for testing
 
-Additionally, there is a `MemoryAssetsService` that can be used during testing
+When using DI, it is possible to retrieve the following services:
+- `IAssetsFactory`: A factory which is able to retrieve named asset services
+- `IReadOnlyAssets`: The base interface which provides readonly access to your assets
+- `IAssetsService`: A writable view on your assets, extends `IReadOnlyAssets`
+- `IFolderAssetsService`: A writable view on your assets with helpers specific to a directory
+
+Named asset services:
+- Supports registration of multiple different asset services
+- Retrieval via `IAssetFactory` by supplying the name
 
 Example:
 ```csharp
 // Add EmbeddedResources and AppData assets to the DI Container
 ServiceProvider provider = new ServiceCollection()
-    .AddEmbeddedResourceAssetsService(typeof(Test).Assembly)
-    .AddAppDataAssetsService("RelativePath")
+    .AddAppDataAssetsService(relativePath: "RelativePath")
+    .AddEmbeddedResourceAssetsService(name: "AssemblyResources", typeof(Test).Assembly)
     .BuildServiceProvider();
 
 // Example read and write operations with the app data
@@ -35,8 +42,9 @@ await service.SerializeJsonAsync("test.json", new Test("value"));
 Test deserialized = await service.DeserializeJsonAsync<Test>("test.json");
 await service.WriteTextAsync("test2.txt", "some content");
 
-// Copy an embedded resource to the app data
-IEmbeddedResourceAssetsService resourceService = provider.GetRequiredService<IEmbeddedResourceAssetsService>();
+// Retrieve a named assets service and copy an embedded resource to the app data
+IAssetsFactory factory = provider.GetRequiredService<IAssetsFactory>();
+IReadOnlyAssetsService resourceService = factory.GetReadOnlyAssets("AssemblyResources");
 await resourceService.CopyToAsync("test.json", service, "test.json");
 
 file sealed record Test(string Prop1);
@@ -54,7 +62,7 @@ Example:
 ```csharp
 ServiceProvider provider = new ServiceCollection()
     .AddAppDataAssetsService("RelativePath")
-    .AddConfigurationFile<TestConfig, IAppDataAssetsService>("config.json")
+    .AddConfigurationFile<TestConfig>("config.json")
     .BuildServiceProvider();
 
 IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
