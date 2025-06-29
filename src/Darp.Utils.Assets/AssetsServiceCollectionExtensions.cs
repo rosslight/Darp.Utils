@@ -140,12 +140,14 @@ public static class AssetsServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         string? name,
         string relativePath
-    ) =>
-        serviceCollection.AddFolderAssetsService(
+    )
+    {
+        return serviceCollection.AddFolderAssetsService(
             name,
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
             relativePath
         );
+    }
 
     /// <summary> Adds an <see cref="EmbeddedResourceAssetsService"/> to the serviceCollection. </summary>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
@@ -200,7 +202,7 @@ public static class AssetsServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         string? name,
         string basePath,
-        Action<MemoryAssetsService>? configure = null
+        Action<IAssetsService>? configure = null
     )
     {
         return serviceCollection.AddAssetsService<MemoryAssetsService>(
@@ -223,7 +225,7 @@ public static class AssetsServiceCollectionExtensions
     public static IServiceCollection AddMemoryAssetsService(
         this IServiceCollection serviceCollection,
         string basePath,
-        Action<MemoryAssetsService>? configure = null
+        Action<IAssetsService>? configure = null
     ) => serviceCollection.AddMemoryAssetsService(null, basePath, configure);
 }
 
