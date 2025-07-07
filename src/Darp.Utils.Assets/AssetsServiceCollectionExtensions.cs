@@ -34,15 +34,15 @@ public static class AssetsServiceCollectionExtensions
         );
         serviceCollection.Add(descriptor);
         serviceCollection.AddTransient<TAssetsService>(provider =>
-            provider.GetRequiredService<IAssetsFactory>().GetReadOnlyAssets<TAssetsService>(name)
+            provider.GetRequiredService<IAssetsFactory>().GetAssets<TAssetsService>(name)
         );
         serviceCollection.AddTransient<IReadOnlyAssetsService>(provider =>
-            provider.GetRequiredService<IAssetsFactory>().GetReadOnlyAssets<IReadOnlyAssetsService>(name)
+            provider.GetRequiredService<IAssetsFactory>().GetAssets<IReadOnlyAssetsService>(name)
         );
         if (typeof(TAssetsService).IsAssignableTo(typeof(IAssetsService)))
         {
             serviceCollection.AddTransient<IAssetsService>(provider =>
-                provider.GetRequiredService<IAssetsFactory>().GetReadOnlyAssets<IAssetsService>(name)
+                provider.GetRequiredService<IAssetsFactory>().GetAssets<IAssetsService>(name)
             );
         }
         return serviceCollection;
@@ -190,7 +190,19 @@ public static class AssetsServiceCollectionExtensions
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <returns> A reference to this instance after the operation has completed. </returns>
     public static IServiceCollection AddBaseDirectoryAssetsService(this IServiceCollection serviceCollection) =>
-        serviceCollection.AddFolderAssetsService(AppDomain.CurrentDomain.BaseDirectory, string.Empty);
+        serviceCollection.AddBaseDirectoryAssetsService(null);
+
+    /// <summary>
+    /// Adds an <see cref="FolderAssetsService"/> to the serviceCollection.
+    /// Root is the <see cref="AppDomain.CurrentDomain"/>.<see cref="AppDomain.BaseDirectory"/>.
+    /// </summary>
+    /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
+    /// <param name="name"> The name of the specific embedded resource assets service </param>
+    /// <returns> A reference to this instance after the operation has completed. </returns>
+    public static IServiceCollection AddBaseDirectoryAssetsService(
+        this IServiceCollection serviceCollection,
+        string? name
+    ) => serviceCollection.AddFolderAssetsService(name, AppDomain.CurrentDomain.BaseDirectory, string.Empty);
 
     /// <summary> Adds an <see cref="MemoryAssetsService"/> to the serviceCollection. </summary>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>

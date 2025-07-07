@@ -36,7 +36,7 @@ public sealed class UseCases
             .BuildServiceProvider();
 
         IAssetsFactory factory = provider.GetRequiredService<IAssetsFactory>();
-        IFolderAssetsService service = factory.GetReadOnlyAssets<IFolderAssetsService>();
+        IFolderAssetsService service = factory.GetAssets<IFolderAssetsService>();
         IAssetsService s1 = factory.GetAssets();
         IReadOnlyAssetsService s2 = factory.GetReadOnlyAssets();
         service.BasePath.ShouldBe("some/path/relative");
@@ -53,21 +53,21 @@ public sealed class UseCases
             .BuildServiceProvider();
 
         IAssetsFactory factory = provider.GetRequiredService<IAssetsFactory>();
-        IFolderAssetsService s11 = factory.GetReadOnlyAssets<IFolderAssetsService>();
+        IFolderAssetsService s11 = factory.GetAssets<IFolderAssetsService>();
         IAssetsService s12 = factory.GetAssets();
         IReadOnlyAssetsService s13 = factory.GetReadOnlyAssets();
         s11.BasePath.ShouldBe("some/path/some");
         s12.BasePath.ShouldBe("some/path/some");
         s13.BasePath.ShouldBe("some/path/some");
 
-        IFolderAssetsService s21 = factory.GetReadOnlyAssets<IFolderAssetsService>("FolderService1");
+        IFolderAssetsService s21 = factory.GetAssets<IFolderAssetsService>("FolderService1");
         IAssetsService s22 = factory.GetAssets("FolderService1");
         IReadOnlyAssetsService s23 = factory.GetReadOnlyAssets("FolderService1");
         s21.BasePath.ShouldBe("some/path/some");
         s22.BasePath.ShouldBe("some/path/some");
         s23.BasePath.ShouldBe("some/path/some");
 
-        IFolderAssetsService s31 = factory.GetReadOnlyAssets<IFolderAssetsService>("FolderService2");
+        IFolderAssetsService s31 = factory.GetAssets<IFolderAssetsService>("FolderService2");
         IAssetsService s32 = factory.GetAssets("FolderService2");
         IReadOnlyAssetsService s33 = factory.GetReadOnlyAssets("FolderService2");
         s31.BasePath.ShouldBe("some/path/other");

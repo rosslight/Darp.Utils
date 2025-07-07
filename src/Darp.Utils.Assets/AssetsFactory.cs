@@ -6,7 +6,7 @@ internal sealed class AssetsFactory(IEnumerable<AssetsOptions> configuration) : 
 {
     private readonly IEnumerable<AssetsOptions> _configuration = configuration;
 
-    public TAssetsService GetReadOnlyAssets<TAssetsService>()
+    public TAssetsService GetAssets<TAssetsService>()
         where TAssetsService : IReadOnlyAssetsService
     {
         Type typeToResolve = typeof(TAssetsService);
@@ -19,7 +19,7 @@ internal sealed class AssetsFactory(IEnumerable<AssetsOptions> configuration) : 
         throw new ArgumentException("No service was registered for the given type");
     }
 
-    public TAssetsService GetReadOnlyAssets<TAssetsService>(string? name)
+    public TAssetsService GetAssets<TAssetsService>(string? name)
         where TAssetsService : IReadOnlyAssetsService
     {
         Type typeToResolve = typeof(TAssetsService);
