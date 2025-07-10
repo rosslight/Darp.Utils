@@ -2,10 +2,12 @@ namespace Darp.Utils.Dialog.FluentAvalonia;
 
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using DialogData;
 using global::FluentAvalonia.Core;
 using ContentDialogButton = ContentDialogButton;
@@ -19,6 +21,8 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
 {
     private readonly AvaloniaDialogService _dialogService;
     private readonly TopLevel? _topLevel;
+    private bool _isShown;
+
     internal FluentContentDialog Dialog { get; }
 
     private CancellationTokenSource? _cancelTokenSource;
@@ -59,6 +63,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     /// <inheritdoc />
     public IContentDialogBuilder<TContent> SetTitle(IObservable<string> observable)
     {
+        EnsureNotShown();
         Dialog[!FluentContentDialog.TitleProperty] = observable.ToBinding();
         return this;
     }
@@ -66,6 +71,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     /// <inheritdoc />
     public IContentDialogBuilder<TContent> SetDefaultButton(ContentDialogButton defaultButton)
     {
+        EnsureNotShown();
         Dialog.DefaultButton = (FluentContentDialogButton)defaultButton;
         return this;
     }
@@ -73,6 +79,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     /// <inheritdoc />
     public IContentDialogBuilder<TContent> SetCloseButton(string text, Func<TContent, bool>? onClick = null)
     {
+        EnsureNotShown();
         Dialog.CloseButtonText = text;
 
         if (onClick is not null)
@@ -93,6 +100,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         Func<TContent, CancellationToken, Task<bool>>? onClick = null
     )
     {
+        EnsureNotShown();
         Dialog.PrimaryButtonText = text;
         BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
         if (isEnabled is not null)
@@ -132,6 +140,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         Func<TContent, CancellationToken, Task<bool>>? onClick = null
     )
     {
+        EnsureNotShown();
         Dialog.SecondaryButtonText = text;
         BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
         if (isEnabled is not null)
@@ -167,16 +176,32 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     /// <inheritdoc />
     public async Task<ContentDialogResult<TContent>> ShowAsync(CancellationToken cancellationToken = default)
     {
+        EnsureNotShown();
+        _isShown = true;
+        CancellationTokenRegistration? registration = null;
         try
         {
             _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            registration = cancellationToken.Register(() =>
+            {
+                Dispatcher.UIThread.Invoke(() => Dialog.Hide());
+            });
             var result = (ContentDialogResult)await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+
             return new ContentDialogResult<TContent>(result, Content);
         }
         finally
         {
+            if (registration is not null)
+                await registration.Value.DisposeAsync().ConfigureAwait(false);
             _cancelTokenSource?.Dispose();
             _cancelTokenSource = null;
         }
+    }
+
+    private void EnsureNotShown([CallerMemberName] string? operationName = null)
+    {
+        if (_isShown)
+            throw new InvalidOperationException($"Cannot {operationName} because dialog is already shown");
     }
 }

@@ -57,7 +57,7 @@ public interface IContentDialogBuilder<TContent>
     );
 
     /// <summary> Show the current dialog </summary>
-    /// <param name="cancellationToken"> The CancellationToken to cancel the operation </param>
+    /// <param name="cancellationToken"> The CancellationToken to cancel showing the dialog </param>
     /// <returns> The task with the <see cref="ContentDialogResult{TContent}"/> after the dialog has closed </returns>
     Task<ContentDialogResult<TContent>> ShowAsync(CancellationToken cancellationToken = default);
 }
