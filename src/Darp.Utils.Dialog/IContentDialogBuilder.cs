@@ -56,6 +56,11 @@ public interface IContentDialogBuilder<TContent>
         Func<TContent, CancellationToken, Task<bool>>? onClick = null
     );
 
+    /// <summary> Enables / disables closing when pressing the escape key </summary>
+    /// <param name="isClosing"> True, if closing is allowed. False otherwise </param>
+    /// <returns> The same <see cref="IContentDialogBuilder{TContent}"/> instance </returns>
+    IContentDialogBuilder<TContent> SetClosingOnEscape(bool isClosing);
+
     /// <summary> Show the current dialog </summary>
     /// <param name="cancellationToken"> The CancellationToken to cancel showing the dialog </param>
     /// <returns> The task with the <see cref="ContentDialogResult{TContent}"/> after the dialog has closed </returns>

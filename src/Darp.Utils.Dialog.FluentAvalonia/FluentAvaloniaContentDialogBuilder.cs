@@ -10,6 +10,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using DialogData;
 using global::FluentAvalonia.Core;
+using global::FluentAvalonia.UI.Controls;
 using ContentDialogButton = ContentDialogButton;
 using ContentDialogResult = Dialog.ContentDialogResult;
 using FluentContentDialog = global::FluentAvalonia.UI.Controls.ContentDialog;
@@ -25,6 +26,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     internal FluentContentDialog Dialog { get; }
 
     private CancellationTokenSource? _cancelTokenSource;
+    private bool _isClosingOnEscape = true;
 
     /// <inheritdoc />
     public string Title => Dialog.Title.ToString() ?? "n/a";
@@ -55,6 +57,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
                 .FirstOrDefault(x => x.Focusable);
             firstOrDefault?.Focus();
         };
+        Dialog.Closing += DialogOnClosing;
         Dialog.DataTemplates.Add(new DialogDataViewLocator());
         Content = content;
     }
@@ -170,6 +173,25 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
             };
         }
         return this;
+    }
+
+    /// <inheritdoc />
+    public IContentDialogBuilder<TContent> SetClosingOnEscape(bool isClosing)
+    {
+        _isClosingOnEscape = isClosing;
+        return this;
+    }
+
+    private void DialogOnClosing(FluentContentDialog dialog, ContentDialogClosingEventArgs args)
+    {
+        if (
+            !_isClosingOnEscape
+            && _cancelTokenSource?.IsCancellationRequested is false
+            && args.Result == global::FluentAvalonia.UI.Controls.ContentDialogResult.None
+        )
+        {
+            args.Cancel = true;
+        }
     }
 
     /// <inheritdoc />

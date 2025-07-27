@@ -17,7 +17,7 @@ public sealed class DialogAwaitable<TContent> : IDisposable
         _closeDialogSource = source;
     }
 
-    /// <summary> The token which is canceled when the dialog closes </summary>
+    /// <summary> Gets the <see cref="CancellationToken"/> which notifies when the dialog has closed </summary>
     public CancellationToken Token => _closeDialogSource.Token;
 
     /// <summary> <c>False</c>, if the dialog is still showing, <c>true</c> otherwise </summary>
