@@ -54,7 +54,7 @@ public static class DialogServiceExtensions
     /// <param name="isSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static Task<ContentDialogResult<MessageBoxViewModel>> ShowMessageBoxDialogAsync(
+    public static DialogAwaitable<MessageBoxViewModel> ShowMessageBoxDialogAsync(
         this IDialogService dialogService,
         string title,
         string message,
@@ -97,7 +97,7 @@ public static class DialogServiceExtensions
     /// <param name="title"> The title of the dialog </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static Task<ContentDialogResult<UsernamePasswordViewModel>> ShowUsernamePasswordDialogAsync(
+    public static DialogAwaitable<UsernamePasswordViewModel> ShowUsernamePasswordDialogAsync(
         this IDialogService dialogService,
         string title,
         CancellationToken cancellationToken = default
@@ -136,7 +136,7 @@ public static class DialogServiceExtensions
     /// <param name="isMessageSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
-    public static Task<ContentDialogResult<InputDialogViewModel>> ShowInputDialogAsync(
+    public static DialogAwaitable<InputDialogViewModel> ShowInputDialogAsync(
         this IDialogService dialogService,
         string title,
         string? message = null,

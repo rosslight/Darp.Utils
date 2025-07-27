@@ -21,7 +21,6 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
 {
     private readonly AvaloniaDialogService _dialogService;
     private readonly TopLevel? _topLevel;
-    private bool _isShown;
 
     internal FluentContentDialog Dialog { get; }
 
@@ -174,34 +173,49 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     }
 
     /// <inheritdoc />
-    public async Task<ContentDialogResult<TContent>> ShowAsync(CancellationToken cancellationToken = default)
+    public DialogAwaitable<TContent> ShowAsync(CancellationToken cancellationToken = default)
+    {
+#pragma warning disable CA2000 // Call System.IDisposable.Dispose on object before all references to it are out of scope
+        var source = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+#pragma warning restore CA2000 // Ignored because it is not going out of scope, its saved in DialogAwaitable
+        Task<ContentDialogResult<TContent>> task = ShowAsync(source);
+        return new DialogAwaitable<TContent>(task, source);
+    }
+
+    private async Task<ContentDialogResult<TContent>> ShowAsync(CancellationTokenSource source)
     {
         EnsureNotShown();
-        _isShown = true;
+        _cancelTokenSource = source;
         CancellationTokenRegistration? registration = null;
         try
         {
-            _cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            registration = cancellationToken.Register(() =>
+            registration = source.Token.Register(() =>
             {
                 Dispatcher.UIThread.Invoke(() => Dialog.Hide());
             });
-            var result = (ContentDialogResult)await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+            ContentDialogResult result;
+            if (Dispatcher.UIThread.CheckAccess())
+                result = await ShowDialogAsync().ConfigureAwait(true);
+            else
+                result = await Dispatcher.UIThread.InvokeAsync(ShowDialogAsync).ConfigureAwait(true);
 
             return new ContentDialogResult<TContent>(result, Content);
         }
         finally
         {
             if (registration is not null)
-                await registration.Value.DisposeAsync().ConfigureAwait(false);
-            _cancelTokenSource?.Dispose();
-            _cancelTokenSource = null;
+                await registration.Value.DisposeAsync().ConfigureAwait(true);
+            if (_cancelTokenSource is not null)
+                await _cancelTokenSource.CancelAsync().ConfigureAwait(true);
         }
+
+        async Task<ContentDialogResult> ShowDialogAsync() =>
+            (ContentDialogResult)await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
     }
 
     private void EnsureNotShown([CallerMemberName] string? operationName = null)
     {
-        if (_isShown)
-            throw new InvalidOperationException($"Cannot {operationName} because dialog is already shown");
+        if (_cancelTokenSource is not null)
+            throw new InvalidOperationException($"Cannot {operationName} because a dialog can only be shown once!");
     }
 }
