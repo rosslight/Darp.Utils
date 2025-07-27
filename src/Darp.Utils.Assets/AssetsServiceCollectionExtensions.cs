@@ -197,7 +197,7 @@ public static class AssetsServiceCollectionExtensions
     /// Root is the <see cref="AppDomain.CurrentDomain"/>.<see cref="AppDomain.BaseDirectory"/>.
     /// </summary>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <param name="name"> The name of the specific embedded resource assets service </param>
+    /// <param name="name"> The name of the specific base directory assets service </param>
     /// <returns> A reference to this instance after the operation has completed. </returns>
     public static IServiceCollection AddBaseDirectoryAssetsService(
         this IServiceCollection serviceCollection,

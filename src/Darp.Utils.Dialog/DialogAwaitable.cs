@@ -3,7 +3,9 @@ namespace Darp.Utils.Dialog;
 using System.Runtime.CompilerServices;
 
 /// <summary> An awaitable and disposable class representing an open dialog </summary>
-public sealed class DialogAwaitable<TContent> : IDisposable
+#pragma warning disable CA1815 // Override equals and operator equals on value types
+public readonly struct DialogAwaitable<TContent> : IDisposable
+#pragma warning restore CA1815
 {
     private readonly Task<ContentDialogResult<TContent>> _dialogTask;
     private readonly CancellationTokenSource _closeDialogSource;

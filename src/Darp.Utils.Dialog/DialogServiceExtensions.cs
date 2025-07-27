@@ -51,16 +51,14 @@ public static class DialogServiceExtensions
     /// <param name="dialogService"> The <see cref="IDialogService"/> to create the dialog from </param>
     /// <param name="title"> The title of the dialog </param>
     /// <param name="message"> The message to be shown </param>
-    /// <param name="isSelectable"> If true, a selectable TextBlock will be used to show the message </param>
     /// <param name="cancellationToken"> The cancellation token to cancel the operation </param>
     /// <returns> The <see cref="IContentDialogBuilder{TContent}"/> </returns>
     public static DialogAwaitable<MessageBoxViewModel> ShowMessageBoxDialogAsync(
         this IDialogService dialogService,
         string title,
         string message,
-        bool isSelectable = true,
         CancellationToken cancellationToken = default
-    ) => dialogService.CreateMessageBoxDialog(title, message, isSelectable).ShowAsync(cancellationToken);
+    ) => dialogService.CreateMessageBoxDialog(title, message, isSelectable: true).ShowAsync(cancellationToken);
 
     /// <summary>
     /// Create a new input dialog builder based on a ContentDialog. The content is an optional message and the input
