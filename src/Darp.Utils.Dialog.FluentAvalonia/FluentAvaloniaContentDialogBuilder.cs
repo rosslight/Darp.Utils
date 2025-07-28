@@ -6,11 +6,11 @@ using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using DialogData;
 using global::FluentAvalonia.Core;
-using global::FluentAvalonia.UI.Controls;
 using ContentDialogButton = ContentDialogButton;
 using ContentDialogResult = Dialog.ContentDialogResult;
 using FluentContentDialog = global::FluentAvalonia.UI.Controls.ContentDialog;
@@ -49,6 +49,12 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         _dialogService = dialogService;
         _topLevel = topLevel;
         Dialog = new FluentContentDialog { Title = title, Content = content };
+        Dialog.AddHandler(
+            InputElement.KeyDownEvent,
+            // ContentDialog will not register the escape key if we mark the event as handled
+            (_, args) => args.Handled = args.Key == Key.Escape && !_isClosingOnEscape,
+            RoutingStrategies.Tunnel
+        );
         Dialog.Opened += (dialog, _) =>
         {
             IInputElement? firstOrDefault = dialog
@@ -57,7 +63,6 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
                 .FirstOrDefault(x => x.Focusable);
             firstOrDefault?.Focus();
         };
-        Dialog.Closing += DialogOnClosing;
         Dialog.DataTemplates.Add(new DialogDataViewLocator());
         Content = content;
     }
@@ -180,18 +185,6 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     {
         _isClosingOnEscape = isClosing;
         return this;
-    }
-
-    private void DialogOnClosing(FluentContentDialog dialog, ContentDialogClosingEventArgs args)
-    {
-        if (
-            !_isClosingOnEscape
-            && _cancelTokenSource?.IsCancellationRequested is false
-            && args.Result == global::FluentAvalonia.UI.Controls.ContentDialogResult.None
-        )
-        {
-            args.Cancel = true;
-        }
     }
 
     /// <inheritdoc />
