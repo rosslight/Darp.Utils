@@ -13,7 +13,7 @@ public sealed class MessageSubject : IMessageSource, IAnyMessageSink
         where T : allows ref struct
 #endif
     {
-        foreach (IMessageSink? eventReceiver in _eventReceiverProxies)
+        foreach (IMessageSink eventReceiver in _eventReceiverProxies)
         {
             if (eventReceiver is IMessageSink<T> receiver)
                 receiver.Publish(message);

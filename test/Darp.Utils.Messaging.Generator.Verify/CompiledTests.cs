@@ -39,7 +39,7 @@ public sealed class CompiledTests
         var source = new TestMessageSource();
         IDisposable? disp1 = null;
 
-        disp1 = source.Subscribe<int>(_ => disp1?.Dispose());
+        disp1 = source.Subscribe<int>(_ => disp1!.Dispose());
 
         source.Publish(42);
     }

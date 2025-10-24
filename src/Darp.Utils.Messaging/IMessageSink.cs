@@ -14,5 +14,5 @@ public interface IMessageSink<T> : IMessageSink
 {
     /// <summary> Provides the sink with a new message </summary>
     /// <param name="message"> The message to be published </param>
-    void Publish(in T message);
+    public void Publish(in T message);
 }
