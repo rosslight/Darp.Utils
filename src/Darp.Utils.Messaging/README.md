@@ -22,6 +22,7 @@ You should use this packet if you
 - have a few, long-living subscribers with a high message throughput
 - have a lot of different message types
 
+
 This package is not for you if you
 - need async handling
 - do not want source generation
