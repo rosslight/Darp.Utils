@@ -15,15 +15,18 @@
 
 </div>
 
-You should use this packet if you want
-- Events that can be subscribed to by a specific type
-- Support for ref-like messages (>= net9.0)
-- a very slim library
+You should use this packet if you
+- want events that can be subscribed to by a specific type
+- require support for ref-like messages (>= net9.0)
+- want a very slim library
+- have a few, long-living subscribers with a high message throughput
+- have a lot of different message types
 
-This package is not for you
+This package is not for you if you
 - need async handling
 - do not want source generation
 - additional features
+- have thousands of subscribers at once that are not expecting an event
 
 ## Usage
 
@@ -46,7 +49,7 @@ public sealed partial class TestMessageSource
 {
     public void PublishInt()
     {
-        Publish(42);
+        PublishMessage(42);
     }
 }
 ```
@@ -59,17 +62,27 @@ The source generator will generate a class which can be used to subscribe to any
 ```csharp
 using Darp.Utils.Messaging;
 
-public sealed partial class TestClass
+public sealed partial class TestMessageSink
 {
     [MessageSink]
-    private void OnInt(int message) { }
+    private void OnInt(int message) => Console.WriteLine($"Received '{message}'");
 
     [MessageSink]
     private void OnSpan(System.ReadOnlySpan<byte> message) { }
 
+    // Handle any message that was not handled by any other method
     [MessageSink]
     private void OnAny<T>(T message) where T : allows ref struct { } // Add 'allows ref struct' only for >= net9.0
 }
+```
+
+This sink can now be subscribed to the previously defined source.
+
+```csharp
+var source = new TestMessageSource();
+source.Subscribe(new TestMessageSink());
+source.PublishInt();
+// Output: Received '42'
 ```
 
 ### Helpers
@@ -96,3 +109,9 @@ subject.Publish(42);
 
 You can take a look at the tests at `test/Darp.Utils.Messaging.Generator.Verify` for additional usage examples.
 Also, you can take a look at the expected generated code there.
+
+## TODO
+- DisposableBags
+- Analyzers
+- Evaluate filters
+- Return bool/int whether publish was handled
