@@ -42,6 +42,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task ShowTwoSecondsAsync(CancellationToken cancellationToken)
+    {
+        DialogAwaitable<MessageBoxViewModel> dialog = _dialogService
+            .CreateMessageBoxDialog("This dialog will be shown for two seconds", "Woo")
+            .SetClosingOnEscape(false)
+            .ShowAsync(cancellationToken);
+        using (dialog)
+        {
+            await Task.Delay(2000, dialog.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        }
+    }
+
+    [RelayCommand]
     private async Task OpenUsernamePasswordAsync(CancellationToken cancellationToken)
     {
         ContentDialogResult<UsernamePasswordViewModel> result = await _dialogService
