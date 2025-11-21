@@ -4,7 +4,6 @@
   "packages": {
     ".": {
       "component": ".",
-      "include-v-in-tag": true,
       "package-name": "Darp.Utils",
       "release-type": "simple",
       "extra-files": [
