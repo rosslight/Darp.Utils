@@ -3,7 +3,6 @@
   "changelog-path": "CHANGELOG.md",
   "packages": {
     ".": {
-      "component": ".",
       "package-name": "Darp.Utils",
       "release-type": "simple",
       "extra-files": [
