@@ -5,15 +5,15 @@
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Avalonia" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Controls.WebView" Version="11.3.0" />
-    <PackageVersion Include="Avalonia.Desktop" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Headless" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Headless.XUnit" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.1" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
+    <PackageVersion Include="Avalonia" Version="11.3.6" />
+    <PackageVersion Include="Avalonia.Controls.WebView" Version="11.3.15" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.6" />
+    <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.6" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.6" />
+    <PackageVersion Include="Avalonia.Headless" Version="11.3.6" />
+    <PackageVersion Include="Avalonia.Headless.XUnit" Version="11.3.6" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.6" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
@@ -22,9 +22,9 @@
     <PackageVersion Include="Easy.MessageHub" Version="5.1.0" />
     <PackageVersion Include="FluentAssertions" Version="[7.1.0]" />
     <PackageVersion Include="FluentAssertions.Reactive" Version="0.2.0" />
-    <PackageVersion Include="FluentAvaloniaUI" Version="2.3.0" />
+    <PackageVersion Include="FluentAvaloniaUI" Version="2.4.1" />
     <PackageVersion Include="Glob" Version="1.1.9" />
-    <PackageVersion Include="MediatR" Version="12.4.1" />
+    <PackageVersion Include="MediatR" Version="13.1.0" />
     <PackageVersion Include="MessagePipe" Version="1.8.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
@@ -34,12 +34,12 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" Version="1.1.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.11.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="MirrorSharp.AspNetCore" Version="4.0.0" />
     <PackageVersion Include="MirrorSharp.Common" Version="3.0.10" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
@@ -50,18 +50,18 @@
     <PackageVersion Include="Serilog.Sinks.XUnit" Version="3.0.19" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="9.0.0" />
-    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
-    <PackageVersion Include="System.Reactive" Version="6.0.1" />
-    <PackageVersion Include="System.Reactive.Linq" Version="6.0.1" />
+    <PackageVersion Include="System.Linq.Async" Version="7.0.0" />
+    <PackageVersion Include="System.Reactive" Version="6.1.0" />
+    <PackageVersion Include="System.Reactive.Linq" Version="6.1.0" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
-    <PackageVersion Include="TUnit" Version="0.20.18" />
-    <PackageVersion Include="Verify.Http" Version="6.5.0" />
+    <PackageVersion Include="TUnit" Version="1.2.11" />
+    <PackageVersion Include="Verify.Http" Version="7.5.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
-    <PackageVersion Include="Verify.Xunit" Version="30.1.0" />
+    <PackageVersion Include="Verify.Xunit" Version="31.7.2" />
     <PackageVersion Include="WebViewControl-Avalonia" Version="3.120.10" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.1">
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>

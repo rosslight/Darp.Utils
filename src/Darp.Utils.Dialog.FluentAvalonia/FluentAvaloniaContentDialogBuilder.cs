@@ -52,7 +52,11 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         Dialog.AddHandler(
             InputElement.KeyDownEvent,
             // ContentDialog will not register the escape key if we mark the event as handled
-            (_, args) => args.Handled = args.Key == Key.Escape && !_isClosingOnEscape,
+            (_, args) =>
+            {
+                if (args.Key == Key.Escape && !_isClosingOnEscape)
+                    args.Handled = true;
+            },
             RoutingStrategies.Tunnel
         );
         Dialog.Opened += (dialog, _) =>

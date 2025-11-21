@@ -104,4 +104,26 @@ public sealed class MessageSinkTests
             """;
         await VerifyHelper.VerifyMessagingGenerator(code);
     }
+
+    [Fact]
+    public async Task AsyncMethod()
+    {
+        const string code = """
+            using System.Threading.Tasks;
+            using Darp.Utils.Messaging;
+
+            namespace Test;
+
+            public sealed partial class TestSubject
+            {
+                [MessageSink]
+                public ValueTask OnIntAsync(int message) => ValueTask.CompletedTask;
+                [MessageSink]
+                public void OnInt(int message) { }
+                [MessageSink]
+                public static ValueTask OnIntStaticAsync(int message) => ValueTask.CompletedTask;
+            }
+            """;
+        await VerifyHelper.VerifyMessagingGenerator(code);
+    }
 }
