@@ -1,0 +1,112 @@
+name: release-please
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write       # required for tags + releases
+  pull-requests: write  # required for release PRs
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: simple
+          manifest-file: .release-please-manifest.json
+          config-file: release-please-config.json
+
+      # Only do the heavy work if a new release was just created
+      - name: Checkout
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache@v4
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
+
+      - name: Setup .NET
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Node.js (needed for Darp.Utils.CodeMirror)
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Frontend Dependencies
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        working-directory: ${{ github.workspace }}/src/Darp.Utils.CodeMirror/js
+        run: npm ci
+
+      - name: Restore
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        run: |
+          dotnet tool restore
+          dotnet restore
+
+      - name: Build
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        run: dotnet test --configuration Release --no-build --no-restore
+
+      - name: Pack NuGet
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        run: |
+          # release-please tag is e.g. "v1.2.3"
+          VERSION="${{ steps.release.outputs.tag_name }}"
+          VERSION="${VERSION#v}"
+          
+          # Skip Darp.Utils.Messaging.Generator as it's not published
+          SKIP_PROJECTS="Darp.Utils.Messaging.Generator"
+          
+          for file_name in ./src/**/*.csproj; do
+            # Get the base name of the project file, and remove the .csproj extension.
+            base_file=$(basename "$file_name")
+            project_name="${base_file%.csproj}"
+            
+            # Check if the project name is in the SKIP_PROJECTS list.
+            if [[ ",$SKIP_PROJECTS," == *",$project_name,"* ]]; then
+                echo "Skipping project $project_name"
+                continue
+            fi
+            
+            dotnet pack $file_name \
+              --configuration Release \
+              --no-build \
+              -p:PackageVersion=$VERSION \
+              -o nupkg
+          done
+
+      - name: Push package to nuget.org
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        run: |
+          dotnet nuget push "nupkg/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      - name: Attach .nupkg to GitHub Release
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ steps.release.outputs.tag_name }}" nupkg/*.nupkg \
+            --repo "${{ github.repository }}"
