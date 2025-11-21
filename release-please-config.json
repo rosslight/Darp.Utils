@@ -4,15 +4,14 @@
   "packages": {
     ".": {
       "component": ".",
+      "include-v-in-tag": true,
       "package-name": "Darp.Utils",
       "release-type": "simple",
-      "bump-minor-pre-major": false,
-      "bump-patch-for-minor-pre-major": false,
       "extra-files": [
         {
           "type": "xml",
-          "path": "src/Directory.Build.props",
-          "xpath": "//Project/PropertyGroup/Version"
+          "path": "/src/Directory.Build.props",
+          "xpath": "/Project/PropertyGroup/Version"
         }
       ]
     }
