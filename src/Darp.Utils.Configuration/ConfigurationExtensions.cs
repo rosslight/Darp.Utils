@@ -28,6 +28,7 @@ file sealed class ConfigurationObservable<TConfig, T>(
 
     public IDisposable Subscribe(IObserver<T> observer)
     {
+        _currentValue = _valueSelector(_configurationService.Config);
         PropertyChangedEventHandler handler = GetConfigChangedHandler(observer);
         _configurationService.PropertyChanged += handler;
         return new Disposable(() => _configurationService.PropertyChanged -= handler);
