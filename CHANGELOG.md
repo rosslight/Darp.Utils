@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.20.0](https://github.com/rosslight/Darp.Utils/compare/v1.19.2...v1.20.0) (2026-04-16)
+
+
+### Features
+
+* Use release-please for releases ([e0b4e82](https://github.com/rosslight/Darp.Utils/commit/e0b4e82c8eeeeec2c293d8daa522258c86f96afa))
+
+
+### Bug Fixes
+
+* Get current value when subscribing to configuration service ([2abc73f](https://github.com/rosslight/Darp.Utils/commit/2abc73f709d8e86cf259e8e25e80c28bb2bd07d4))
+* Update versions automatically ([58b5575](https://github.com/rosslight/Darp.Utils/commit/58b5575ca212aa663724fde179f2ce0baa3289ba))
+
 ## [1.19.2](https://github.com/rosslight/Darp.Utils/compare/v1.19.1...v1.19.2) (2025-10-24)
 
 ### Bug Fixes
