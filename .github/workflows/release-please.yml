@@ -12,6 +12,7 @@ jobs:
   release-please:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     runs-on: ubuntu-latest
     steps:
       - name: Run release-please
@@ -43,7 +44,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Setup Node.js (needed for Darp.Utils.CodeMirror)
         uses: actions/setup-node@v4
@@ -79,7 +80,7 @@ jobs:
                 echo "Skipping project $project_name"
                 continue
             fi
-            dotnet pack $file_name --configuration Release --no-restore /p:Version=${{ steps.semantic.outputs.new_release_version }}
+            dotnet pack $file_name --configuration Release --no-restore
           done
           for pkg_name in ./src/**/bin/Release/*.nupkg; do
             dotnet nuget push $pkg_name --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
@@ -89,5 +90,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ steps.release.outputs.tag_name }}" nupkg/*.nupkg \
+          gh release upload "${{ needs.release-please.outputs.tag_name }}" ./src/**/bin/Release/*.nupkg \
             --repo "${{ github.repository }}"
