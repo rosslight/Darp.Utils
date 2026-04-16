@@ -21,7 +21,7 @@ public abstract class WindowBase<TViewModel> : Window
     public virtual TViewModel ViewModel
     {
         get => AvaloniaHelpers.GetViewModel<TViewModel>(base.DataContext);
-        [MemberNotNull(nameof(base.DataContext))]
+        [MemberNotNull(nameof(DataContext))]
         init => DataContext = value;
     }
 }

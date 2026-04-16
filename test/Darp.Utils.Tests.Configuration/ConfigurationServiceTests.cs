@@ -1,5 +1,6 @@
 namespace Darp.Utils.Tests.Configuration;
 
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -180,11 +181,55 @@ public sealed class ConfigurationServiceTests
         service.IsLoaded.Should().BeFalse();
         service.Path.ShouldBe(Path.Join("some/other/path", ConfigFileName));
     }
+
+    [Fact]
+    public async Task Observe_WhenFirstChangeIsEnumDefault_ShouldEmitChangedValue()
+    {
+        // Arrange
+        var assetsService = new MemoryAssetsService(BasePath);
+        var configurationService = new ConfigurationService<TestConfig>(ConfigFileName, assetsService);
+        await configurationService.WriteConfigurationAsync(
+            new TestConfig { LogLevel = TestLogLevel.Warning },
+            CancellationToken.None
+        );
+        var observer = new TestObserver<TestLogLevel>();
+
+        // Act
+        using IDisposable subscription = configurationService.Observe(x => x.LogLevel).Subscribe(observer);
+        await configurationService.WriteConfigurationAsync(
+            new TestConfig { LogLevel = TestLogLevel.Verbose },
+            CancellationToken.None
+        );
+
+        // Assert
+        observer.Values.Should().ContainSingle().Which.Should().Be(TestLogLevel.Verbose);
+        configurationService.Dispose();
+    }
 }
 
 internal sealed record TestConfig
 {
     public string Setting { get; init; } = "Default";
+
+    public TestLogLevel LogLevel { get; init; } = TestLogLevel.Verbose;
+}
+
+internal enum TestLogLevel
+{
+    Verbose = 0,
+    Information = 1,
+    Warning = 2,
+}
+
+internal sealed class TestObserver<T> : IObserver<T>
+{
+    public List<T> Values { get; } = [];
+
+    public void OnCompleted() { }
+
+    public void OnError(Exception error) => throw error;
+
+    public void OnNext(T value) => Values.Add(value);
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
