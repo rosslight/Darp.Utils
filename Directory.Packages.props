@@ -20,7 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
     <PackageVersion Include="Easy.MessageHub" Version="5.1.0" />
-    <PackageVersion Include="FluentAssertions" Version="[7.1.0]" />
+    <PackageVersion Include="FluentAssertions" Version="[8.9.0]" />
     <PackageVersion Include="FluentAssertions.Reactive" Version="0.2.0" />
     <PackageVersion Include="FluentAvaloniaUI" Version="2.4.1" />
     <PackageVersion Include="Glob" Version="1.1.9" />
