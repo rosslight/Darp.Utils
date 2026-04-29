@@ -15,8 +15,8 @@
                    TextWrapping="WrapWithOverflow">
             <TextBlock.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                    <CompiledBinding Path="!IsMessageSelectable"/>
-                    <CompiledBinding Path="Message" Converter="{x:Static ObjectConverters.IsNotNull}" />
+                    <Binding Path="!IsMessageSelectable"/>
+                    <Binding Path="Message" Converter="{x:Static ObjectConverters.IsNotNull}" />
                 </MultiBinding>
             </TextBlock.IsVisible>
         </TextBlock>
@@ -24,8 +24,8 @@
                              TextWrapping="WrapWithOverflow">
             <TextBlock.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                    <CompiledBinding Path="IsMessageSelectable"/>
-                    <CompiledBinding Path="Message" Converter="{x:Static ObjectConverters.IsNotNull}" />
+                    <Binding Path="IsMessageSelectable"/>
+                    <Binding Path="Message" Converter="{x:Static ObjectConverters.IsNotNull}" />
                 </MultiBinding>
             </TextBlock.IsVisible>
         </SelectableTextBlock>

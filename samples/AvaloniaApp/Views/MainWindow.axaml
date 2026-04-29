@@ -44,12 +44,12 @@
         </StackPanel>
         <Button Content="Show for 2 seconds"
                 Command="{CompiledBinding ShowTwoSecondsCommand}" MinWidth="100"/>
-        <controls:NavigationView SelectionChanged="NavigationView_OnSelectionChanged">
-            <controls:NavigationView.MenuItems>
-                <controls:NavigationViewItem Content="1 Hello" Tag="{StaticResource 123}" />
-                <controls:NavigationViewItem Content="2 Hello" Tag="123123" />
-            </controls:NavigationView.MenuItems>
-            <controls:Frame Name="MyFrame" />
-        </controls:NavigationView>
+        <controls:FANavigationView SelectionChanged="NavigationView_OnSelectionChanged">
+            <controls:FANavigationView.MenuItems>
+                <controls:FANavigationViewItem Content="1 Hello" Tag="{StaticResource 123}" />
+                <controls:FANavigationViewItem Content="2 Hello" Tag="123123" />
+            </controls:FANavigationView.MenuItems>
+            <controls:FAFrame Name="MyFrame" />
+        </controls:FANavigationView>
     </StackPanel>
 </Window>
