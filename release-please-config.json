@@ -6,7 +6,10 @@
       "include-v-in-tag": true,
       "include-component-in-tag": false,
       "package-name": "Darp.Utils",
+      "prerelease": true,
+      "prerelease-type": "preview",
       "release-type": "simple",
+      "versioning": "prerelease",
       "extra-files": [
         {
           "type": "xml",
