@@ -7,7 +7,10 @@
     <NoWarn>$(NoWarn);CA1062;CA1859;CA1707</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectName)' != 'Darp.Utils.Tests.Common'">
-    <PackageReference Include="coverlet.collector" />
+    <PackageReference Update="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
