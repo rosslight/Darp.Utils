@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/AvaloniaApp/AvaloniaApp.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <Project Path="src/Darp.Utils.Assets/Darp.Utils.Assets.csproj" />
+    <Project Path="src/Darp.Utils.Avalonia/Darp.Utils.Avalonia.csproj" />
+    <Project Path="src/Darp.Utils.Configuration/Darp.Utils.Configuration.csproj" />
+    <Project Path="src/Darp.Utils.Dialog.FluentAvalonia/Darp.Utils.Dialog.FluentAvalonia.csproj" />
+    <Project Path="src/Darp.Utils.Dialog/Darp.Utils.Dialog.csproj" />
+    <Project Path="src/Darp.Utils.Messaging.Generator/Darp.Utils.Messaging.Generator.csproj" />
+    <Project Path="src/Darp.Utils.Messaging/Darp.Utils.Messaging.csproj" />
+    <Project Path="src/Darp.Utils.ResxSourceGenerator/Darp.Utils.ResxSourceGenerator.csproj" />
+    <Project Path="src/Darp.Utils.TestRail/Darp.Utils.TestRail.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <File Path="test/Directory.Build.props" />
+    <Project Path="test/Darp.Utils.Dialog.FluentAvalonia.Tests/Darp.Utils.Dialog.FluentAvalonia.Tests.csproj" />
+    <Project Path="test/Darp.Utils.Dialog.Tests/Darp.Utils.Dialog.Tests.csproj" />
+    <Project Path="test/Darp.Utils.Messaging.Generator.Verify/Darp.Utils.Messaging.Generator.Verify.csproj" />
+    <Project Path="test/Darp.Utils.ResxSourceGenerator.Tests/Darp.Utils.ResxSourceGenerator.Tests.csproj" />
+    <Project Path="test/Darp.Utils.TestRail.Tests/Darp.Utils.TestRail.Tests.csproj" />
+    <Project Path="test/Darp.Utils.Tests.Assets/Darp.Utils.Tests.Assets.csproj" />
+    <Project Path="test/Darp.Utils.Tests.Common/Darp.Utils.Tests.Common.csproj" />
+    <Project Path="test/Darp.Utils.Tests.Configuration/Darp.Utils.Tests.Configuration.csproj" />
+  </Folder>
+</Solution>
