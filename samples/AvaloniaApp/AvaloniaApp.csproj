@@ -15,8 +15,6 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="FluentAvaloniaUI" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -32,7 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Darp.Utils.Avalonia\Darp.Utils.Avalonia.csproj" />
-    <ProjectReference Include="..\..\src\Darp.Utils.CodeMirror\Darp.Utils.CodeMirror.csproj" />
     <ProjectReference Include="..\..\src\Darp.Utils.Dialog.FluentAvalonia\Darp.Utils.Dialog.FluentAvalonia.csproj" />
     <ProjectReference Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj" OutputItemType="Analyzer" />
     <EmbeddedResource Update="Localization\Resources.resx" EmitFormatMethods="true" Public="true" />

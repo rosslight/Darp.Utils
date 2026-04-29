@@ -21,13 +21,13 @@ public sealed partial class MainWindow : WindowBase<MainWindowViewModel>
         RequestedThemeVariant = RequestedThemeVariant == ThemeVariant.Light ? ThemeVariant.Dark : ThemeVariant.Light;
     }
 
-    private void NavigationView_OnSelectionChanged(object? sender, NavigationViewSelectionChangedEventArgs e)
+    private void NavigationView_OnSelectionChanged(object? sender, FANavigationViewSelectionChangedEventArgs e)
     {
-        MyFrame.Navigate((e.SelectedItem as NavigationViewItem)?.Tag?.GetType() ?? typeof(string));
+        MyFrame.Navigate((e.SelectedItem as FANavigationViewItem)?.Tag?.GetType() ?? typeof(string));
     }
 }
 
-file sealed class DependencyInjectionPageFactory(MainWindow window) : INavigationPageFactory
+file sealed class DependencyInjectionPageFactory(MainWindow window) : IFANavigationPageFactory
 {
     private readonly MainWindow _window = window;
 

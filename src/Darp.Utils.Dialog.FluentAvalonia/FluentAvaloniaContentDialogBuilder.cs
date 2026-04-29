@@ -13,8 +13,8 @@ using DialogData;
 using global::FluentAvalonia.Core;
 using ContentDialogButton = ContentDialogButton;
 using ContentDialogResult = Dialog.ContentDialogResult;
-using FluentContentDialog = global::FluentAvalonia.UI.Controls.ContentDialog;
-using FluentContentDialogButton = global::FluentAvalonia.UI.Controls.ContentDialogButton;
+using FluentContentDialog = global::FluentAvalonia.UI.Controls.FAContentDialog;
+using FluentContentDialogButton = global::FluentAvalonia.UI.Controls.FAContentDialogButton;
 
 /// <summary> The builder based on the <see cref="FluentContentDialog"/> of FluentAvalonia </summary>
 /// <typeparam name="TContent"> The type of the content </typeparam>
@@ -126,7 +126,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         {
             Dialog.PrimaryButtonClick += async (_, args) =>
             {
-                Deferral? deferral = null;
+                FADeferral? deferral = null;
                 try
                 {
                     notExecutingSubject.OnNext(false);
@@ -166,7 +166,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         {
             Dialog.SecondaryButtonClick += async (_, args) =>
             {
-                Deferral? deferral = null;
+                FADeferral? deferral = null;
                 try
                 {
                     notExecutingSubject.OnNext(false);

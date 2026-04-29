@@ -1,26 +1,10 @@
 namespace Darp.Utils.Avalonia;
 
 using System.Diagnostics.CodeAnalysis;
-using global::Avalonia.Data.Core.Plugins;
 
 /// <summary> A collection of helpful methods when working with avalonia </summary>
 public static class AvaloniaHelpers
 {
-    /// <summary> Avoid duplicate validations from both Avalonia and the CommunityToolkit. </summary>
-    /// <seealso href="https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins"/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We are only removing validators")]
-    public static void DisableAvaloniaDataAnnotationValidation()
-    {
-        // Get an array of plugins to remove
-        DataAnnotationsValidationPlugin[] dataValidationPluginsToRemove = BindingPlugins
-            .DataValidators.OfType<DataAnnotationsValidationPlugin>()
-            .ToArray();
-
-        // remove each entry found
-        foreach (DataAnnotationsValidationPlugin plugin in dataValidationPluginsToRemove)
-            BindingPlugins.DataValidators.Remove(plugin);
-    }
-
     /// <summary> Cast the DataContext to a specific ViewModel Type </summary>
     /// <param name="dataContext"> The DataContext </param>
     /// <typeparam name="TViewModel"> The type of the ViewModel </typeparam>

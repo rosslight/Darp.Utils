@@ -66,7 +66,7 @@ public class AvaloniaDialogServiceTests
 
         // Assert
         builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.DefaultButton.Should().Be((global::FluentAvalonia.UI.Controls.ContentDialogButton)button);
+        builder.Dialog.DefaultButton.Should().Be((global::FluentAvalonia.UI.Controls.FAContentDialogButton)button);
     }
 
     [Fact]

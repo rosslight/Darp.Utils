@@ -3,11 +3,14 @@
   <PropertyGroup>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
+    <IsTestProject Condition="'$(MSBuildProjectName)' != 'Darp.Utils.Tests.Common'">true</IsTestProject>
     <NoWarn>$(NoWarn);CA1062;CA1859;CA1707</NoWarn>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" />
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Darp.Utils.Tests.Common'">
+    <PackageReference Update="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
@@ -15,8 +18,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Serilog.Sinks.XUnit" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 </Project>
