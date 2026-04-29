@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0-preview](https://github.com/rosslight/Darp.Utils/compare/v1.20.0...v2.0.0-preview) (2026-04-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* 
+
+### Features
+
+* Remove Darp.Utils.CodeMirror and bump to avalonia 12 ([#21](https://github.com/rosslight/Darp.Utils/issues/21)) ([c4d840a](https://github.com/rosslight/Darp.Utils/commit/c4d840a7a1578a8f8119dc9a225f033eedb554fb))
+
 ## [1.20.0](https://github.com/rosslight/Darp.Utils/compare/v1.19.2...v1.20.0) (2026-04-16)
 
 
