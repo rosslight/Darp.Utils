@@ -4,7 +4,6 @@ public sealed class MessageSinkTests
 {
 #if NET9_0_OR_GREATER
     [Fact]
-#endif
     public async Task DefaultCases_Net9()
     {
         const string code = """
@@ -37,10 +36,8 @@ public sealed class MessageSinkTests
             """;
         await VerifyHelper.VerifyMessagingGenerator(code);
     }
-
-#if !NET9_0_OR_GREATER
+#else
     [Fact]
-#endif
     public async Task DefaultCases_BelowNet9()
     {
         const string code = """
@@ -65,6 +62,7 @@ public sealed class MessageSinkTests
             """;
         await VerifyHelper.VerifyMessagingGenerator(code);
     }
+#endif
 
     [Fact]
     public async Task GenericClass()

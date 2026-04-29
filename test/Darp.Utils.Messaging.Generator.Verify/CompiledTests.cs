@@ -288,7 +288,7 @@ public sealed class CompiledTests
     }
 }
 
-internal partial class TestIntHandler
+internal sealed partial class TestIntHandler
 {
     public int ReceivedInt { get; private set; }
 
@@ -296,7 +296,7 @@ internal partial class TestIntHandler
     private void OnInt(int receivedInt) => ReceivedInt = receivedInt;
 }
 
-internal partial class TestStringHandler
+internal sealed partial class TestStringHandler
 {
     public string? ReceivedString { get; private set; }
 
@@ -305,7 +305,7 @@ internal partial class TestStringHandler
 }
 
 [MessageSource]
-internal partial class TestMessageSource
+internal sealed partial class TestMessageSource
 {
     [MessageSink]
     public void Publish<T>(T message)
