@@ -133,13 +133,28 @@ public sealed class SimpleArgumentParserRegistrationTests
     }
 
     [Fact]
-    public void AddNamed_WhenDuplicateOptionNameIsRegistered_ThrowsArgumentException()
+    public void AddNamed_WhenExactDuplicateOptionNameIsRegistered_ThrowsArgumentException()
     {
         // Arrange
         var parser = new Parser();
         parser.AddNamed<int>("--count");
 
         // Act & Assert
-        Should.Throw<ArgumentException>(() => parser.AddFlag("--COUNT"));
+        Should.Throw<ArgumentException>(() => parser.AddFlag("--count"));
+    }
+
+    [Fact]
+    public void AddNamed_WhenOptionNamesOnlyDifferByCase_RegistersSeparateArguments()
+    {
+        // Arrange
+        var parser = new Parser();
+
+        // Act
+        OptionalArgument<int> lowerCount = parser.AddNamed<int>("--count");
+        OptionalArgument<int> upperCount = parser.AddNamed<int>("--COUNT");
+
+        // Assert
+        lowerCount.Name.ShouldBe("count");
+        upperCount.Name.ShouldBe("COUNT");
     }
 }

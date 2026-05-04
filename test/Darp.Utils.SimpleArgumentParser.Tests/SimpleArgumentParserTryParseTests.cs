@@ -23,17 +23,19 @@ public sealed class SimpleArgumentParserTryParseTests
     }
 
     [Fact]
-    public void TryParse_NamedArgument_MatchesOptionCaseInsensitively()
+    public void TryParse_NamedArgument_MatchesOptionCaseSensitively()
     {
         // Arrange
         var parser = new Parser();
-        OptionalArgument<int> count = parser.AddNamed<int>("--count");
+        OptionalArgument<int> lowerCount = parser.AddNamed<int>("--count");
+        OptionalArgument<int> upperCount = parser.AddNamed<int>("--COUNT");
 
         // Act
-        ParseResult result = parser.ShouldParseSuccessfully(["--COUNT", "42"]);
+        ParseResult result = parser.ShouldParseSuccessfully(["--count", "42", "--COUNT", "100"]);
 
         // Assert
-        result.GetValue(count).ShouldBe(42);
+        result.GetValue(lowerCount).ShouldBe(42);
+        result.GetValue(upperCount).ShouldBe(100);
     }
 
     [Theory]
@@ -188,18 +190,20 @@ public sealed class SimpleArgumentParserTryParseTests
         result.GetValue(second).ShouldBe(42);
     }
 
-    [Fact]
-    public void TryParse_StopParsingOptions_TreatsFollowingOptionTokenAsPositional()
+    [Theory]
+    [InlineData("--value")]
+    [InlineData("-x")]
+    public void TryParse_StopParsingOptions_TreatsFollowingOptionTokenAsPositional(string token)
     {
         // Arrange
         var parser = new Parser();
         Argument<string> value = parser.AddRequiredPositional<string>("value", ParserTestHelpers.ParseString);
 
         // Act
-        ParseResult result = parser.ShouldParseSuccessfully(["--", "--value"]);
+        ParseResult result = parser.ShouldParseSuccessfully(["--", token]);
 
         // Assert
-        result.GetValue(value).ShouldBe("--value");
+        result.GetValue(value).ShouldBe(token);
     }
 
     [Fact]
@@ -232,16 +236,106 @@ public sealed class SimpleArgumentParserTryParseTests
         parser.ShouldFailWith(["--missing"], "Unknown option '--missing'.");
     }
 
+    [Fact]
+    public void TryParse_WhenOptionCaseDoesNotMatchRegistration_ReturnsUnknownOptionError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddNamed<int>("--count");
+
+        // Act & Assert
+        parser.ShouldFailWith(["--COUNT", "42"], "Unknown option '--COUNT'.");
+    }
+
     [Theory]
+    [InlineData("-x")]
     [InlineData("-count")]
-    [InlineData("-v")]
-    public void TryParse_WhenTokenUsesSingleDash_TreatsTokenAsPositional(string arg)
+    [InlineData("-x=value")]
+    public void TryParse_WhenTokenUsesUnsupportedShortOption_ReturnsUnknownOptionError(string arg)
     {
         // Arrange
         var parser = new Parser();
 
         // Act & Assert
-        parser.ShouldFailWith([arg], $"Unexpected positional argument '{arg}'.");
+        parser.ShouldFailWith([arg], $"Unknown option '{arg}'.");
+    }
+
+    [Fact]
+    public void TryParse_WhenShortOptionTokenCouldBePositional_ReturnsUnknownOptionError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredPositional<string>("path", ParserTestHelpers.ParseString);
+
+        // Act & Assert
+        parser.ShouldFailWith(["-x"], "Unknown option '-x'.");
+    }
+
+    [Fact]
+    public void TryParse_WhenNamedValueIsUnsupportedShortOption_ReturnsMissingValueError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredNamed<int>("--count");
+
+        // Act & Assert
+        parser.ShouldFailWith(["--count", "-x"], "Option '--count' requires a value.");
+    }
+
+    [Fact]
+    public void TryParse_NamedArgument_AcceptsNegativeNumberValue()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<int> count = parser.AddRequiredNamed<int>("--count");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--count", "-1"]);
+
+        // Assert
+        result.GetValue(count).ShouldBe(-1);
+    }
+
+    [Fact]
+    public void TryParse_NamedArgument_AcceptsNegativeDecimalValue()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<double> amount = parser.AddRequiredNamed<double>("--amount");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--amount", "-1.5"]);
+
+        // Assert
+        result.GetValue(amount).ShouldBe(-1.5);
+    }
+
+    [Fact]
+    public void TryParse_PositionalArgument_AcceptsNegativeNumberValue()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<int> count = parser.AddRequiredPositional<int>("count");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["-1"]);
+
+        // Assert
+        result.GetValue(count).ShouldBe(-1);
+    }
+
+    [Fact]
+    public void TryParse_PositionalArgument_AcceptsSingleDashValue()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<string> value = parser.AddRequiredPositional<string>("value", ParserTestHelpers.ParseString);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["-"]);
+
+        // Assert
+        result.GetValue(value).ShouldBe("-");
     }
 
     [Fact]

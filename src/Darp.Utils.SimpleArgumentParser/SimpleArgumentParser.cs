@@ -13,7 +13,7 @@ public sealed class SimpleArgumentParser(string? description = null)
 
     private readonly ParserIdentity _owner = new();
     private readonly List<IArgument> _arguments = [];
-    private readonly HashSet<string> _namedArgumentNames = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _namedArgumentNames = new(StringComparer.Ordinal);
     private readonly List<IArgument> _namedArgumentsInOrder = [];
     private readonly List<IArgument> _positionalsInOrder = [];
 
@@ -39,7 +39,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds a presence-only boolean option that defaults to <see langword="false"/>.
     /// </summary>
-    /// <param name="name">The long option name, such as <c>--verbose</c>.</param>
+    /// <param name="name">The case-sensitive long option name, such as <c>--verbose</c>.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <returns>An argument handle used to read the parsed flag value.</returns>
     /// <remarks>Passing <c>--name</c> sets the value to <see langword="true"/>. Short options such as <c>-v</c> are not supported.</remarks>
@@ -60,7 +60,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds an optional named option parsed from <c>--name value</c> or <c>--name=value</c>.
     /// </summary>
-    /// <param name="name">The long option name, such as <c>--count</c>.</param>
+    /// <param name="name">The case-sensitive long option name, such as <c>--count</c>.</param>
     /// <param name="parser">The parser used to convert the option value.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
@@ -82,7 +82,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds a named option with a default value.
     /// </summary>
-    /// <param name="name">The long option name, such as <c>--count</c>.</param>
+    /// <param name="name">The case-sensitive long option name, such as <c>--count</c>.</param>
     /// <param name="parser">The parser used to convert the option value.</param>
     /// <param name="defaultValue">The value returned when the option is absent.</param>
     /// <param name="description">Optional help text for the option.</param>
@@ -111,7 +111,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds a named option that must be supplied for parsing to succeed.
     /// </summary>
-    /// <param name="name">The long option name, such as <c>--count</c>.</param>
+    /// <param name="name">The case-sensitive long option name, such as <c>--count</c>.</param>
     /// <param name="parser">The parser used to convert the option value.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
@@ -233,7 +233,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <param name="result">The parsed result when parsing succeeds.</param>
     /// <param name="error">A user-facing error message when parsing fails.</param>
     /// <returns><see langword="true"/> when all required arguments were supplied and all values were valid.</returns>
-    /// <remarks>Use <c>--</c> to stop named-option parsing and treat following tokens as positional values.</remarks>
+    /// <remarks>Unsupported short options such as <c>-v</c> are rejected. Use <c>--</c> to treat following dash-prefixed tokens as positional values.</remarks>
     public bool TryParse(
         string[] args,
         [NotNullWhen(true)] out ParseResult? result,
@@ -309,6 +309,9 @@ public sealed class SimpleArgumentParser(string? description = null)
 
                 continue;
             }
+
+            if (!stopParsingOptions && LooksLikeUnsupportedShortOption(token))
+                return Fail($"Unknown option '{token.ToString()}'.", out result, out error);
 
             if (!TryParsePositional(token, positionalIndex++, slots, out result, out error))
                 return false;
@@ -387,7 +390,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     {
         foreach (IArgument argument in _namedArgumentsInOrder)
         {
-            if (optionName.Equals(argument.Name.AsSpan(), StringComparison.OrdinalIgnoreCase))
+            if (optionName.Equals(argument.Name.AsSpan(), StringComparison.Ordinal))
                 return argument;
         }
 
@@ -449,7 +452,7 @@ public sealed class SimpleArgumentParser(string? description = null)
         explicitValue = default;
         hasExplicitValue = false;
 
-        if (!token.StartsWith("--", StringComparison.Ordinal) || token.Length <= 2)
+        if (!LooksLikeLongOption(token))
             return false;
 
         ReadOnlySpan<char> optionBody = token[2..];
@@ -467,7 +470,42 @@ public sealed class SimpleArgumentParser(string? description = null)
     }
 
     private static bool LooksLikeOption(ReadOnlySpan<char> value) =>
+        LooksLikeLongOption(value) || LooksLikeUnsupportedShortOption(value);
+
+    private static bool LooksLikeLongOption(ReadOnlySpan<char> value) =>
         value.StartsWith("--", StringComparison.Ordinal) && value.Length > 2;
+
+    private static bool LooksLikeUnsupportedShortOption(ReadOnlySpan<char> value)
+    {
+        if (value.Length <= 1 || value[0] != '-' || value[1] == '-')
+            return false;
+
+        return !LooksLikeNegativeNumber(value);
+    }
+
+    private static bool LooksLikeNegativeNumber(ReadOnlySpan<char> value)
+    {
+        if (value.Length <= 1 || value[0] != '-' || !char.IsDigit(value[1]))
+            return false;
+
+        var hasDecimalPoint = false;
+        for (var index = 2; index < value.Length; index++)
+        {
+            var c = value[index];
+            if (char.IsDigit(c))
+                continue;
+
+            if (c == '.' && !hasDecimalPoint)
+            {
+                hasDecimalPoint = true;
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
 
     private static bool ParseBoolValue(ReadOnlySpan<char> value, IFormatProvider? provider, out bool result) =>
         bool.TryParse(value, out result);
