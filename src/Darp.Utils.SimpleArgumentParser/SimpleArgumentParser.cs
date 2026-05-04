@@ -148,7 +148,7 @@ public sealed class SimpleArgumentParser(string? description = null)
         ArgumentNullException.ThrowIfNull(args);
 
         error = null;
-        var slots = CreateResultSlots();
+        ResultSlot[] slots = CreateResultSlots();
         var positionalIndex = 0;
         var stopParsingOptions = false;
         var cursor = new ArgumentCursor(args);
@@ -222,14 +222,8 @@ public sealed class SimpleArgumentParser(string? description = null)
                 return false;
         }
 
-        for (var index = positionalIndex; index < _positionalsInOrder.Count; index++)
-        {
-            IArgument argument = _positionalsInOrder[index];
-            if (!argument.IsRequired)
-                continue;
-
-            return Fail($"Missing positional argument '{argument.Name}'.", out result, out error);
-        }
+        if (!ValidateRequiredArguments(slots, out result, out error))
+            return false;
 
         result = new ParseResult(_owner, slots);
         error = null;
@@ -244,6 +238,29 @@ public sealed class SimpleArgumentParser(string? description = null)
             slots[index] = _arguments[index].CreateResultSlot();
 
         return slots;
+    }
+
+    private bool ValidateRequiredArguments(
+        ResultSlot[] slots,
+        out ParseResult? result,
+        [NotNullWhen(false)] out string? error
+    )
+    {
+        foreach (IArgument argument in _arguments)
+        {
+            if (!argument.IsRequired || slots[argument.Slot].HasValue)
+                continue;
+
+            var message =
+                argument.Kind is ArgumentKind.Named
+                    ? $"Missing option '--{argument.Name}'."
+                    : $"Missing positional argument '{argument.Name}'.";
+            return Fail(message, out result, out error);
+        }
+
+        result = null;
+        error = null;
+        return true;
     }
 
     private TArgument RegisterNamedArgument<TArgument>(TArgument argument)
@@ -276,7 +293,7 @@ public sealed class SimpleArgumentParser(string? description = null)
 
     private IArgument? FindNamedArgument(ReadOnlySpan<char> optionName)
     {
-        foreach (var argument in _namedArgumentsInOrder)
+        foreach (IArgument argument in _namedArgumentsInOrder)
         {
             if (optionName.Equals(argument.Name.AsSpan(), StringComparison.OrdinalIgnoreCase))
                 return argument;
@@ -298,7 +315,7 @@ public sealed class SimpleArgumentParser(string? description = null)
             return Fail($"Unexpected positional argument '{value.ToString()}'.", out result, out error);
         }
 
-        var argument = _positionalsInOrder[positionalIndex];
+        IArgument argument = _positionalsInOrder[positionalIndex];
         if (!argument.TrySetValue(value, FormatProvider, slots[argument.Slot]))
             return FailInvalidValue(argument.Name, value, argument.ValueTypeName, out result, out error);
 
@@ -343,7 +360,7 @@ public sealed class SimpleArgumentParser(string? description = null)
         if (!token.StartsWith("--", StringComparison.Ordinal) || token.Length <= 2)
             return false;
 
-        var optionBody = token[2..];
+        ReadOnlySpan<char> optionBody = token[2..];
         var equalsIndex = optionBody.IndexOf('=');
         if (equalsIndex < 0)
         {

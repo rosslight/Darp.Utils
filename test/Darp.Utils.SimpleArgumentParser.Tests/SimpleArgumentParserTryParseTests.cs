@@ -1,0 +1,319 @@
+namespace Darp.Utils.SimpleArgumentParser.Tests;
+
+using Shouldly;
+using Xunit;
+using Parser = Darp.Utils.SimpleArgumentParser.SimpleArgumentParser;
+
+public sealed class SimpleArgumentParserTryParseTests
+{
+    [Theory]
+    [InlineData(new[] { "--count", "42" }, 42)]
+    [InlineData(new[] { "--count=42" }, 42)]
+    public void TryParse_NamedArgument_ReturnsParsedValue(string[] args, int expectedValue)
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<int> count = parser.AddNamed<int>("count");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(args);
+
+        // Assert
+        result.GetValue(count).ShouldBe(expectedValue);
+    }
+
+    [Fact]
+    public void TryParse_NamedArgument_MatchesOptionCaseInsensitively()
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<int> count = parser.AddNamed<int>("count");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--COUNT", "42"]);
+
+        // Assert
+        result.GetValue(count).ShouldBe(42);
+    }
+
+    [Theory]
+    [InlineData(new string[] { }, 42)]
+    [InlineData(new[] { "--count", "100" }, 100)]
+    public void TryParse_DefaultNamedArgument_ReturnsExpectedValue(string[] args, int expectedValue)
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<int> count = parser.AddNamed("count", 42);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(args);
+
+        // Assert
+        result.GetValue(count).ShouldBe(expectedValue);
+    }
+
+    [Theory]
+    [InlineData(new string[] { }, 42)]
+    [InlineData(new[] { "100" }, 100)]
+    public void TryParse_DefaultPositionalArgument_ReturnsExpectedValue(string[] args, int expectedValue)
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<int> count = parser.AddPositional("count", 42);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(args);
+
+        // Assert
+        result.GetValue(count).ShouldBe(expectedValue);
+    }
+
+    [Fact]
+    public void TryParse_RequiredNamedArgument_ReturnsParsedValue()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<int> count = parser.AddRequiredNamed<int>("count");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--count", "42"]);
+
+        // Assert
+        result.GetValue(count).ShouldBe(42);
+    }
+
+    [Fact]
+    public void TryParse_RequiredPositionalArgument_ReturnsParsedValue()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<int> count = parser.AddRequiredPositional<int>("count");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["42"]);
+
+        // Assert
+        result.GetValue(count).ShouldBe(42);
+    }
+
+    [Fact]
+    public void TryParse_OptionalNamedArgument_WhenAbsent_ReturnsNull()
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<string> value = parser.AddNamed<string>("value", ParserTestHelpers.ParseString);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully([]);
+
+        // Assert
+        result.GetValue(value).ShouldBeNull();
+    }
+
+    [Fact]
+    public void TryParse_OptionalPositionalArgument_WhenAbsent_ReturnsNull()
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<string> value = parser.AddPositional<string>("value", ParserTestHelpers.ParseString);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully([]);
+
+        // Assert
+        result.GetValue(value).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(new string[] { }, false)]
+    [InlineData(new[] { "--verbose" }, true)]
+    [InlineData(new[] { "--verbose=true" }, true)]
+    [InlineData(new[] { "--verbose=false" }, false)]
+    [InlineData(new[] { "--verbose", "true" }, true)]
+    [InlineData(new[] { "--verbose", "false" }, false)]
+    public void TryParse_Flag_ReturnsExpectedValue(string[] args, bool expectedValue)
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<bool> verbose = parser.AddFlag("verbose");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(args);
+
+        // Assert
+        result.GetValue(verbose).ShouldBe(expectedValue);
+    }
+
+    [Fact]
+    public void TryParse_FlagFollowedByNonBool_DoesNotConsumePositionalToken()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<bool> verbose = parser.AddFlag("verbose");
+        Argument<string> path = parser.AddRequiredPositional<string>("path", ParserTestHelpers.ParseString);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--verbose", "file.txt"]);
+
+        // Assert
+        result.GetValue(verbose).ShouldBeTrue();
+        result.GetValue(path).ShouldBe("file.txt");
+    }
+
+    [Fact]
+    public void TryParse_Positionals_ReturnValuesInRegistrationOrder()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<string> first = parser.AddRequiredPositional<string>("first", ParserTestHelpers.ParseString);
+        Argument<int> second = parser.AddRequiredPositional<int>("second");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["alpha", "42"]);
+
+        // Assert
+        result.GetValue(first).ShouldBe("alpha");
+        result.GetValue(second).ShouldBe(42);
+    }
+
+    [Fact]
+    public void TryParse_StopParsingOptions_TreatsFollowingOptionTokenAsPositional()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<string> value = parser.AddRequiredPositional<string>("value", ParserTestHelpers.ParseString);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--", "--value"]);
+
+        // Assert
+        result.GetValue(value).ShouldBe("--value");
+    }
+
+    [Fact]
+    public void TryParse_MixedNamedAndPositionalArguments_ReturnsExpectedValues()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<string> input = parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString);
+        OptionalArgument<int> count = parser.AddNamed<int>("count");
+        Argument<bool> verbose = parser.AddFlag("verbose");
+        Argument<string> output = parser.AddRequiredPositional<string>("output", ParserTestHelpers.ParseString);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--count", "42", "input.txt", "--verbose", "output.txt"]);
+
+        // Assert
+        result.GetValue(input).ShouldBe("input.txt");
+        result.GetValue(count).ShouldBe(42);
+        result.GetValue(verbose).ShouldBeTrue();
+        result.GetValue(output).ShouldBe("output.txt");
+    }
+
+    [Fact]
+    public void TryParse_WhenOptionIsUnknown_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+
+        // Act & Assert
+        parser.ShouldFailWith(["--missing"], "Unknown option '--missing'.");
+    }
+
+    [Fact]
+    public void TryParse_WhenNamedValueIsMissingAtEnd_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredNamed<int>("count");
+
+        // Act & Assert
+        parser.ShouldFailWith(["--count"], "Option '--count' requires a value.");
+    }
+
+    [Fact]
+    public void TryParse_WhenNamedValueIsMissingBeforeOption_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredNamed<int>("count");
+        parser.AddFlag("verbose");
+
+        // Act & Assert
+        parser.ShouldFailWith(["--count", "--verbose"], "Option '--count' requires a value.");
+    }
+
+    [Fact]
+    public void TryParse_WhenRequiredNamedArgumentIsMissing_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredNamed<int>("count");
+
+        // Act & Assert
+        parser.ShouldFailWith([], "Missing option '--count'.");
+    }
+
+    [Fact]
+    public void TryParse_WhenRequiredPositionalArgumentIsMissing_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredPositional<int>("count");
+
+        // Act & Assert
+        parser.ShouldFailWith([], "Missing positional argument 'count'.");
+    }
+
+    [Fact]
+    public void TryParse_WhenNamedValueIsInvalid_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredNamed<int>("count");
+
+        // Act & Assert
+        parser.ShouldFailWith(
+            ["--count", "not-an-int"],
+            "Argument 'count' has value 'not-an-int', which could not be parsed as Int32."
+        );
+    }
+
+    [Fact]
+    public void TryParse_WhenPositionalValueIsInvalid_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddRequiredPositional<int>("count");
+
+        // Act & Assert
+        parser.ShouldFailWith(
+            ["not-an-int"],
+            "Argument 'count' has value 'not-an-int', which could not be parsed as Int32."
+        );
+    }
+
+    [Fact]
+    public void TryParse_WhenFlagValueIsInvalid_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddFlag("verbose");
+
+        // Act & Assert
+        parser.ShouldFailWith(
+            ["--verbose=maybe"],
+            "Argument 'verbose' has value 'maybe', which could not be parsed as Boolean."
+        );
+    }
+
+    [Fact]
+    public void TryParse_WhenPositionalArgumentIsUnexpected_ReturnsError()
+    {
+        // Arrange
+        var parser = new Parser();
+
+        // Act & Assert
+        parser.ShouldFailWith(["extra"], "Unexpected positional argument 'extra'.");
+    }
+}

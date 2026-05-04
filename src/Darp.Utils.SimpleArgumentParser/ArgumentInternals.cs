@@ -30,11 +30,16 @@ internal interface IArgument
     bool TrySetValue(ReadOnlySpan<char> value, IFormatProvider? provider, ResultSlot slot);
 }
 
-internal abstract class ResultSlot;
+internal abstract class ResultSlot
+{
+    internal abstract bool HasValue { get; }
+}
 
 internal sealed class ResultSlot<T> : ResultSlot
 {
     internal OptionalValue<T> Value { get; set; }
+
+    internal override bool HasValue => Value.HasValue;
 }
 
 internal readonly struct OptionalValue<T>
