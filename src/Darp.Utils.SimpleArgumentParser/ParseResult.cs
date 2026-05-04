@@ -5,22 +5,11 @@ public sealed class ParseResult
     private readonly ParserIdentity _owner;
     private readonly ResultSlot[] _slots;
 
-    internal ParseResult(
-        ParserIdentity owner,
-        ParseStatus status,
-        IReadOnlyList<ParseDiagnostic> diagnostics,
-        ResultSlot[] slots
-    )
+    internal ParseResult(ParserIdentity owner, ResultSlot[] slots)
     {
         _owner = owner;
-        Status = status;
-        Diagnostics = diagnostics;
         _slots = slots;
     }
-
-    public ParseStatus Status { get; }
-
-    public IReadOnlyList<ParseDiagnostic> Diagnostics { get; }
 
     public T GetValue<T>(Argument<T> argument)
     {
@@ -38,11 +27,6 @@ public sealed class ParseResult
 
     private void ValidateArgumentAccess(IArgument argument)
     {
-        if (Status != ParseStatus.Success)
-            throw new InvalidOperationException(
-                "Argument values can only be read when parsing completed successfully."
-            );
-
         if (!ReferenceEquals(argument.Owner, _owner))
             throw new ArgumentException("The argument does not belong to this parse result.", nameof(argument));
 

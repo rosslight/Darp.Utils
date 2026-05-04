@@ -113,19 +113,22 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
-    public ParseResult Parse(string[] args)
+    public bool TryParse(
+        string[] args,
+        [NotNullWhen(true)] out ParseResult? result,
+        [NotNullWhen(false)] out string? error
+    )
     {
         ArgumentNullException.ThrowIfNull(args);
 
-        List<ParseDiagnostic>? diagnostics = null;
+        error = null;
         var slots = CreateResultSlots();
         var positionalIndex = 0;
         var stopParsingOptions = false;
+        var cursor = new ArgumentCursor(args);
 
-        for (var i = 0; i < args.Length; i++)
+        while (cursor.TryRead(out var token))
         {
-            var token = args[i].AsSpan();
-
             if (!stopParsingOptions && token.Equals("--", StringComparison.Ordinal))
             {
                 stopParsingOptions = true;
@@ -141,15 +144,7 @@ public sealed class SimpleArgumentParser(string? description = null)
                 if (argument is null)
                 {
                     var optionNameString = optionName.ToString();
-                    AddDiagnostic(
-                        ref diagnostics,
-                        new ParseDiagnostic(
-                            ParseDiagnosticKind.UnknownOption,
-                            $"Unknown option '--{optionNameString}'.",
-                            optionNameString
-                        )
-                    );
-                    continue;
+                    return Fail($"Unknown option '--{optionNameString}'.", out result, out error);
                 }
 
                 if (argument.Kind is ArgumentKind.Flag)
@@ -160,42 +155,45 @@ public sealed class SimpleArgumentParser(string? description = null)
                     {
                         flagValue = explicitValue;
                     }
-                    else if (i + 1 < args.Length && TryParseBool(args[i + 1].AsSpan()))
+                    else if (cursor.TryPeek(out var nextToken) && TryParseBool(nextToken))
                     {
-                        flagValue = args[++i].AsSpan();
+                        cursor.TryConsumeNext(out flagValue);
                     }
 
                     if (!argument.TrySetValue(flagValue, FormatProvider, slots[argument.Slot]))
-                        AddInvalidValueDiagnostic(ref diagnostics, argument.Name, flagValue, argument.ValueTypeName);
+                        return FailInvalidValue(
+                            argument.Name,
+                            flagValue,
+                            argument.ValueTypeName,
+                            out result,
+                            out error
+                        );
 
                     continue;
                 }
 
                 if (!hasExplicitValue)
                 {
-                    if (i + 1 >= args.Length || LooksLikeOption(args[i + 1].AsSpan()))
-                    {
-                        AddDiagnostic(
-                            ref diagnostics,
-                            new ParseDiagnostic(
-                                ParseDiagnosticKind.MissingValue,
-                                $"Option '--{argument.Name}' requires a value.",
-                                argument.Name
-                            )
-                        );
-                        continue;
-                    }
+                    if (!cursor.TryPeek(out var nextToken) || LooksLikeOption(nextToken))
+                        return Fail($"Option '--{argument.Name}' requires a value.", out result, out error);
 
-                    explicitValue = args[++i].AsSpan();
+                    cursor.TryConsumeNext(out explicitValue);
                 }
 
                 if (!argument.TrySetValue(explicitValue, FormatProvider, slots[argument.Slot]))
-                    AddInvalidValueDiagnostic(ref diagnostics, argument.Name, explicitValue, argument.ValueTypeName);
+                    return FailInvalidValue(
+                        argument.Name,
+                        explicitValue,
+                        argument.ValueTypeName,
+                        out result,
+                        out error
+                    );
 
                 continue;
             }
 
-            ParsePositional(token, positionalIndex++, slots, ref diagnostics);
+            if (!TryParsePositional(token, positionalIndex++, slots, out result, out error))
+                return false;
         }
 
         for (var index = positionalIndex; index < _positionalsInOrder.Count; index++)
@@ -204,22 +202,12 @@ public sealed class SimpleArgumentParser(string? description = null)
             if (argument.HasDefaultValue)
                 continue;
 
-            AddDiagnostic(
-                ref diagnostics,
-                new ParseDiagnostic(
-                    ParseDiagnosticKind.MissingPositional,
-                    $"Missing positional argument '{argument.Name}'.",
-                    argument.Name
-                )
-            );
+            return Fail($"Missing positional argument '{argument.Name}'.", out result, out error);
         }
 
-        return new ParseResult(
-            _owner,
-            diagnostics is null ? ParseStatus.Success : ParseStatus.Failed,
-            diagnostics ?? [],
-            slots
-        );
+        result = new ParseResult(_owner, slots);
+        error = null;
+        return true;
     }
 
     private ResultSlot[] CreateResultSlots()
@@ -271,51 +259,48 @@ public sealed class SimpleArgumentParser(string? description = null)
         return null;
     }
 
-    private void ParsePositional(
+    private bool TryParsePositional(
         ReadOnlySpan<char> value,
         int positionalIndex,
         ResultSlot[] slots,
-        ref List<ParseDiagnostic>? diagnostics
+        out ParseResult? result,
+        [NotNullWhen(false)] out string? error
     )
     {
         if (positionalIndex >= _positionalsInOrder.Count)
         {
-            AddDiagnostic(
-                ref diagnostics,
-                new ParseDiagnostic(
-                    ParseDiagnosticKind.UnexpectedPositional,
-                    $"Unexpected positional argument '{value.ToString()}'."
-                )
-            );
-            return;
+            return Fail($"Unexpected positional argument '{value.ToString()}'.", out result, out error);
         }
 
         var argument = _positionalsInOrder[positionalIndex];
         if (!argument.TrySetValue(value, FormatProvider, slots[argument.Slot]))
-            AddInvalidValueDiagnostic(ref diagnostics, argument.Name, value, argument.ValueTypeName);
+            return FailInvalidValue(argument.Name, value, argument.ValueTypeName, out result, out error);
+
+        result = null;
+        error = null;
+        return true;
     }
 
-    private static void AddInvalidValueDiagnostic(
-        ref List<ParseDiagnostic>? diagnostics,
+    private static bool FailInvalidValue(
         string argumentName,
         ReadOnlySpan<char> value,
-        string valueTypeName
+        string valueTypeName,
+        out ParseResult? result,
+        out string? error
     )
     {
-        AddDiagnostic(
-            ref diagnostics,
-            new ParseDiagnostic(
-                ParseDiagnosticKind.InvalidValue,
-                $"Argument '{argumentName}' has value '{value.ToString()}', which could not be parsed as {valueTypeName}.",
-                argumentName
-            )
+        return Fail(
+            $"Argument '{argumentName}' has value '{value.ToString()}', which could not be parsed as {valueTypeName}.",
+            out result,
+            out error
         );
     }
 
-    private static void AddDiagnostic(ref List<ParseDiagnostic>? diagnostics, ParseDiagnostic diagnostic)
+    private static bool Fail(string message, out ParseResult? result, out string error)
     {
-        diagnostics ??= [];
-        diagnostics.Add(diagnostic);
+        result = null;
+        error = message;
+        return false;
     }
 
     private static bool TryGetOptionToken(
@@ -353,6 +338,44 @@ public sealed class SimpleArgumentParser(string? description = null)
 
     private static bool ParseBoolValue(ReadOnlySpan<char> value, IFormatProvider? provider, out bool result) =>
         bool.TryParse(value, out result);
+
+    private ref struct ArgumentCursor(string[] args)
+    {
+        private int _index;
+
+        public bool TryRead(out ReadOnlySpan<char> token)
+        {
+            if (_index >= args.Length)
+            {
+                token = default;
+                return false;
+            }
+
+            token = args[_index++].AsSpan();
+            return true;
+        }
+
+        public bool TryPeek(out ReadOnlySpan<char> token)
+        {
+            if (_index >= args.Length)
+            {
+                token = default;
+                return false;
+            }
+
+            token = args[_index].AsSpan();
+            return true;
+        }
+
+        public bool TryConsumeNext(out ReadOnlySpan<char> token)
+        {
+            if (!TryPeek(out token))
+                return false;
+
+            _index++;
+            return true;
+        }
+    }
 
     private static string NormalizeOptionName(string name)
     {
