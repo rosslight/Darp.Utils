@@ -270,13 +270,10 @@ public sealed class SimpleArgumentParser(string? description = null)
 
                 if (argument.Kind is ArgumentKind.Flag)
                 {
-                    ReadOnlySpan<char> flagValue = "true";
-
                     if (hasExplicitValue)
-                        flagValue = explicitValue;
-                    else if (cursor.TryPeek(out ReadOnlySpan<char> nextToken) && TryParseBool(nextToken))
-                        cursor.TryConsumeNext(out flagValue);
+                        return Fail($"Option '--{argument.Name}' does not accept a value.", out result, out error);
 
+                    ReadOnlySpan<char> flagValue = "true";
                     if (!argument.TrySetValue(flagValue, FormatProvider, slots[argument.Slot]))
                     {
                         return FailInvalidValue(
@@ -471,8 +468,6 @@ public sealed class SimpleArgumentParser(string? description = null)
 
     private static bool LooksLikeOption(ReadOnlySpan<char> value) =>
         value.StartsWith("--", StringComparison.Ordinal) && value.Length > 2;
-
-    private static bool TryParseBool(ReadOnlySpan<char> value) => bool.TryParse(value, out _);
 
     private static bool ParseBoolValue(ReadOnlySpan<char> value, IFormatProvider? provider, out bool result) =>
         bool.TryParse(value, out result);

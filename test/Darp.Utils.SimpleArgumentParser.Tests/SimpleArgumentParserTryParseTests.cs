@@ -37,6 +37,22 @@ public sealed class SimpleArgumentParserTryParseTests
     }
 
     [Theory]
+    [InlineData(new[] { "--verbose", "true" }, true)]
+    [InlineData(new[] { "--verbose=false" }, false)]
+    public void TryParse_NamedBoolArgument_ReturnsParsedValue(string[] args, bool expectedValue)
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<bool> verbose = parser.AddNamed<bool>("verbose");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(args);
+
+        // Assert
+        result.GetValue(verbose).ShouldBe(expectedValue);
+    }
+
+    [Theory]
     [InlineData(new string[] { }, 42)]
     [InlineData(new[] { "--count", "100" }, 100)]
     public void TryParse_DefaultNamedArgument_ReturnsExpectedValue(string[] args, int expectedValue)
@@ -127,10 +143,6 @@ public sealed class SimpleArgumentParserTryParseTests
     [Theory]
     [InlineData(new string[] { }, false)]
     [InlineData(new[] { "--verbose" }, true)]
-    [InlineData(new[] { "--verbose=true" }, true)]
-    [InlineData(new[] { "--verbose=false" }, false)]
-    [InlineData(new[] { "--verbose", "true" }, true)]
-    [InlineData(new[] { "--verbose", "false" }, false)]
     public void TryParse_Flag_ReturnsExpectedValue(string[] args, bool expectedValue)
     {
         // Arrange
@@ -145,7 +157,7 @@ public sealed class SimpleArgumentParserTryParseTests
     }
 
     [Fact]
-    public void TryParse_FlagFollowedByNonBool_DoesNotConsumePositionalToken()
+    public void TryParse_FlagFollowedByToken_DoesNotConsumePositionalToken()
     {
         // Arrange
         var parser = new Parser();
@@ -293,18 +305,29 @@ public sealed class SimpleArgumentParserTryParseTests
         );
     }
 
-    [Fact]
-    public void TryParse_WhenFlagValueIsInvalid_ReturnsError()
+    [Theory]
+    [InlineData("--verbose=true")]
+    [InlineData("--verbose=false")]
+    [InlineData("--verbose=maybe")]
+    public void TryParse_WhenFlagHasExplicitValue_ReturnsError(string arg)
     {
         // Arrange
         var parser = new Parser();
         parser.AddFlag("verbose");
 
         // Act & Assert
-        parser.ShouldFailWith(
-            ["--verbose=maybe"],
-            "Argument 'verbose' has value 'maybe', which could not be parsed as Boolean."
-        );
+        parser.ShouldFailWith([arg], "Option '--verbose' does not accept a value.");
+    }
+
+    [Fact]
+    public void TryParse_WhenFlagIsFollowedByUnexpectedValue_ReturnsUnexpectedPositionalError()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddFlag("verbose");
+
+        // Act & Assert
+        parser.ShouldFailWith(["--verbose", "false"], "Unexpected positional argument 'false'.");
     }
 
     [Fact]
