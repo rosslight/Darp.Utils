@@ -115,6 +115,41 @@ public sealed class SimpleArgumentParserTryParseTests
     }
 
     [Fact]
+    public void TryParse_RequiredPositionalFollowedByDefaultedPositional_WithOneToken_UsesDefault()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<string> input = parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString);
+        Argument<string> config = parser.AddPositional("config", ParserTestHelpers.ParseString, "default.cfg");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["input.txt"]);
+
+        // Assert
+        result.GetValue(input).ShouldBe("input.txt");
+        result.GetValue(config).ShouldBe("default.cfg");
+    }
+
+    [Fact]
+    public void TryParse_RequiredPositionalFollowedByOptionalPositional_WithOneToken_ReturnsNullForOptional()
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<string> source = parser.AddRequiredPositional<string>("source", ParserTestHelpers.ParseString);
+        OptionalArgument<string> destination = parser.AddPositional<string>(
+            "destination",
+            ParserTestHelpers.ParseString
+        );
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["source.txt"]);
+
+        // Assert
+        result.GetValue(source).ShouldBe("source.txt");
+        result.GetValue(destination).ShouldBeNull();
+    }
+
+    [Fact]
     public void TryParse_OptionalNamedArgument_WhenAbsent_ReturnsNull()
     {
         // Arrange

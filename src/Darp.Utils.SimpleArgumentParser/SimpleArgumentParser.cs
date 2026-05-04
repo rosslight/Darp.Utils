@@ -140,6 +140,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed or default value.</returns>
+    /// <remarks>Defaulted positional arguments must be added after all required positional arguments.</remarks>
     public Argument<T> AddPositional<T>(
         string name,
         ArgumentValueParser<T> parser,
@@ -168,6 +169,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed or default value.</returns>
+    /// <remarks>Defaulted positional arguments must be added after all required positional arguments.</remarks>
     public Argument<T> AddPositional<T>(string name, T defaultValue, string? description = null)
         where T : ISpanParsable<T> => AddPositional(name, T.TryParse, defaultValue, description);
 
@@ -178,6 +180,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle whose result value is <see langword="null"/> when the token is absent.</returns>
+    /// <remarks>Optional positional arguments must be added after all required positional arguments.</remarks>
     public OptionalArgument<T> AddPositional<T>(string name, string? description = null)
         where T : ISpanParsable<T> => AddPositional<T>(name, T.TryParse, description);
 
@@ -189,6 +192,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle whose result value is <see langword="null"/> when the token is absent.</returns>
+    /// <remarks>Optional positional arguments must be added after all required positional arguments.</remarks>
     public OptionalArgument<T> AddPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -211,6 +215,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed value.</returns>
+    /// <remarks>Required positional arguments must be added before optional or defaulted positional arguments.</remarks>
     public Argument<T> AddRequiredPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -375,9 +380,27 @@ public sealed class SimpleArgumentParser(string? description = null)
     private TArgument RegisterPositionalArgument<TArgument>(TArgument argument)
         where TArgument : IArgument
     {
+        ValidatePositionalRegistrationOrder(argument);
         RegisterArgument(argument);
         _positionalsInOrder.Add(argument);
         return argument;
+    }
+
+    private void ValidatePositionalRegistrationOrder(IArgument argument)
+    {
+        if (!argument.IsRequired)
+            return;
+
+        foreach (IArgument positional in _positionalsInOrder)
+        {
+            if (positional.IsRequired)
+                continue;
+
+            throw new ArgumentException(
+                $"Required positional argument '{argument.Name}' cannot be added after an optional or defaulted positional argument.",
+                nameof(argument)
+            );
+        }
     }
 
     private void RegisterArgument(IArgument argument)

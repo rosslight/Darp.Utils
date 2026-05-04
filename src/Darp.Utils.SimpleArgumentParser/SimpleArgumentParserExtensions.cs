@@ -74,6 +74,7 @@ public static class SimpleArgumentParserExtensions
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed value.</returns>
+    /// <remarks>Required positional arguments must be added before optional or defaulted positional arguments.</remarks>
     public static Argument<T> AddRequiredPositional<T>(
         this SimpleArgumentParser parser,
         string name,
@@ -93,6 +94,7 @@ public static class SimpleArgumentParserExtensions
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle whose result value is <see langword="null"/> when the token is absent.</returns>
+    /// <remarks>Optional positional arguments must be added after all required positional arguments.</remarks>
     public static OptionalArgument<T> AddPositional<T>(
         this SimpleArgumentParser parser,
         string name,
@@ -113,6 +115,7 @@ public static class SimpleArgumentParserExtensions
     /// <param name="description">Optional help text for the argument.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed or default value.</returns>
+    /// <remarks>Defaulted positional arguments must be added after all required positional arguments.</remarks>
     public static Argument<T> AddPositional<T>(
         this SimpleArgumentParser parser,
         string name,

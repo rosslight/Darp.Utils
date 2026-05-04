@@ -133,6 +133,40 @@ public sealed class SimpleArgumentParserRegistrationTests
     }
 
     [Fact]
+    public void AddRequiredPositional_WhenAddedAfterDefaultedPositional_ThrowsArgumentException()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddPositional("config", "default.cfg");
+
+        // Act
+        ArgumentException exception = Should.Throw<ArgumentException>(
+            () => parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString)
+        );
+
+        // Assert
+        exception.Message.ShouldContain("Required positional argument 'input'");
+        exception.Message.ShouldContain("optional or defaulted positional argument");
+    }
+
+    [Fact]
+    public void AddRequiredPositional_WhenAddedAfterOptionalPositional_ThrowsArgumentException()
+    {
+        // Arrange
+        var parser = new Parser();
+        parser.AddPositional<string>("project", ParserTestHelpers.ParseString);
+
+        // Act
+        ArgumentException exception = Should.Throw<ArgumentException>(
+            () => parser.AddRequiredPositional<string>("command", ParserTestHelpers.ParseString)
+        );
+
+        // Assert
+        exception.Message.ShouldContain("Required positional argument 'command'");
+        exception.Message.ShouldContain("optional or defaulted positional argument");
+    }
+
+    [Fact]
     public void AddNamed_WhenExactDuplicateOptionNameIsRegistered_ThrowsArgumentException()
     {
         // Arrange
