@@ -31,7 +31,7 @@ public sealed class OptionalArgument<T> : IArgument
         set => _slot = value;
     }
 
-    ArgumentKind IArgument.Kind => ArgumentKind.Option;
+    ArgumentKind IArgument.Kind => ArgumentKind.Named;
 
     bool IArgument.HasDefaultValue => false;
 

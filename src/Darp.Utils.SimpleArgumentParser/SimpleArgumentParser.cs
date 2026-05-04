@@ -35,22 +35,15 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
-    public OptionalArgument<T> AddOption<T>(string name, string? description = null)
-        where T : ISpanParsable<T> => AddOption<T>(name, T.TryParse, description);
-
-    public Argument<T> AddOption<T>(string name, T defaultValue, string? description = null)
-        where T : ISpanParsable<T> => AddOption(name, T.TryParse, defaultValue, description);
-
-    public OptionalArgument<T> AddOption<T>(string name, ArgumentValueParser<T> parser, string? description = null)
+    public OptionalArgument<T> AddNamed<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
-
         return RegisterNamedArgument(
             new OptionalArgument<T>(_owner, NormalizeOptionName(name), NormalizeDescription(description), parser)
         );
     }
 
-    public Argument<T> AddOption<T>(
+    public Argument<T> AddNamed<T>(
         string name,
         ArgumentValueParser<T> parser,
         T defaultValue,
@@ -58,11 +51,10 @@ public sealed class SimpleArgumentParser(string? description = null)
     )
     {
         ArgumentNullException.ThrowIfNull(parser);
-
         return RegisterNamedArgument(
             new Argument<T>(
                 _owner,
-                ArgumentKind.Option,
+                ArgumentKind.Named,
                 NormalizeOptionName(name),
                 NormalizeDescription(description),
                 parser,
@@ -71,21 +63,14 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
-    public Argument<T> AddPositional<T>(string name, string? description = null)
-        where T : ISpanParsable<T> => AddPositional<T>(name, T.TryParse, description);
-
-    public Argument<T> AddPositional<T>(string name, T defaultValue, string? description = null)
-        where T : ISpanParsable<T> => AddPositional(name, T.TryParse, defaultValue, description);
-
-    public Argument<T> AddPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
+    public Argument<T> AddRequiredNamed<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
-
-        return RegisterPositionalArgument(
+        return RegisterNamedArgument(
             new Argument<T>(
                 _owner,
-                ArgumentKind.Positional,
-                NormalizePositionalName(name),
+                ArgumentKind.Named,
+                NormalizeOptionName(name),
                 NormalizeDescription(description),
                 parser,
                 OptionalValue<T>.None
@@ -101,7 +86,6 @@ public sealed class SimpleArgumentParser(string? description = null)
     )
     {
         ArgumentNullException.ThrowIfNull(parser);
-
         return RegisterPositionalArgument(
             new Argument<T>(
                 _owner,
@@ -110,6 +94,21 @@ public sealed class SimpleArgumentParser(string? description = null)
                 NormalizeDescription(description),
                 parser,
                 OptionalValue<T>.Some(defaultValue)
+            )
+        );
+    }
+
+    public Argument<T> AddRequiredPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return RegisterPositionalArgument(
+            new Argument<T>(
+                _owner,
+                ArgumentKind.Positional,
+                NormalizePositionalName(name),
+                NormalizeDescription(description),
+                parser,
+                OptionalValue<T>.None
             )
         );
     }

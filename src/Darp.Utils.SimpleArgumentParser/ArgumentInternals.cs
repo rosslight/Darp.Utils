@@ -2,8 +2,8 @@ namespace Darp.Utils.SimpleArgumentParser;
 
 internal enum ArgumentKind
 {
-    Option,
     Flag,
+    Named,
     Positional,
 }
 
