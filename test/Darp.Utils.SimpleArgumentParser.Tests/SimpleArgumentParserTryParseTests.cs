@@ -13,7 +13,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        OptionalArgument<int> count = parser.AddNamed<int>("count");
+        OptionalArgument<int> count = parser.AddNamed<int>("--count");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(args);
@@ -27,7 +27,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        OptionalArgument<int> count = parser.AddNamed<int>("count");
+        OptionalArgument<int> count = parser.AddNamed<int>("--count");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(["--COUNT", "42"]);
@@ -43,7 +43,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        OptionalArgument<bool> verbose = parser.AddNamed<bool>("verbose");
+        OptionalArgument<bool> verbose = parser.AddNamed<bool>("--verbose");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(args);
@@ -59,7 +59,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        Argument<int> count = parser.AddNamed("count", 42);
+        Argument<int> count = parser.AddNamed("--count", 42);
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(args);
@@ -89,7 +89,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        Argument<int> count = parser.AddRequiredNamed<int>("count");
+        Argument<int> count = parser.AddRequiredNamed<int>("--count");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(["--count", "42"]);
@@ -117,7 +117,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        OptionalArgument<string> value = parser.AddNamed<string>("value", ParserTestHelpers.ParseString);
+        OptionalArgument<string> value = parser.AddNamed<string>("--value", ParserTestHelpers.ParseString);
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully([]);
@@ -147,7 +147,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        Argument<bool> verbose = parser.AddFlag("verbose");
+        Argument<bool> verbose = parser.AddFlag("--verbose");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(args);
@@ -161,7 +161,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        Argument<bool> verbose = parser.AddFlag("verbose");
+        Argument<bool> verbose = parser.AddFlag("--verbose");
         Argument<string> path = parser.AddRequiredPositional<string>("path", ParserTestHelpers.ParseString);
 
         // Act
@@ -208,8 +208,8 @@ public sealed class SimpleArgumentParserTryParseTests
         // Arrange
         var parser = new Parser();
         Argument<string> input = parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString);
-        OptionalArgument<int> count = parser.AddNamed<int>("count");
-        Argument<bool> verbose = parser.AddFlag("verbose");
+        OptionalArgument<int> count = parser.AddNamed<int>("--count");
+        Argument<bool> verbose = parser.AddFlag("--verbose");
         Argument<string> output = parser.AddRequiredPositional<string>("output", ParserTestHelpers.ParseString);
 
         // Act
@@ -232,12 +232,24 @@ public sealed class SimpleArgumentParserTryParseTests
         parser.ShouldFailWith(["--missing"], "Unknown option '--missing'.");
     }
 
+    [Theory]
+    [InlineData("-count")]
+    [InlineData("-v")]
+    public void TryParse_WhenTokenUsesSingleDash_TreatsTokenAsPositional(string arg)
+    {
+        // Arrange
+        var parser = new Parser();
+
+        // Act & Assert
+        parser.ShouldFailWith([arg], $"Unexpected positional argument '{arg}'.");
+    }
+
     [Fact]
     public void TryParse_WhenNamedValueIsMissingAtEnd_ReturnsError()
     {
         // Arrange
         var parser = new Parser();
-        parser.AddRequiredNamed<int>("count");
+        parser.AddRequiredNamed<int>("--count");
 
         // Act & Assert
         parser.ShouldFailWith(["--count"], "Option '--count' requires a value.");
@@ -248,8 +260,8 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        parser.AddRequiredNamed<int>("count");
-        parser.AddFlag("verbose");
+        parser.AddRequiredNamed<int>("--count");
+        parser.AddFlag("--verbose");
 
         // Act & Assert
         parser.ShouldFailWith(["--count", "--verbose"], "Option '--count' requires a value.");
@@ -260,7 +272,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        parser.AddRequiredNamed<int>("count");
+        parser.AddRequiredNamed<int>("--count");
 
         // Act & Assert
         parser.ShouldFailWith([], "Missing option '--count'.");
@@ -282,7 +294,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        parser.AddRequiredNamed<int>("count");
+        parser.AddRequiredNamed<int>("--count");
 
         // Act & Assert
         parser.ShouldFailWith(
@@ -313,7 +325,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        parser.AddFlag("verbose");
+        parser.AddFlag("--verbose");
 
         // Act & Assert
         parser.ShouldFailWith([arg], "Option '--verbose' does not accept a value.");
@@ -324,7 +336,7 @@ public sealed class SimpleArgumentParserTryParseTests
     {
         // Arrange
         var parser = new Parser();
-        parser.AddFlag("verbose");
+        parser.AddFlag("--verbose");
 
         // Act & Assert
         parser.ShouldFailWith(["--verbose", "false"], "Unexpected positional argument 'false'.");

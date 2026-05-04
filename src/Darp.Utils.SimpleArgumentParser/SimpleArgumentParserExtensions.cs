@@ -11,7 +11,7 @@ public static class SimpleArgumentParserExtensions
     /// Adds an optional named option parsed via <see cref="ISpanParsable{TSelf}"/>.
     /// </summary>
     /// <param name="parser">The parser to add the option to.</param>
-    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="name">The long option name, such as <c>--count</c>.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle whose result value is <see langword="null"/> when the option is absent.</returns>
@@ -26,7 +26,7 @@ public static class SimpleArgumentParserExtensions
     /// Adds a required named option parsed via <see cref="ISpanParsable{TSelf}"/>.
     /// </summary>
     /// <param name="parser">The parser to add the option to.</param>
-    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="name">The long option name, such as <c>--count</c>.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed value.</returns>
@@ -41,7 +41,7 @@ public static class SimpleArgumentParserExtensions
     /// Adds a named option with a default value, parsed via <see cref="ISpanParsable{TSelf}"/>.
     /// </summary>
     /// <param name="parser">The parser to add the option to.</param>
-    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="name">The long option name, such as <c>--count</c>.</param>
     /// <param name="defaultValue">The value returned when the option is absent.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>

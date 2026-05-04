@@ -11,7 +11,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     {
         // Arrange
         var parser = new Parser();
-        OptionalArgument<int> count = parser.AddNamed<int>("count");
+        OptionalArgument<int> count = parser.AddNamed<int>("--count");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(["--count", "42"]);
@@ -25,7 +25,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     {
         // Arrange
         var parser = new Parser();
-        Argument<Guid> id = parser.AddRequiredNamed<Guid>("id");
+        Argument<Guid> id = parser.AddRequiredNamed<Guid>("--id");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(["--id", "00000000-0000-0000-0000-000000000000"]);
@@ -39,7 +39,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     {
         // Arrange
         var parser = new Parser();
-        Argument<bool> enabled = parser.AddNamed("enabled", false);
+        Argument<bool> enabled = parser.AddNamed("--enabled", false);
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(["--enabled", "true"]);

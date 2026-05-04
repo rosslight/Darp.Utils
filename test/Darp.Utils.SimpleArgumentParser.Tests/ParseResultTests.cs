@@ -11,8 +11,8 @@ public sealed class ParseResultTests
     {
         // Arrange
         var parser = new Parser();
-        Argument<int> count = parser.AddRequiredNamed<int>("count");
-        OptionalArgument<string> name = parser.AddNamed<string>("name", ParserTestHelpers.ParseString);
+        Argument<int> count = parser.AddRequiredNamed<int>("--count");
+        OptionalArgument<string> name = parser.AddNamed<string>("--name", ParserTestHelpers.ParseString);
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully(["--count", "42", "--name", "alpha"]);
@@ -27,7 +27,7 @@ public sealed class ParseResultTests
     {
         // Arrange
         var parser = new Parser();
-        OptionalArgument<string> name = parser.AddNamed<string>("name", ParserTestHelpers.ParseString);
+        OptionalArgument<string> name = parser.AddNamed<string>("--name", ParserTestHelpers.ParseString);
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully([]);
@@ -56,7 +56,7 @@ public sealed class ParseResultTests
         ParseResult result = parser.ShouldParseSuccessfully([]);
 
         var otherParser = new Parser();
-        Argument<int> otherCount = otherParser.AddNamed("count", 42);
+        Argument<int> otherCount = otherParser.AddNamed("--count", 42);
 
         // Act & Assert
         Should.Throw<ArgumentException>(() => result.GetValue(otherCount));
@@ -68,7 +68,7 @@ public sealed class ParseResultTests
         // Arrange
         var parser = new Parser();
         ParseResult result = parser.ShouldParseSuccessfully([]);
-        Argument<int> count = parser.AddNamed("count", 42);
+        Argument<int> count = parser.AddNamed("--count", 42);
 
         // Act & Assert
         Should.Throw<ArgumentException>(() => result.GetValue(count));

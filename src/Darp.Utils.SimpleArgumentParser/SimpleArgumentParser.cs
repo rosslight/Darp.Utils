@@ -39,10 +39,10 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds a presence-only boolean option that defaults to <see langword="false"/>.
     /// </summary>
-    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="name">The long option name, such as <c>--verbose</c>.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <returns>An argument handle used to read the parsed flag value.</returns>
-    /// <remarks>Passing <c>--name</c> sets the value to <see langword="true"/>. Use <c>AddNamed&lt;bool&gt;</c> for explicit boolean values.</remarks>
+    /// <remarks>Passing <c>--name</c> sets the value to <see langword="true"/>. Short options such as <c>-v</c> are not supported.</remarks>
     public Argument<bool> AddFlag(string name, string? description = null)
     {
         return RegisterNamedArgument(
@@ -60,7 +60,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds an optional named option parsed from <c>--name value</c> or <c>--name=value</c>.
     /// </summary>
-    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="name">The long option name, such as <c>--count</c>.</param>
     /// <param name="parser">The parser used to convert the option value.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
@@ -82,7 +82,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds a named option with a default value.
     /// </summary>
-    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="name">The long option name, such as <c>--count</c>.</param>
     /// <param name="parser">The parser used to convert the option value.</param>
     /// <param name="defaultValue">The value returned when the option is absent.</param>
     /// <param name="description">Optional help text for the option.</param>
@@ -111,7 +111,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     /// <summary>
     /// Adds a named option that must be supplied for parsing to succeed.
     /// </summary>
-    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="name">The long option name, such as <c>--count</c>.</param>
     /// <param name="parser">The parser used to convert the option value.</param>
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
@@ -516,11 +516,15 @@ public sealed class SimpleArgumentParser(string? description = null)
             throw new ArgumentException("Option name cannot be empty.", nameof(name));
 
         name = name.Trim();
-        while (name.StartsWith('-'))
-            name = name[1..];
+        if (!name.StartsWith("--", StringComparison.Ordinal))
+            throw new ArgumentException("Option names must use long option form, e.g. '--name'.", nameof(name));
 
+        name = name[2..];
         if (name.Length == 0)
             throw new ArgumentException("Option name cannot be only dashes.", nameof(name));
+
+        if (name.StartsWith('-'))
+            throw new ArgumentException("Option name cannot start with dashes after '--'.", nameof(name));
 
         return name;
     }
