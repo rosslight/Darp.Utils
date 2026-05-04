@@ -1,5 +1,9 @@
 namespace Darp.Utils.SimpleArgumentParser;
 
+/// <summary>
+/// Represents a registered argument whose value may be absent after a successful parse.
+/// </summary>
+/// <typeparam name="T">The parsed value type.</typeparam>
 public sealed class OptionalArgument<T> : IArgument
 {
     private readonly ParserIdentity _owner;
@@ -22,8 +26,14 @@ public sealed class OptionalArgument<T> : IArgument
         _parser = parser;
     }
 
+    /// <summary>
+    /// Gets the normalized argument name used in errors and result lookup.
+    /// </summary>
     public string Name { get; }
 
+    /// <summary>
+    /// Gets the optional help text supplied when the argument was registered.
+    /// </summary>
     public string? Description { get; }
 
     ParserIdentity IArgument.Owner => _owner;

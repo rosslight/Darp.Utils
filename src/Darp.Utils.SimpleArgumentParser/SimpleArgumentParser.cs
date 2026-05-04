@@ -3,6 +3,10 @@ namespace Darp.Utils.SimpleArgumentParser;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+/// <summary>
+/// Parses command-line arguments into typed named and positional values.
+/// </summary>
+/// <param name="description">Optional text describing the command handled by this parser.</param>
 public sealed class SimpleArgumentParser(string? description = null)
 {
     private static readonly IFormatProvider FormatProvider = CultureInfo.InvariantCulture;
@@ -13,14 +17,32 @@ public sealed class SimpleArgumentParser(string? description = null)
     private readonly List<IArgument> _namedArgumentsInOrder = [];
     private readonly List<IArgument> _positionalsInOrder = [];
 
+    /// <summary>
+    /// Gets the normalized parser description, or <see langword="null"/> when none was supplied.
+    /// </summary>
     public string? Description { get; } = NormalizeDescription(description);
 
+    /// <summary>
+    /// Converts a raw argument value into a typed value.
+    /// </summary>
+    /// <param name="value">The command-line token text to parse.</param>
+    /// <param name="provider">The format provider used by the parser.</param>
+    /// <param name="result">The parsed value when parsing succeeds.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns><see langword="true"/> when the value was parsed successfully.</returns>
     public delegate bool ArgumentValueParser<T>(
         ReadOnlySpan<char> value,
         IFormatProvider? provider,
         [MaybeNullWhen(false)] out T result
     );
 
+    /// <summary>
+    /// Adds a presence-only boolean option that defaults to <see langword="false"/>.
+    /// </summary>
+    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="description">Optional help text for the option.</param>
+    /// <returns>An argument handle used to read the parsed flag value.</returns>
+    /// <remarks>Passing <c>--name</c> sets the value to <see langword="true"/>. Use <c>AddNamed&lt;bool&gt;</c> for explicit boolean values.</remarks>
     public Argument<bool> AddFlag(string name, string? description = null)
     {
         return RegisterNamedArgument(
@@ -35,6 +57,14 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    /// <summary>
+    /// Adds an optional named option parsed from <c>--name value</c> or <c>--name=value</c>.
+    /// </summary>
+    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="parser">The parser used to convert the option value.</param>
+    /// <param name="description">Optional help text for the option.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle whose result value is <see langword="null"/> when the option is absent.</returns>
     public OptionalArgument<T> AddNamed<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -49,6 +79,15 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    /// <summary>
+    /// Adds a named option with a default value.
+    /// </summary>
+    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="parser">The parser used to convert the option value.</param>
+    /// <param name="defaultValue">The value returned when the option is absent.</param>
+    /// <param name="description">Optional help text for the option.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle used to read the parsed or default value.</returns>
     public Argument<T> AddNamed<T>(
         string name,
         ArgumentValueParser<T> parser,
@@ -69,6 +108,14 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    /// <summary>
+    /// Adds a named option that must be supplied for parsing to succeed.
+    /// </summary>
+    /// <param name="name">The option name, with or without leading dashes.</param>
+    /// <param name="parser">The parser used to convert the option value.</param>
+    /// <param name="description">Optional help text for the option.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle used to read the parsed value.</returns>
     public Argument<T> AddRequiredNamed<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -84,6 +131,15 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    /// <summary>
+    /// Adds a positional argument with a default value.
+    /// </summary>
+    /// <param name="name">The positional argument name used in errors and result lookup.</param>
+    /// <param name="parser">The parser used to convert the positional value.</param>
+    /// <param name="defaultValue">The value returned when no token is supplied for this position.</param>
+    /// <param name="description">Optional help text for the argument.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle used to read the parsed or default value.</returns>
     public Argument<T> AddPositional<T>(
         string name,
         ArgumentValueParser<T> parser,
@@ -104,12 +160,35 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    /// <summary>
+    /// Adds a positional argument with a default value, parsed via <see cref="ISpanParsable{TSelf}"/>.
+    /// </summary>
+    /// <param name="name">The positional argument name used in errors and result lookup.</param>
+    /// <param name="defaultValue">The value returned when no token is supplied for this position.</param>
+    /// <param name="description">Optional help text for the argument.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle used to read the parsed or default value.</returns>
     public Argument<T> AddPositional<T>(string name, T defaultValue, string? description = null)
         where T : ISpanParsable<T> => AddPositional(name, T.TryParse, defaultValue, description);
 
+    /// <summary>
+    /// Adds an optional positional argument parsed via <see cref="ISpanParsable{TSelf}"/>.
+    /// </summary>
+    /// <param name="name">The positional argument name used in errors and result lookup.</param>
+    /// <param name="description">Optional help text for the argument.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle whose result value is <see langword="null"/> when the token is absent.</returns>
     public OptionalArgument<T> AddPositional<T>(string name, string? description = null)
         where T : ISpanParsable<T> => AddPositional<T>(name, T.TryParse, description);
 
+    /// <summary>
+    /// Adds an optional positional argument.
+    /// </summary>
+    /// <param name="name">The positional argument name used in errors and result lookup.</param>
+    /// <param name="parser">The parser used to convert the positional value.</param>
+    /// <param name="description">Optional help text for the argument.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle whose result value is <see langword="null"/> when the token is absent.</returns>
     public OptionalArgument<T> AddPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -124,6 +203,14 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    /// <summary>
+    /// Adds a positional argument that must be supplied for parsing to succeed.
+    /// </summary>
+    /// <param name="name">The positional argument name used in errors and result lookup.</param>
+    /// <param name="parser">The parser used to convert the positional value.</param>
+    /// <param name="description">Optional help text for the argument.</param>
+    /// <typeparam name="T">The parsed value type.</typeparam>
+    /// <returns>An argument handle used to read the parsed value.</returns>
     public Argument<T> AddRequiredPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -139,6 +226,14 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    /// <summary>
+    /// Attempts to parse the supplied command-line tokens.
+    /// </summary>
+    /// <param name="args">The command-line tokens, usually from <c>Main</c>.</param>
+    /// <param name="result">The parsed result when parsing succeeds.</param>
+    /// <param name="error">A user-facing error message when parsing fails.</param>
+    /// <returns><see langword="true"/> when all required arguments were supplied and all values were valid.</returns>
+    /// <remarks>Use <c>--</c> to stop named-option parsing and treat following tokens as positional values.</remarks>
     public bool TryParse(
         string[] args,
         [NotNullWhen(true)] out ParseResult? result,
