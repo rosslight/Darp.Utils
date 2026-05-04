@@ -12,6 +12,7 @@
     <Project Path="src/Darp.Utils.Messaging.Generator/Darp.Utils.Messaging.Generator.csproj" />
     <Project Path="src/Darp.Utils.Messaging/Darp.Utils.Messaging.csproj" />
     <Project Path="src/Darp.Utils.ResxSourceGenerator/Darp.Utils.ResxSourceGenerator.csproj" />
+    <Project Path="src/Darp.Utils.SimpleArgumentParser/Darp.Utils.SimpleArgumentParser.csproj" />
     <Project Path="src/Darp.Utils.TestRail/Darp.Utils.TestRail.csproj" />
   </Folder>
   <Folder Name="/test/">
