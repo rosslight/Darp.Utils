@@ -33,6 +33,13 @@ public static class SimpleArgumentParserExtensions
     )
         where T : ISpanParsable<T> => parser.AddRequiredPositional<T>(name, T.TryParse, description);
 
+    public static OptionalArgument<T> AddPositional<T>(
+        this SimpleArgumentParser parser,
+        string name,
+        string? description = null
+    )
+        where T : ISpanParsable<T> => parser.AddPositional<T>(name, T.TryParse, description);
+
     public static Argument<T> AddPositional<T>(
         this SimpleArgumentParser parser,
         string name,
@@ -56,4 +63,7 @@ public static class SimpleArgumentParserExtensions
         Environment.Exit(1);
         throw new UnreachableException("Environment.Exit() should have exited the process.");
     }
+
+    public static bool TryParseEnum<T>(ReadOnlySpan<char> value, IFormatProvider? _, out T result)
+        where T : struct => Enum.TryParse(value, out result);
 }

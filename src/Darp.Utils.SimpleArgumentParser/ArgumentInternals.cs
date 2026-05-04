@@ -21,7 +21,7 @@ internal interface IArgument
 
     ArgumentKind Kind { get; }
 
-    bool HasDefaultValue { get; }
+    bool IsRequired { get; }
 
     string ValueTypeName { get; }
 

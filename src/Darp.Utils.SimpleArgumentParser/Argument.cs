@@ -39,7 +39,7 @@ public sealed class Argument<T> : IArgument
 
     ArgumentKind IArgument.Kind => _kind;
 
-    bool IArgument.HasDefaultValue => _defaultValue.HasValue;
+    bool IArgument.IsRequired => !_defaultValue.HasValue;
 
     string IArgument.ValueTypeName => typeof(T).Name;
 

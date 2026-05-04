@@ -3,17 +3,20 @@ namespace Darp.Utils.SimpleArgumentParser;
 public sealed class OptionalArgument<T> : IArgument
 {
     private readonly ParserIdentity _owner;
+    private readonly ArgumentKind _kind;
     private readonly SimpleArgumentParser.ArgumentValueParser<T> _parser;
     private int _slot = -1;
 
     internal OptionalArgument(
         ParserIdentity owner,
+        ArgumentKind kind,
         string name,
         string? description,
         SimpleArgumentParser.ArgumentValueParser<T> parser
     )
     {
         _owner = owner;
+        _kind = kind;
         Name = name;
         Description = description;
         _parser = parser;
@@ -31,9 +34,9 @@ public sealed class OptionalArgument<T> : IArgument
         set => _slot = value;
     }
 
-    ArgumentKind IArgument.Kind => ArgumentKind.Named;
+    ArgumentKind IArgument.Kind => _kind;
 
-    bool IArgument.HasDefaultValue => false;
+    bool IArgument.IsRequired => false;
 
     string IArgument.ValueTypeName => typeof(T).Name;
 

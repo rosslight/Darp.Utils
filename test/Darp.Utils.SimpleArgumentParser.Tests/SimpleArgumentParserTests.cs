@@ -127,6 +127,25 @@ public sealed class SimpleArgumentParserTests
     }
 
     [Theory]
+    [InlineData(new string[] { }, null)]
+    [InlineData(new[] { "alpha" }, "alpha")]
+    public void TryParse_OptionalPositionalArgument_ReturnsExpectedValue(string[] args, string? expectedValue)
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<string> value = parser.AddPositional<string>("value", ParseString);
+
+        // Act
+        var success = parser.TryParse(args, out ParseResult? result, out string? error);
+
+        // Assert
+        success.ShouldBeTrue();
+        result.ShouldNotBeNull();
+        error.ShouldBeNull();
+        result.GetValue(value).ShouldBe(expectedValue);
+    }
+
+    [Theory]
     [InlineData(FailureCase.UnknownOption, new[] { "--missing" }, "Unknown option '--missing'.")]
     [InlineData(FailureCase.MissingNamedValueAtEnd, new[] { "--count" }, "Option '--count' requires a value.")]
     [InlineData(

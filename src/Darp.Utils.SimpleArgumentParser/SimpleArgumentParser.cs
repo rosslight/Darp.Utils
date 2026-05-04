@@ -39,7 +39,13 @@ public sealed class SimpleArgumentParser(string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
         return RegisterNamedArgument(
-            new OptionalArgument<T>(_owner, NormalizeOptionName(name), NormalizeDescription(description), parser)
+            new OptionalArgument<T>(
+                _owner,
+                ArgumentKind.Named,
+                NormalizeOptionName(name),
+                NormalizeDescription(description),
+                parser
+            )
         );
     }
 
@@ -98,6 +104,26 @@ public sealed class SimpleArgumentParser(string? description = null)
         );
     }
 
+    public Argument<T> AddPositional<T>(string name, T defaultValue, string? description = null)
+        where T : ISpanParsable<T> => AddPositional(name, T.TryParse, defaultValue, description);
+
+    public OptionalArgument<T> AddPositional<T>(string name, string? description = null)
+        where T : ISpanParsable<T> => AddPositional<T>(name, T.TryParse, description);
+
+    public OptionalArgument<T> AddPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return RegisterPositionalArgument(
+            new OptionalArgument<T>(
+                _owner,
+                ArgumentKind.Positional,
+                NormalizePositionalName(name),
+                NormalizeDescription(description),
+                parser
+            )
+        );
+    }
+
     public Argument<T> AddRequiredPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -127,7 +153,7 @@ public sealed class SimpleArgumentParser(string? description = null)
         var stopParsingOptions = false;
         var cursor = new ArgumentCursor(args);
 
-        while (cursor.TryRead(out var token))
+        while (cursor.TryRead(out ReadOnlySpan<char> token))
         {
             if (!stopParsingOptions && token.Equals("--", StringComparison.Ordinal))
             {
@@ -140,7 +166,7 @@ public sealed class SimpleArgumentParser(string? description = null)
                 && TryGetOptionToken(token, out var optionName, out var explicitValue, out var hasExplicitValue)
             )
             {
-                var argument = FindNamedArgument(optionName);
+                IArgument? argument = FindNamedArgument(optionName);
                 if (argument is null)
                 {
                     var optionNameString = optionName.ToString();
@@ -152,15 +178,12 @@ public sealed class SimpleArgumentParser(string? description = null)
                     ReadOnlySpan<char> flagValue = "true";
 
                     if (hasExplicitValue)
-                    {
                         flagValue = explicitValue;
-                    }
-                    else if (cursor.TryPeek(out var nextToken) && TryParseBool(nextToken))
-                    {
+                    else if (cursor.TryPeek(out ReadOnlySpan<char> nextToken) && TryParseBool(nextToken))
                         cursor.TryConsumeNext(out flagValue);
-                    }
 
                     if (!argument.TrySetValue(flagValue, FormatProvider, slots[argument.Slot]))
+                    {
                         return FailInvalidValue(
                             argument.Name,
                             flagValue,
@@ -168,6 +191,7 @@ public sealed class SimpleArgumentParser(string? description = null)
                             out result,
                             out error
                         );
+                    }
 
                     continue;
                 }
@@ -181,6 +205,7 @@ public sealed class SimpleArgumentParser(string? description = null)
                 }
 
                 if (!argument.TrySetValue(explicitValue, FormatProvider, slots[argument.Slot]))
+                {
                     return FailInvalidValue(
                         argument.Name,
                         explicitValue,
@@ -188,6 +213,7 @@ public sealed class SimpleArgumentParser(string? description = null)
                         out result,
                         out error
                     );
+                }
 
                 continue;
             }
@@ -198,8 +224,8 @@ public sealed class SimpleArgumentParser(string? description = null)
 
         for (var index = positionalIndex; index < _positionalsInOrder.Count; index++)
         {
-            var argument = _positionalsInOrder[index];
-            if (argument.HasDefaultValue)
+            IArgument argument = _positionalsInOrder[index];
+            if (!argument.IsRequired)
                 continue;
 
             return Fail($"Missing positional argument '{argument.Name}'.", out result, out error);
