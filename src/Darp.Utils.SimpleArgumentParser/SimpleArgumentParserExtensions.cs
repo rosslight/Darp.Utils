@@ -20,7 +20,11 @@ public static class SimpleArgumentParserExtensions
         string name,
         string? description = null
     )
-        where T : ISpanParsable<T> => parser.AddNamed<T>(name, T.TryParse, description);
+        where T : ISpanParsable<T>
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return parser.AddNamed<T>(name, T.TryParse, description);
+    }
 
     /// <summary>
     /// Adds a required named option parsed via <see cref="ISpanParsable{TSelf}"/>.
@@ -35,7 +39,11 @@ public static class SimpleArgumentParserExtensions
         string name,
         string? description = null
     )
-        where T : ISpanParsable<T> => parser.AddRequiredNamed<T>(name, T.TryParse, description);
+        where T : ISpanParsable<T>
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return parser.AddRequiredNamed<T>(name, T.TryParse, description);
+    }
 
     /// <summary>
     /// Adds a named option with a default value, parsed via <see cref="ISpanParsable{TSelf}"/>.
@@ -52,7 +60,11 @@ public static class SimpleArgumentParserExtensions
         T defaultValue,
         string? description = null
     )
-        where T : ISpanParsable<T> => parser.AddNamed(name, T.TryParse, defaultValue, description);
+        where T : ISpanParsable<T>
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return parser.AddNamed(name, T.TryParse, defaultValue, description);
+    }
 
     /// <summary>
     /// Adds a required positional argument parsed via <see cref="ISpanParsable{TSelf}"/>.
@@ -67,7 +79,11 @@ public static class SimpleArgumentParserExtensions
         string name,
         string? description = null
     )
-        where T : ISpanParsable<T> => parser.AddRequiredPositional<T>(name, T.TryParse, description);
+        where T : ISpanParsable<T>
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return parser.AddRequiredPositional<T>(name, T.TryParse, description);
+    }
 
     /// <summary>
     /// Adds an optional positional argument parsed via <see cref="ISpanParsable{TSelf}"/>.
@@ -82,7 +98,11 @@ public static class SimpleArgumentParserExtensions
         string name,
         string? description = null
     )
-        where T : ISpanParsable<T> => parser.AddPositional<T>(name, T.TryParse, description);
+        where T : ISpanParsable<T>
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return parser.AddPositional<T>(name, T.TryParse, description);
+    }
 
     /// <summary>
     /// Adds a positional argument with a default value, parsed via <see cref="ISpanParsable{TSelf}"/>.
@@ -99,7 +119,25 @@ public static class SimpleArgumentParserExtensions
         T defaultValue,
         string? description = null
     )
-        where T : ISpanParsable<T> => parser.AddPositional(name, T.TryParse, defaultValue, description);
+        where T : ISpanParsable<T>
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return parser.AddPositional(name, T.TryParse, defaultValue, description);
+    }
+
+    /// <summary>
+    /// Gets the parsed value for an optional reference-type argument.
+    /// </summary>
+    /// <param name="result">The parse result to read from.</param>
+    /// <param name="argument">The argument handle returned when the argument was registered.</param>
+    /// <typeparam name="T">The parsed reference type.</typeparam>
+    /// <returns>The parsed value, or <see langword="null"/> when the argument was not supplied.</returns>
+    /// <exception cref="ArgumentException">Thrown when the argument belongs to another parser or was registered after this result was created.</exception>
+    public static T? GetValue<T>(this ParseResult result, OptionalArgument<T> argument)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        return result.GetOptionalValue(argument);
+    }
 
     /// <summary>
     /// Parses the arguments, writes parse errors to <see cref="Console.Error"/>, and exits with code 1 on failure.

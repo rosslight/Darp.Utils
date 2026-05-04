@@ -129,11 +129,39 @@ public sealed class SimpleArgumentParserTryParseTests
     }
 
     [Fact]
+    public void TryParse_OptionalNamedValueTypeArgument_WhenAbsent_ReturnsNull()
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<int> value = parser.AddNamed<int>("--value");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully([]);
+
+        // Assert
+        result.GetValue(value).ShouldBeNull();
+    }
+
+    [Fact]
     public void TryParse_OptionalPositionalArgument_WhenAbsent_ReturnsNull()
     {
         // Arrange
         var parser = new Parser();
         OptionalArgument<string> value = parser.AddPositional<string>("value", ParserTestHelpers.ParseString);
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully([]);
+
+        // Assert
+        result.GetValue(value).ShouldBeNull();
+    }
+
+    [Fact]
+    public void TryParse_OptionalPositionalValueTypeArgument_WhenAbsent_ReturnsNull()
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<int> value = parser.AddPositional<int>("value");
 
         // Act
         ParseResult result = parser.ShouldParseSuccessfully([]);

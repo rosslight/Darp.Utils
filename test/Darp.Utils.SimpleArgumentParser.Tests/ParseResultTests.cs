@@ -37,6 +37,20 @@ public sealed class ParseResultTests
     }
 
     [Fact]
+    public void GetValue_WhenOptionalValueTypeArgumentIsAbsent_ReturnsNull()
+    {
+        // Arrange
+        var parser = new Parser();
+        OptionalArgument<int> count = parser.AddNamed<int>("--count");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully([]);
+
+        // Assert
+        result.GetValue(count).ShouldBeNull();
+    }
+
+    [Fact]
     public void GetValue_WhenArgumentIsNull_ThrowsArgumentNullException()
     {
         // Arrange

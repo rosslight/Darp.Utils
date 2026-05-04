@@ -1,5 +1,7 @@
 namespace Darp.Utils.SimpleArgumentParser;
 
+using System.Diagnostics.CodeAnalysis;
+
 /// <summary>
 /// Represents a registered argument whose value may be absent after a successful parse.
 /// </summary>
@@ -61,7 +63,17 @@ public sealed class OptionalArgument<T> : IArgument
         return true;
     }
 
-    internal T? GetValue(ResultSlot[] slots) => GetTypedSlot(slots[_slot]).Value.GetValueOrDefault();
+    internal bool TryGetValue(ResultSlot[] slots, [MaybeNullWhen(false)] out T value)
+    {
+        OptionalValue<T> slot = GetTypedSlot(slots[_slot]).Value;
+        if (slot.HasValue)
+        {
+            value = slot.Value;
+            return true;
+        }
+        value = default;
+        return false;
+    }
 
     private static ResultSlot<T> GetTypedSlot(ResultSlot slot)
     {

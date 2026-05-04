@@ -59,6 +59,4 @@ internal readonly struct OptionalValue<T>
     internal static OptionalValue<T> None => default;
 
     internal static OptionalValue<T> Some(T value) => new(value);
-
-    internal T? GetValueOrDefault() => HasValue ? _value : default;
 }
