@@ -7,12 +7,13 @@ public sealed class SimpleArgumentParser(string? description = null)
 {
     private static readonly IFormatProvider FormatProvider = CultureInfo.InvariantCulture;
 
-    private readonly object _owner = new();
-    private readonly Dictionary<string, ArgumentDefinition> _namedDefinitions = new(StringComparer.OrdinalIgnoreCase);
-    private readonly List<ArgumentDefinition> _namedDefinitionsInOrder = [];
-    private readonly List<ArgumentDefinition> _positionalsInOrder = [];
+    private readonly ParserIdentity _owner = new();
+    private readonly List<IArgument> _arguments = [];
+    private readonly HashSet<string> _namedArgumentNames = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<IArgument> _namedArgumentsInOrder = [];
+    private readonly List<IArgument> _positionalsInOrder = [];
 
-    public string? Description { get; } = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    public string? Description { get; } = NormalizeDescription(description);
 
     public delegate bool ArgumentValueParser<T>(
         ReadOnlySpan<char> value,
@@ -20,25 +21,33 @@ public sealed class SimpleArgumentParser(string? description = null)
         [MaybeNullWhen(false)] out T result
     );
 
+    public Argument<bool> AddFlag(string name, string? description = null)
+    {
+        return RegisterNamedArgument(
+            new Argument<bool>(
+                _owner,
+                ArgumentKind.Flag,
+                NormalizeOptionName(name),
+                NormalizeDescription(description),
+                ParseBoolValue,
+                OptionalValue<bool>.Some(false)
+            )
+        );
+    }
+
     public OptionalArgument<T> AddOption<T>(string name, string? description = null)
-        where T : ISpanParsable<T> => AddOption<T>(name, parser: T.TryParse, description);
+        where T : ISpanParsable<T> => AddOption<T>(name, T.TryParse, description);
 
     public Argument<T> AddOption<T>(string name, T defaultValue, string? description = null)
-        where T : ISpanParsable<T> => AddOption(name, parser: T.TryParse, defaultValue, description);
+        where T : ISpanParsable<T> => AddOption(name, T.TryParse, defaultValue, description);
 
     public OptionalArgument<T> AddOption<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
 
-        var definition = ArgumentDefinition.CreateOption<T>(
-            NormalizeOptionName(name),
-            description,
-            parser,
-            hasDefaultValue: false,
-            default!
+        return RegisterNamedArgument(
+            new OptionalArgument<T>(_owner, NormalizeOptionName(name), NormalizeDescription(description), parser)
         );
-        RegisterNamedDefinition(definition);
-        return new OptionalArgument<T>(_owner, definition);
     }
 
     public Argument<T> AddOption<T>(
@@ -50,65 +59,38 @@ public sealed class SimpleArgumentParser(string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
 
-        var definition = ArgumentDefinition.CreateOption<T>(
-            NormalizeOptionName(name),
-            description,
-            parser,
-            hasDefaultValue: true,
-            defaultValue
+        return RegisterNamedArgument(
+            new Argument<T>(
+                _owner,
+                ArgumentKind.Option,
+                NormalizeOptionName(name),
+                NormalizeDescription(description),
+                parser,
+                OptionalValue<T>.Some(defaultValue)
+            )
         );
-        RegisterNamedDefinition(definition);
-        return new Argument<T>(_owner, definition);
     }
 
-    public Argument<bool> AddFlag(string name, string? description = null)
-    {
-        var definition = ArgumentDefinition.CreateFlag(NormalizeOptionName(name), description);
-        RegisterNamedDefinition(definition);
-        return new Argument<bool>(_owner, definition);
-    }
-
-    public OptionalArgument<T> AddPositional<T>(string name, string? description = null)
-        where T : ISpanParsable<T>
-    {
-        var definition = ArgumentDefinition.CreateOption<T>(
-            NormalizePositionalName(name),
-            description,
-            T.TryParse,
-            hasDefaultValue: false,
-            default!
-        );
-        _positionalsInOrder.Add(definition);
-        return new OptionalArgument<T>(_owner, definition);
-    }
+    public Argument<T> AddPositional<T>(string name, string? description = null)
+        where T : ISpanParsable<T> => AddPositional<T>(name, T.TryParse, description);
 
     public Argument<T> AddPositional<T>(string name, T defaultValue, string? description = null)
-        where T : ISpanParsable<T>
-    {
-        var definition = ArgumentDefinition.CreatePositional<T>(
-            NormalizePositionalName(name),
-            description,
-            T.TryParse,
-            hasDefaultValue: true,
-            defaultValue
-        );
-        _positionalsInOrder.Add(definition);
-        return new Argument<T>(_owner, definition);
-    }
+        where T : ISpanParsable<T> => AddPositional(name, T.TryParse, defaultValue, description);
 
     public Argument<T> AddPositional<T>(string name, ArgumentValueParser<T> parser, string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
 
-        var definition = ArgumentDefinition.CreatePositional<T>(
-            NormalizePositionalName(name),
-            description,
-            parser,
-            hasDefaultValue: false,
-            default!
+        return RegisterPositionalArgument(
+            new Argument<T>(
+                _owner,
+                ArgumentKind.Positional,
+                NormalizePositionalName(name),
+                NormalizeDescription(description),
+                parser,
+                OptionalValue<T>.None
+            )
         );
-        _positionalsInOrder.Add(definition);
-        return new Argument<T>(_owner, definition);
     }
 
     public Argument<T> AddPositional<T>(
@@ -120,15 +102,16 @@ public sealed class SimpleArgumentParser(string? description = null)
     {
         ArgumentNullException.ThrowIfNull(parser);
 
-        var definition = ArgumentDefinition.CreatePositional<T>(
-            NormalizePositionalName(name),
-            description,
-            parser,
-            hasDefaultValue: true,
-            defaultValue
+        return RegisterPositionalArgument(
+            new Argument<T>(
+                _owner,
+                ArgumentKind.Positional,
+                NormalizePositionalName(name),
+                NormalizeDescription(description),
+                parser,
+                OptionalValue<T>.Some(defaultValue)
+            )
         );
-        _positionalsInOrder.Add(definition);
-        return new Argument<T>(_owner, definition);
     }
 
     public ParseResult Parse(string[] args)
@@ -136,7 +119,7 @@ public sealed class SimpleArgumentParser(string? description = null)
         ArgumentNullException.ThrowIfNull(args);
 
         List<ParseDiagnostic>? diagnostics = null;
-        var values = CreateDefaultValues();
+        var slots = CreateResultSlots();
         var positionalIndex = 0;
         var stopParsingOptions = false;
 
@@ -155,8 +138,8 @@ public sealed class SimpleArgumentParser(string? description = null)
                 && TryGetOptionToken(token, out var optionName, out var explicitValue, out var hasExplicitValue)
             )
             {
-                var definition = FindNamedDefinition(optionName);
-                if (definition is null)
+                var argument = FindNamedArgument(optionName);
+                if (argument is null)
                 {
                     var optionNameString = optionName.ToString();
                     AddDiagnostic(
@@ -170,25 +153,22 @@ public sealed class SimpleArgumentParser(string? description = null)
                     continue;
                 }
 
-                if (definition.Kind is ArgumentDefinitionKind.Flag)
+                if (argument.Kind is ArgumentKind.Flag)
                 {
-                    var flagValue = true;
+                    ReadOnlySpan<char> flagValue = "true";
 
                     if (hasExplicitValue)
                     {
-                        if (!TryParseBool(explicitValue, out flagValue))
-                        {
-                            AddInvalidValueDiagnostic(ref diagnostics, definition.Name, explicitValue, typeof(bool));
-                            continue;
-                        }
+                        flagValue = explicitValue;
                     }
-                    else if (i + 1 < args.Length && TryParseBool(args[i + 1].AsSpan(), out var nextFlagValue))
+                    else if (i + 1 < args.Length && TryParseBool(args[i + 1].AsSpan()))
                     {
-                        flagValue = nextFlagValue;
-                        i++;
+                        flagValue = args[++i].AsSpan();
                     }
 
-                    values[definition] = flagValue;
+                    if (!argument.TrySetValue(flagValue, FormatProvider, slots[argument.Slot]))
+                        AddInvalidValueDiagnostic(ref diagnostics, argument.Name, flagValue, argument.ValueTypeName);
+
                     continue;
                 }
 
@@ -200,8 +180,8 @@ public sealed class SimpleArgumentParser(string? description = null)
                             ref diagnostics,
                             new ParseDiagnostic(
                                 ParseDiagnosticKind.MissingValue,
-                                $"Option '--{definition.Name}' requires a value.",
-                                definition.Name
+                                $"Option '--{argument.Name}' requires a value.",
+                                argument.Name
                             )
                         );
                         continue;
@@ -210,31 +190,27 @@ public sealed class SimpleArgumentParser(string? description = null)
                     explicitValue = args[++i].AsSpan();
                 }
 
-                if (!definition.TryParseValue(explicitValue, FormatProvider, out var optionValue))
-                {
-                    AddInvalidValueDiagnostic(ref diagnostics, definition.Name, explicitValue, definition.ValueType);
-                    continue;
-                }
+                if (!argument.TrySetValue(explicitValue, FormatProvider, slots[argument.Slot]))
+                    AddInvalidValueDiagnostic(ref diagnostics, argument.Name, explicitValue, argument.ValueTypeName);
 
-                values[definition] = optionValue;
                 continue;
             }
 
-            ParsePositional(token, positionalIndex++, values, ref diagnostics);
+            ParsePositional(token, positionalIndex++, slots, ref diagnostics);
         }
 
         for (var index = positionalIndex; index < _positionalsInOrder.Count; index++)
         {
-            var definition = _positionalsInOrder[index];
-            if (definition.HasDefaultValue)
+            var argument = _positionalsInOrder[index];
+            if (argument.HasDefaultValue)
                 continue;
 
             AddDiagnostic(
                 ref diagnostics,
                 new ParseDiagnostic(
                     ParseDiagnosticKind.MissingPositional,
-                    $"Missing positional argument '{definition.Name}'.",
-                    definition.Name
+                    $"Missing positional argument '{argument.Name}'.",
+                    argument.Name
                 )
             );
         }
@@ -243,48 +219,54 @@ public sealed class SimpleArgumentParser(string? description = null)
             _owner,
             diagnostics is null ? ParseStatus.Success : ParseStatus.Failed,
             diagnostics ?? [],
-            values
+            slots
         );
     }
 
-    private void RegisterNamedDefinition(ArgumentDefinition definition)
+    private ResultSlot[] CreateResultSlots()
     {
-        if (!_namedDefinitions.TryAdd(definition.Name, definition))
+        var slots = new ResultSlot[_arguments.Count];
+
+        for (var index = 0; index < _arguments.Count; index++)
+            slots[index] = _arguments[index].CreateResultSlot();
+
+        return slots;
+    }
+
+    private TArgument RegisterNamedArgument<TArgument>(TArgument argument)
+        where TArgument : IArgument
+    {
+        if (!_namedArgumentNames.Add(argument.Name))
             throw new ArgumentException(
-                $"An option named '--{definition.Name}' has already been added.",
-                nameof(definition)
+                $"An option named '--{argument.Name}' has already been added.",
+                nameof(argument)
             );
 
-        _namedDefinitionsInOrder.Add(definition);
+        RegisterArgument(argument);
+        _namedArgumentsInOrder.Add(argument);
+        return argument;
     }
 
-    private Dictionary<ArgumentDefinition, object?> CreateDefaultValues()
+    private TArgument RegisterPositionalArgument<TArgument>(TArgument argument)
+        where TArgument : IArgument
     {
-        var values = new Dictionary<ArgumentDefinition, object?>(
-            _namedDefinitionsInOrder.Count + _positionalsInOrder.Count
-        );
-
-        foreach (var definition in _namedDefinitionsInOrder)
-        {
-            if (definition.HasDefaultValue)
-                values[definition] = definition.DefaultValue;
-        }
-
-        foreach (var definition in _positionalsInOrder)
-        {
-            if (definition.HasDefaultValue)
-                values[definition] = definition.DefaultValue;
-        }
-
-        return values;
+        RegisterArgument(argument);
+        _positionalsInOrder.Add(argument);
+        return argument;
     }
 
-    private ArgumentDefinition? FindNamedDefinition(ReadOnlySpan<char> optionName)
+    private void RegisterArgument(IArgument argument)
     {
-        foreach (var definition in _namedDefinitionsInOrder)
+        argument.Slot = _arguments.Count;
+        _arguments.Add(argument);
+    }
+
+    private IArgument? FindNamedArgument(ReadOnlySpan<char> optionName)
+    {
+        foreach (var argument in _namedArgumentsInOrder)
         {
-            if (optionName.Equals(definition.Name.AsSpan(), StringComparison.OrdinalIgnoreCase))
-                return definition;
+            if (optionName.Equals(argument.Name.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                return argument;
         }
 
         return null;
@@ -293,7 +275,7 @@ public sealed class SimpleArgumentParser(string? description = null)
     private void ParsePositional(
         ReadOnlySpan<char> value,
         int positionalIndex,
-        Dictionary<ArgumentDefinition, object?> values,
+        ResultSlot[] slots,
         ref List<ParseDiagnostic>? diagnostics
     )
     {
@@ -309,28 +291,23 @@ public sealed class SimpleArgumentParser(string? description = null)
             return;
         }
 
-        var definition = _positionalsInOrder[positionalIndex];
-        if (!definition.TryParseValue(value, FormatProvider, out var positionalValue))
-        {
-            AddInvalidValueDiagnostic(ref diagnostics, definition.Name, value, definition.ValueType);
-            return;
-        }
-
-        values[definition] = positionalValue;
+        var argument = _positionalsInOrder[positionalIndex];
+        if (!argument.TrySetValue(value, FormatProvider, slots[argument.Slot]))
+            AddInvalidValueDiagnostic(ref diagnostics, argument.Name, value, argument.ValueTypeName);
     }
 
     private static void AddInvalidValueDiagnostic(
         ref List<ParseDiagnostic>? diagnostics,
         string argumentName,
         ReadOnlySpan<char> value,
-        Type valueType
+        string valueTypeName
     )
     {
         AddDiagnostic(
             ref diagnostics,
             new ParseDiagnostic(
                 ParseDiagnosticKind.InvalidValue,
-                $"Argument '{argumentName}' has value '{value.ToString()}', which could not be parsed as {valueType.Name}.",
+                $"Argument '{argumentName}' has value '{value.ToString()}', which could not be parsed as {valueTypeName}.",
                 argumentName
             )
         );
@@ -373,7 +350,10 @@ public sealed class SimpleArgumentParser(string? description = null)
     private static bool LooksLikeOption(ReadOnlySpan<char> value) =>
         value.StartsWith("--", StringComparison.Ordinal) && value.Length > 2;
 
-    private static bool TryParseBool(ReadOnlySpan<char> value, out bool result) => bool.TryParse(value, out result);
+    private static bool TryParseBool(ReadOnlySpan<char> value) => bool.TryParse(value, out _);
+
+    private static bool ParseBoolValue(ReadOnlySpan<char> value, IFormatProvider? provider, out bool result) =>
+        bool.TryParse(value, out result);
 
     private static string NormalizeOptionName(string name)
     {
@@ -401,4 +381,7 @@ public sealed class SimpleArgumentParser(string? description = null)
 
         return name;
     }
+
+    private static string? NormalizeDescription(string? description) =>
+        string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

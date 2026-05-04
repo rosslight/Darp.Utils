@@ -1,9 +1,8 @@
 namespace Darp.Utils.SimpleArgumentParser;
 
-#pragma warning disable CS1591
 public static class ConsoleCancellation
 {
-    private static readonly object SyncRoot = new();
+    private static readonly Lock SyncRoot = new();
     private static CancellationTokenSource? _cancelSource;
     private static bool _handlerRegistered;
 
@@ -17,7 +16,7 @@ public static class ConsoleCancellation
             _cancelSource = new CancellationTokenSource();
             if (!_handlerRegistered)
             {
-                Console.CancelKeyPress += OnCancelKeyPress;
+                Console.CancelKeyPress += static (_, e) => OnCancelKeyPress(e);
                 _handlerRegistered = true;
             }
 
@@ -25,7 +24,7 @@ public static class ConsoleCancellation
         }
     }
 
-    private static void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private static void OnCancelKeyPress(ConsoleCancelEventArgs e)
     {
         lock (SyncRoot)
         {
@@ -39,4 +38,3 @@ public static class ConsoleCancellation
         }
     }
 }
-#pragma warning restore CS1591

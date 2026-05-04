@@ -1,23 +1,72 @@
 namespace Darp.Utils.SimpleArgumentParser;
 
-public sealed class Argument<T> : IArgumentHandle
+public sealed class Argument<T> : IArgument
 {
-    private readonly object _owner;
-    private readonly ArgumentDefinition _definition;
+    private readonly ParserIdentity _owner;
+    private readonly ArgumentKind _kind;
+    private readonly SimpleArgumentParser.ArgumentValueParser<T> _parser;
+    private readonly OptionalValue<T> _defaultValue;
+    private int _slot = -1;
 
-    internal Argument(object owner, ArgumentDefinition definition)
+    internal Argument(
+        ParserIdentity owner,
+        ArgumentKind kind,
+        string name,
+        string? description,
+        SimpleArgumentParser.ArgumentValueParser<T> parser,
+        OptionalValue<T> defaultValue
+    )
     {
         _owner = owner;
-        _definition = definition;
+        _kind = kind;
+        Name = name;
+        Description = description;
+        _parser = parser;
+        _defaultValue = defaultValue;
     }
 
-    public string Name => _definition.Name;
+    public string Name { get; }
 
-    public string? Description => _definition.Description;
+    public string? Description { get; }
 
-    object IArgumentHandle.Owner => _owner;
+    ParserIdentity IArgument.Owner => _owner;
 
-    ArgumentDefinition IArgumentHandle.Definition => _definition;
+    int IArgument.Slot
+    {
+        get => _slot;
+        set => _slot = value;
+    }
 
-    internal ArgumentDefinition Definition => _definition;
+    ArgumentKind IArgument.Kind => _kind;
+
+    bool IArgument.HasDefaultValue => _defaultValue.HasValue;
+
+    string IArgument.ValueTypeName => typeof(T).Name;
+
+    ResultSlot IArgument.CreateResultSlot()
+    {
+        var slot = new ResultSlot<T>();
+        if (_defaultValue.HasValue)
+            slot.Value = _defaultValue;
+        return slot;
+    }
+
+    bool IArgument.TrySetValue(ReadOnlySpan<char> value, IFormatProvider? provider, ResultSlot slot)
+    {
+        if (!_parser(value, provider, out var result))
+            return false;
+
+        GetTypedSlot(slot).Value = OptionalValue<T>.Some(result);
+        return true;
+    }
+
+    internal T GetValue(ResultSlot[] slots) => GetTypedSlot(slots[_slot]).Value.Value;
+
+    private static ResultSlot<T> GetTypedSlot(ResultSlot slot)
+    {
+        if (slot is ResultSlot<T> typedSlot)
+            return typedSlot;
+
+        throw new InvalidOperationException("The result slot does not match the argument type.");
+    }
 }

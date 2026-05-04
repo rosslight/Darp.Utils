@@ -1,23 +1,21 @@
 namespace Darp.Utils.SimpleArgumentParser;
 
-using System.Diagnostics.CodeAnalysis;
-
 public sealed class ParseResult
 {
-    private readonly object _owner;
-    private readonly Dictionary<ArgumentDefinition, object?> _values;
+    private readonly ParserIdentity _owner;
+    private readonly ResultSlot[] _slots;
 
     internal ParseResult(
-        object owner,
+        ParserIdentity owner,
         ParseStatus status,
         IReadOnlyList<ParseDiagnostic> diagnostics,
-        Dictionary<ArgumentDefinition, object?> values
+        ResultSlot[] slots
     )
     {
         _owner = owner;
         Status = status;
         Diagnostics = diagnostics;
-        _values = values;
+        _slots = slots;
     }
 
     public ParseStatus Status { get; }
@@ -28,35 +26,17 @@ public sealed class ParseResult
     {
         ArgumentNullException.ThrowIfNull(argument);
         ValidateArgumentAccess(argument);
-        return TryGetValue<T>(argument.Definition, out var value) ? value! : default!;
+        return argument.GetValue(_slots);
     }
 
     public T? GetValue<T>(OptionalArgument<T> argument)
     {
         ArgumentNullException.ThrowIfNull(argument);
         ValidateArgumentAccess(argument);
-        return TryGetValue<T>(argument.Definition, out var value) ? value : default;
+        return argument.GetValue(_slots);
     }
 
-    private bool TryGetValue<T>(ArgumentDefinition definition, [MaybeNull] out T value)
-    {
-        if (_values.TryGetValue(definition, out var rawValue))
-        {
-            if (rawValue is null)
-            {
-                value = default;
-                return true;
-            }
-
-            value = (T)rawValue;
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-
-    private void ValidateArgumentAccess(IArgumentHandle argument)
+    private void ValidateArgumentAccess(IArgument argument)
     {
         if (Status != ParseStatus.Success)
             throw new InvalidOperationException(
@@ -65,5 +45,11 @@ public sealed class ParseResult
 
         if (!ReferenceEquals(argument.Owner, _owner))
             throw new ArgumentException("The argument does not belong to this parse result.", nameof(argument));
+
+        if (argument.Slot < 0 || argument.Slot >= _slots.Length)
+            throw new ArgumentException(
+                "The argument was not registered when this parse result was created.",
+                nameof(argument)
+            );
     }
 }

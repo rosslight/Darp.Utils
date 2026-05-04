@@ -1,23 +1,60 @@
 namespace Darp.Utils.SimpleArgumentParser;
 
-public sealed class OptionalArgument<T> : IArgumentHandle
+public sealed class OptionalArgument<T> : IArgument
 {
-    private readonly object _owner;
-    private readonly ArgumentDefinition _definition;
+    private readonly ParserIdentity _owner;
+    private readonly SimpleArgumentParser.ArgumentValueParser<T> _parser;
+    private int _slot = -1;
 
-    internal OptionalArgument(object owner, ArgumentDefinition definition)
+    internal OptionalArgument(
+        ParserIdentity owner,
+        string name,
+        string? description,
+        SimpleArgumentParser.ArgumentValueParser<T> parser
+    )
     {
         _owner = owner;
-        _definition = definition;
+        Name = name;
+        Description = description;
+        _parser = parser;
     }
 
-    public string Name => _definition.Name;
+    public string Name { get; }
 
-    public string? Description => _definition.Description;
+    public string? Description { get; }
 
-    object IArgumentHandle.Owner => _owner;
+    ParserIdentity IArgument.Owner => _owner;
 
-    ArgumentDefinition IArgumentHandle.Definition => _definition;
+    int IArgument.Slot
+    {
+        get => _slot;
+        set => _slot = value;
+    }
 
-    internal ArgumentDefinition Definition => _definition;
+    ArgumentKind IArgument.Kind => ArgumentKind.Option;
+
+    bool IArgument.HasDefaultValue => false;
+
+    string IArgument.ValueTypeName => typeof(T).Name;
+
+    ResultSlot IArgument.CreateResultSlot() => new ResultSlot<T>();
+
+    bool IArgument.TrySetValue(ReadOnlySpan<char> value, IFormatProvider? provider, ResultSlot slot)
+    {
+        if (!_parser(value, provider, out var result))
+            return false;
+
+        GetTypedSlot(slot).Value = OptionalValue<T>.Some(result);
+        return true;
+    }
+
+    internal T? GetValue(ResultSlot[] slots) => GetTypedSlot(slots[_slot]).Value.GetValueOrDefault();
+
+    private static ResultSlot<T> GetTypedSlot(ResultSlot slot)
+    {
+        if (slot is ResultSlot<T> typedSlot)
+            return typedSlot;
+
+        throw new InvalidOperationException("The result slot does not match the argument type.");
+    }
 }
