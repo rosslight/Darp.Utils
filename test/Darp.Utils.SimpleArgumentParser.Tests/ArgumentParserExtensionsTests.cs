@@ -2,15 +2,14 @@ namespace Darp.Utils.SimpleArgumentParser.Tests;
 
 using Shouldly;
 using Xunit;
-using Parser = Darp.Utils.SimpleArgumentParser.SimpleArgumentParser;
 
-public sealed class SimpleArgumentParserExtensionsTests
+public sealed class ArgumentParserExtensionsTests
 {
     [Fact]
     public void AddNamedOptionalOverload_UsesISpanParsableParser()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<int> count = parser.AddNamed<int>("--count");
 
         // Act
@@ -24,7 +23,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void AddRequiredNamedOverload_UsesISpanParsableParser()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<Guid> id = parser.AddRequiredNamed<Guid>("--id");
 
         // Act
@@ -38,7 +37,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void AddNamedDefaultOverload_UsesISpanParsableParser()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<bool> enabled = parser.AddNamed("--enabled", false);
 
         // Act
@@ -52,7 +51,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void AddRequiredPositionalOverload_UsesISpanParsableParser()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<DateTimeOffset> timestamp = parser.AddRequiredPositional<DateTimeOffset>("timestamp");
 
         // Act
@@ -66,7 +65,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void AddPositionalOptionalOverload_UsesISpanParsableParser()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<string> value = parser.AddPositional<string>("value");
 
         // Act
@@ -80,7 +79,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void AddPositionalDefaultOverload_UsesISpanParsableParser()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddPositional("count", 42);
 
         // Act
@@ -94,7 +93,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void TryParseEnum_WhenValueMatchesEnumName_ReturnsTrue()
     {
         // Act
-        var success = SimpleArgumentParsers.TryParseEnum("X2", null, out SampleChoice result);
+        var success = ArgumentParsers.TryParseEnum("X2", null, out SampleChoice result);
 
         // Assert
         success.ShouldBeTrue();
@@ -105,7 +104,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void TryParseEnumIgnoreCase_WhenValueMatchesEnumName_ReturnsTrue()
     {
         // Act
-        var success = SimpleArgumentParsers.TryParseEnumIgnoreCase("x2", null, out SampleChoice result);
+        var success = ArgumentParsers.TryParseEnumIgnoreCase("x2", null, out SampleChoice result);
 
         // Assert
         success.ShouldBeTrue();
@@ -116,7 +115,7 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void ParseOrExit_WhenParseSucceeds_ReturnsResult()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddRequiredPositional<int>("count");
 
         // Act

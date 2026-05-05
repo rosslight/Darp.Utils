@@ -1,11 +1,10 @@
 namespace Darp.Utils.SimpleArgumentParser.Tests;
 
 using Shouldly;
-using Parser = Darp.Utils.SimpleArgumentParser.SimpleArgumentParser;
 
 internal static class ParserTestHelpers
 {
-    internal static ParseResult ShouldParseSuccessfully(this Parser parser, string[] args)
+    internal static ParseResult ShouldParseSuccessfully(this ArgumentParser parser, string[] args)
     {
         var success = parser.TryParse(args, out ParseResult? result, out string? error);
 
@@ -15,7 +14,7 @@ internal static class ParserTestHelpers
         return result;
     }
 
-    internal static void ShouldFailWith(this Parser parser, string[] args, string expectedError)
+    internal static void ShouldFailWith(this ArgumentParser parser, string[] args, string expectedError)
     {
         var success = parser.TryParse(args, out ParseResult? result, out string? error);
 

@@ -2,7 +2,6 @@ namespace Darp.Utils.SimpleArgumentParser.Tests;
 
 using Shouldly;
 using Xunit;
-using Parser = Darp.Utils.SimpleArgumentParser.SimpleArgumentParser;
 
 public sealed class SimpleArgumentParserRegistrationTests
 {
@@ -14,7 +13,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void Constructor_NormalizesDescription(string? description, string? expectedDescription)
     {
         // Arrange & Act
-        var parser = new Parser(description);
+        var parser = new ArgumentParser(description);
 
         // Assert
         parser.Description.ShouldBe(expectedDescription);
@@ -26,7 +25,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddNamed_NormalizesDescription(string description, string? expectedDescription)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act
         OptionalArgument<int> argument = parser.AddNamed<int>("--count", description);
@@ -41,7 +40,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddNamed_NormalizesOptionName(string registeredName)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<int> count = parser.AddNamed<int>(registeredName);
 
         // Act
@@ -69,7 +68,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddFlag_WhenNameIsInvalid_ThrowsArgumentException(string? name)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         Should.Throw<ArgumentException>(() => parser.AddFlag(name!));
@@ -91,7 +90,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddNamed_WhenNameIsInvalid_ThrowsArgumentException(string? name)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         Should.Throw<ArgumentException>(() => parser.AddNamed<int>(name!));
@@ -113,7 +112,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddRequiredNamed_WhenNameIsInvalid_ThrowsArgumentException(string? name)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         Should.Throw<ArgumentException>(() => parser.AddRequiredNamed<int>(name!));
@@ -125,7 +124,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddPositional_WhenNameStartsWithDash_ThrowsArgumentException(string name)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         Should.Throw<ArgumentException>(() => parser.AddPositional<string>(name, ParserTestHelpers.ParseString));
@@ -138,7 +137,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddPositional_WhenNameIsEmpty_ThrowsArgumentException(string? name)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         Should.Throw<ArgumentException>(() => parser.AddPositional<string>(name!, ParserTestHelpers.ParseString));
@@ -148,7 +147,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddRequiredPositional_WhenAddedAfterDefaultedPositional_ThrowsArgumentException()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddPositional("config", "default.cfg");
 
         // Act
@@ -165,7 +164,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddRequiredPositional_WhenAddedAfterOptionalPositional_ThrowsArgumentException()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddPositional<string>("project", ParserTestHelpers.ParseString);
 
         // Act
@@ -182,7 +181,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddNamed_WhenExactDuplicateOptionNameIsRegistered_ThrowsArgumentException()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddNamed<int>("--count");
 
         // Act & Assert
@@ -193,7 +192,7 @@ public sealed class SimpleArgumentParserRegistrationTests
     public void AddNamed_WhenOptionNamesOnlyDifferByCase_RegistersSeparateArguments()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act
         OptionalArgument<int> lowerCount = parser.AddNamed<int>("--count");

@@ -10,7 +10,7 @@ public sealed class OptionalArgument<T> : IArgument
 {
     private readonly ParserIdentity _owner;
     private readonly ArgumentKind _kind;
-    private readonly SimpleArgumentParser.ArgumentValueParser<T> _parser;
+    private readonly ArgumentParser.ArgumentValueParser<T> _parser;
     private int _slot = -1;
 
     internal OptionalArgument(
@@ -18,7 +18,7 @@ public sealed class OptionalArgument<T> : IArgument
         ArgumentKind kind,
         string name,
         string? description,
-        SimpleArgumentParser.ArgumentValueParser<T> parser
+        ArgumentParser.ArgumentValueParser<T> parser
     )
     {
         _owner = owner;

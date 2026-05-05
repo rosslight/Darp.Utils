@@ -2,7 +2,6 @@ namespace Darp.Utils.SimpleArgumentParser.Tests;
 
 using Shouldly;
 using Xunit;
-using Parser = Darp.Utils.SimpleArgumentParser.SimpleArgumentParser;
 
 public sealed class ParseResultTests
 {
@@ -10,7 +9,7 @@ public sealed class ParseResultTests
     public void GetValue_ReturnsArgumentAndOptionalArgumentValues()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddRequiredNamed<int>("--count");
         OptionalArgument<string> name = parser.AddNamed<string>("--name", ParserTestHelpers.ParseString);
 
@@ -26,7 +25,7 @@ public sealed class ParseResultTests
     public void GetValue_WhenOptionalArgumentIsAbsent_ReturnsNull()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<string> name = parser.AddNamed<string>("--name", ParserTestHelpers.ParseString);
 
         // Act
@@ -40,7 +39,7 @@ public sealed class ParseResultTests
     public void GetValue_WhenOptionalValueTypeArgumentIsAbsent_ReturnsNull()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<int> count = parser.AddNamed<int>("--count");
 
         // Act
@@ -54,7 +53,7 @@ public sealed class ParseResultTests
     public void GetValue_WhenArgumentIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         ParseResult result = parser.ShouldParseSuccessfully([]);
 
         // Act & Assert
@@ -66,10 +65,10 @@ public sealed class ParseResultTests
     public void GetValue_WhenArgumentBelongsToAnotherParser_ThrowsArgumentException()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         ParseResult result = parser.ShouldParseSuccessfully([]);
 
-        var otherParser = new Parser();
+        var otherParser = new ArgumentParser();
         Argument<int> otherCount = otherParser.AddNamed("--count", 42);
 
         // Act & Assert
@@ -80,7 +79,7 @@ public sealed class ParseResultTests
     public void GetValue_WhenArgumentWasAddedAfterParse_ThrowsArgumentException()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         ParseResult result = parser.ShouldParseSuccessfully([]);
         Argument<int> count = parser.AddNamed("--count", 42);
 

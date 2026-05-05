@@ -5,7 +5,7 @@ using System.Diagnostics;
 /// <summary>
 /// Convenience methods for common parser registrations and process-exit handling.
 /// </summary>
-public static class SimpleArgumentParserExtensions
+public static class ArgumentParserExtensions
 {
     /// <summary>
     /// Adds an optional named option parsed via <see cref="ISpanParsable{TSelf}"/>.
@@ -15,11 +15,7 @@ public static class SimpleArgumentParserExtensions
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle whose result value is <see langword="null"/> when the option is absent.</returns>
-    public static OptionalArgument<T> AddNamed<T>(
-        this SimpleArgumentParser parser,
-        string name,
-        string? description = null
-    )
+    public static OptionalArgument<T> AddNamed<T>(this ArgumentParser parser, string name, string? description = null)
         where T : ISpanParsable<T>
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -34,11 +30,7 @@ public static class SimpleArgumentParserExtensions
     /// <param name="description">Optional help text for the option.</param>
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed value.</returns>
-    public static Argument<T> AddRequiredNamed<T>(
-        this SimpleArgumentParser parser,
-        string name,
-        string? description = null
-    )
+    public static Argument<T> AddRequiredNamed<T>(this ArgumentParser parser, string name, string? description = null)
         where T : ISpanParsable<T>
     {
         ArgumentNullException.ThrowIfNull(parser);
@@ -55,7 +47,7 @@ public static class SimpleArgumentParserExtensions
     /// <typeparam name="T">The parsed value type.</typeparam>
     /// <returns>An argument handle used to read the parsed or default value.</returns>
     public static Argument<T> AddNamed<T>(
-        this SimpleArgumentParser parser,
+        this ArgumentParser parser,
         string name,
         T defaultValue,
         string? description = null
@@ -76,7 +68,7 @@ public static class SimpleArgumentParserExtensions
     /// <returns>An argument handle used to read the parsed value.</returns>
     /// <remarks>Required positional arguments must be added before optional or defaulted positional arguments.</remarks>
     public static Argument<T> AddRequiredPositional<T>(
-        this SimpleArgumentParser parser,
+        this ArgumentParser parser,
         string name,
         string? description = null
     )
@@ -96,7 +88,7 @@ public static class SimpleArgumentParserExtensions
     /// <returns>An argument handle whose result value is <see langword="null"/> when the token is absent.</returns>
     /// <remarks>Optional positional arguments must be added after all required positional arguments.</remarks>
     public static OptionalArgument<T> AddPositional<T>(
-        this SimpleArgumentParser parser,
+        this ArgumentParser parser,
         string name,
         string? description = null
     )
@@ -117,7 +109,7 @@ public static class SimpleArgumentParserExtensions
     /// <returns>An argument handle used to read the parsed or default value.</returns>
     /// <remarks>Defaulted positional arguments must be added after all required positional arguments.</remarks>
     public static Argument<T> AddPositional<T>(
-        this SimpleArgumentParser parser,
+        this ArgumentParser parser,
         string name,
         T defaultValue,
         string? description = null
@@ -134,7 +126,7 @@ public static class SimpleArgumentParserExtensions
     /// <param name="parser">The parser to use.</param>
     /// <param name="args">The command-line tokens, usually from <c>Main</c>.</param>
     /// <returns>The parsed result when parsing succeeds.</returns>
-    public static ParseResult ParseOrExit(this SimpleArgumentParser parser, string[] args)
+    public static ParseResult ParseOrExit(this ArgumentParser parser, string[] args)
     {
         ArgumentNullException.ThrowIfNull(parser);
         if (parser.TryParse(args, out ParseResult? result, out var error))

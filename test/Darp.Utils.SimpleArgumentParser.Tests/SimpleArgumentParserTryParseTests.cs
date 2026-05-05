@@ -2,7 +2,6 @@ namespace Darp.Utils.SimpleArgumentParser.Tests;
 
 using Shouldly;
 using Xunit;
-using Parser = Darp.Utils.SimpleArgumentParser.SimpleArgumentParser;
 
 public sealed class SimpleArgumentParserTryParseTests
 {
@@ -12,7 +11,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_NamedArgument_ReturnsParsedValue(string[] args, int expectedValue)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<int> count = parser.AddNamed<int>("--count");
 
         // Act
@@ -26,7 +25,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_NamedArgument_MatchesOptionCaseSensitively()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<int> lowerCount = parser.AddNamed<int>("--count");
         OptionalArgument<int> upperCount = parser.AddNamed<int>("--COUNT");
 
@@ -44,7 +43,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_NamedBoolArgument_ReturnsParsedValue(string[] args, bool expectedValue)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<bool> verbose = parser.AddNamed<bool>("--verbose");
 
         // Act
@@ -60,7 +59,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_DefaultNamedArgument_ReturnsExpectedValue(string[] args, int expectedValue)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddNamed("--count", 42);
 
         // Act
@@ -76,7 +75,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_DefaultPositionalArgument_ReturnsExpectedValue(string[] args, int expectedValue)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddPositional("count", 42);
 
         // Act
@@ -90,7 +89,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_RequiredNamedArgument_ReturnsParsedValue()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddRequiredNamed<int>("--count");
 
         // Act
@@ -104,7 +103,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_RequiredPositionalArgument_ReturnsParsedValue()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddRequiredPositional<int>("count");
 
         // Act
@@ -118,7 +117,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_RequiredPositionalFollowedByDefaultedPositional_WithOneToken_UsesDefault()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<string> input = parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString);
         Argument<string> config = parser.AddPositional("config", ParserTestHelpers.ParseString, "default.cfg");
 
@@ -134,7 +133,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_RequiredPositionalFollowedByOptionalPositional_WithOneToken_ReturnsNullForOptional()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<string> source = parser.AddRequiredPositional<string>("source", ParserTestHelpers.ParseString);
         OptionalArgument<string> destination = parser.AddPositional<string>(
             "destination",
@@ -153,7 +152,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_OptionalNamedArgument_WhenAbsent_ReturnsNull()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<string> value = parser.AddNamed<string>("--value", ParserTestHelpers.ParseString);
 
         // Act
@@ -167,7 +166,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_OptionalNamedValueTypeArgument_WhenAbsent_ReturnsNull()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<int> value = parser.AddNamed<int>("--value");
 
         // Act
@@ -181,7 +180,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_OptionalPositionalArgument_WhenAbsent_ReturnsNull()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<string> value = parser.AddPositional<string>("value", ParserTestHelpers.ParseString);
 
         // Act
@@ -195,7 +194,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_OptionalPositionalValueTypeArgument_WhenAbsent_ReturnsNull()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         OptionalArgument<int> value = parser.AddPositional<int>("value");
 
         // Act
@@ -211,7 +210,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_Flag_ReturnsExpectedValue(string[] args, bool expectedValue)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<bool> verbose = parser.AddFlag("--verbose");
 
         // Act
@@ -225,7 +224,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_FlagFollowedByToken_DoesNotConsumePositionalToken()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<bool> verbose = parser.AddFlag("--verbose");
         Argument<string> path = parser.AddRequiredPositional<string>("path", ParserTestHelpers.ParseString);
 
@@ -241,7 +240,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_Positionals_ReturnValuesInRegistrationOrder()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<string> first = parser.AddRequiredPositional<string>("first", ParserTestHelpers.ParseString);
         Argument<int> second = parser.AddRequiredPositional<int>("second");
 
@@ -259,7 +258,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_StopParsingOptions_TreatsFollowingOptionTokenAsPositional(string token)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<string> value = parser.AddRequiredPositional<string>("value", ParserTestHelpers.ParseString);
 
         // Act
@@ -273,7 +272,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_MixedNamedAndPositionalArguments_ReturnsExpectedValues()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<string> input = parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString);
         OptionalArgument<int> count = parser.AddNamed<int>("--count");
         Argument<bool> verbose = parser.AddFlag("--verbose");
@@ -293,7 +292,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenOptionIsUnknown_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         parser.ShouldFailWith(["--missing"], "Unknown option '--missing'.");
@@ -303,7 +302,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenOptionCaseDoesNotMatchRegistration_ReturnsUnknownOptionError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddNamed<int>("--count");
 
         // Act & Assert
@@ -317,7 +316,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenTokenUsesUnsupportedShortOption_ReturnsUnknownOptionError(string arg)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         parser.ShouldFailWith([arg], $"Unknown option '{arg}'.");
@@ -327,7 +326,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenShortOptionTokenCouldBePositional_ReturnsUnknownOptionError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredPositional<string>("path", ParserTestHelpers.ParseString);
 
         // Act & Assert
@@ -338,7 +337,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenNamedValueIsUnsupportedShortOption_ReturnsMissingValueError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredNamed<int>("--count");
 
         // Act & Assert
@@ -349,7 +348,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_NamedArgument_AcceptsNegativeNumberValue()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddRequiredNamed<int>("--count");
 
         // Act
@@ -363,7 +362,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_NamedArgument_AcceptsNegativeDecimalValue()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<double> amount = parser.AddRequiredNamed<double>("--amount");
 
         // Act
@@ -380,7 +379,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_NamedArgument_AcceptsNegativeFloatingPointFormats(string value, double expectedValue)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<double> amount = parser.AddRequiredNamed<double>("--amount");
 
         // Act
@@ -394,7 +393,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_PositionalArgument_AcceptsNegativeNumberValue()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<int> count = parser.AddRequiredPositional<int>("count");
 
         // Act
@@ -408,7 +407,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_PositionalArgument_AcceptsSingleDashValue()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         Argument<string> value = parser.AddRequiredPositional<string>("value", ParserTestHelpers.ParseString);
 
         // Act
@@ -422,7 +421,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenNamedValueIsMissingAtEnd_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredNamed<int>("--count");
 
         // Act & Assert
@@ -433,7 +432,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenNamedValueIsMissingBeforeOption_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredNamed<int>("--count");
         parser.AddFlag("--verbose");
 
@@ -445,7 +444,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenRequiredNamedArgumentIsMissing_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredNamed<int>("--count");
 
         // Act & Assert
@@ -456,7 +455,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenRequiredPositionalArgumentIsMissing_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredPositional<int>("count");
 
         // Act & Assert
@@ -467,7 +466,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenNamedValueIsInvalid_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredNamed<int>("--count");
 
         // Act & Assert
@@ -481,7 +480,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenPositionalValueIsInvalid_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddRequiredPositional<int>("count");
 
         // Act & Assert
@@ -498,7 +497,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenFlagHasExplicitValue_ReturnsError(string arg)
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddFlag("--verbose");
 
         // Act & Assert
@@ -509,7 +508,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenFlagIsFollowedByUnexpectedValue_ReturnsUnexpectedPositionalError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
         parser.AddFlag("--verbose");
 
         // Act & Assert
@@ -520,7 +519,7 @@ public sealed class SimpleArgumentParserTryParseTests
     public void TryParse_WhenPositionalArgumentIsUnexpected_ReturnsError()
     {
         // Arrange
-        var parser = new Parser();
+        var parser = new ArgumentParser();
 
         // Act & Assert
         parser.ShouldFailWith(["extra"], "Unexpected positional argument 'extra'.");

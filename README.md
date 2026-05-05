@@ -196,11 +196,11 @@ By default, every type that implements `ISpanParsable` can be parsed automatical
 After parsing, the values can be resolved from the `ParseResult` object. Optional arguments return nullable values.
 
 ```csharp
-var parser = new SimpleArgumentParser();
+var parser = new ArgumentParser();
 Argument<string> myNameArgument = parser.AddRequiredPositional<string>("myName");
 OptionalArgument<int> myAgeArgument = parser.AddPositional<int>("myAge");
 Argument<bool> isVerboseArgument = parser.AddFlag("--verbose");
-Argument<Size> isAwesomeArgument = parser.AddNamed("--size", parser: SimpleArgumentParsers.TryParseEnumIgnoreCase, defaultValue: Size.Medium);
+Argument<Size> isAwesomeArgument = parser.AddNamed("--size", parser: ArgumentParsers.TryParseEnumIgnoreCase, defaultValue: Size.Medium);
 OptionalArgument<bool> livesInEuropeArgument = parser.AddNamed<bool>("--livesInEurope", parser: static (value, _, out result) =>
 {
     if (value is "y" or "yes")

@@ -38,7 +38,7 @@ public sealed class ParseResult
     /// <returns>The parsed value, or <see langword="null"/> when the argument was not supplied.</returns>
     /// <remarks>
     /// Optional reference-type arguments are read via
-    /// <see cref="SimpleArgumentParserExtensions.GetValue{T}(ParseResult, OptionalArgument{T})" />.
+    /// <see cref="ArgumentParserExtensions.GetValue{T}(ParseResult, OptionalArgument{T})" />.
     /// </remarks>
     /// <exception cref="ArgumentException">Thrown when the argument belongs to another parser or was registered after this result was created.</exception>
     public T? GetValue<T>(OptionalArgument<T> argument)

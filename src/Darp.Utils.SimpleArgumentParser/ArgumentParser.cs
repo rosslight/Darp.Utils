@@ -7,7 +7,7 @@ using System.Globalization;
 /// Parses command-line arguments into typed named and positional values.
 /// </summary>
 /// <param name="description">Optional text describing the command handled by this parser.</param>
-public sealed class SimpleArgumentParser(string? description = null)
+public sealed class ArgumentParser(string? description = null)
 {
     private static readonly IFormatProvider FormatProvider = CultureInfo.InvariantCulture;
 

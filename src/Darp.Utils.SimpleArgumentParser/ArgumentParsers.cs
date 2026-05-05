@@ -1,7 +1,7 @@
 namespace Darp.Utils.SimpleArgumentParser;
 
 /// <summary> A class that provides simple argument parsers </summary>
-public static class SimpleArgumentParsers
+public static class ArgumentParsers
 {
     /// <summary>
     /// Parses an enum value using the same delegate shape as parser registrations.
