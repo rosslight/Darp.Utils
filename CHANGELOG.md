@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0-preview.1](https://github.com/rosslight/Darp.Utils/compare/v2.0.0-preview...v2.0.0-preview.1) (2026-05-05)
+
+
+### Features
+
+* add simple argument parser ([#29](https://github.com/rosslight/Darp.Utils/issues/29)) ([23bdc09](https://github.com/rosslight/Darp.Utils/commit/23bdc09ca8f909fa35185939da146629b978c135))
+
 ## [2.0.0-preview](https://github.com/rosslight/Darp.Utils/compare/v1.20.0...v2.0.0-preview) (2026-04-29)
 
 
