@@ -170,3 +170,60 @@ var provider = new ServiceCollection()
     .BuildServiceProvider();
 var service = provider.GetRequiredService<ITestRailService>();
 ```
+
+## Darp.Utils.SimpleArgumentParser
+
+[![NuGet](https://img.shields.io/nuget/v/Darp.Utils.SimpleArgumentParser.svg)](https://www.nuget.org/packages/Darp.Utils.SimpleArgumentParser)
+[![Downloads](https://img.shields.io/nuget/dt/Darp.Utils.SimpleArgumentParser)](https://www.nuget.org/packages/Darp.Utils.SimpleArgumentParser)
+
+A simple argument parser for command line applications. Provides a simple, typed syntax for parsing command line arguments without a complex CLI configuration.
+
+It was created to have a simple argument parser that can be used for example scripts or single-command CLIs.
+
+Features:
+- Positional arguments
+- Named arguments (options)
+- Flags (`store_true`)
+- Required/default values
+- AOT/trimming friendly
+
+No goals:
+- Fully featured CLI framework. For this, please use e.g. [Spectre.Console.Cli](https://github.com/spectreconsole/spectre.console.cli) or [ConsoleAppFramework](https://github.com/Cysharp/ConsoleAppFramework).
+
+How to use:
+
+By default, every type that implements `ISpanParsable` can be parsed automatically. Other types have to provide a manual parser.
+After parsing, the values can be resolved from the `ParseResult` object. Optional arguments return nullable values.
+
+```csharp
+var parser = new SimpleArgumentParser();
+Argument<string> myNameArgument = parser.AddRequiredPositional<string>("myName");
+OptionalArgument<int> myAgeArgument = parser.AddPositional<int>("myAge");
+Argument<bool> isVerboseArgument = parser.AddFlag("--verbose");
+Argument<Size> isAwesomeArgument = parser.AddNamed("--size", parser: SimpleArgumentParsers.TryParseEnumIgnoreCase, defaultValue: Size.Medium);
+OptionalArgument<bool> livesInEuropeArgument = parser.AddNamed<bool>("--livesInEurope", parser: static (value, _, out result) =>
+{
+    if (value is "y" or "yes")
+    {
+        result = true;
+        return true;
+    }
+    result = false;
+    return false;
+});
+
+ParseResult result = parser.ParseOrExit(args);
+
+string myName = result.GetValue(myNameArgument);
+int? myAge = result.GetValue(myAgeArgument);
+bool isVerbose = result.GetValue(isVerboseArgument);
+Size isAwesome = result.GetValue(isAwesomeArgument);
+bool? livesInEurope = result.GetValue(livesInEuropeArgument);
+
+public enum Size
+{
+    Small,
+    Medium,
+    Large,
+}
+```

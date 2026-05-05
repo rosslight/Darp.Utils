@@ -129,20 +129,6 @@ public static class SimpleArgumentParserExtensions
     }
 
     /// <summary>
-    /// Gets the parsed value for an optional reference-type argument.
-    /// </summary>
-    /// <param name="result">The parse result to read from.</param>
-    /// <param name="argument">The argument handle returned when the argument was registered.</param>
-    /// <typeparam name="T">The parsed reference type.</typeparam>
-    /// <returns>The parsed value, or <see langword="null"/> when the argument was not supplied.</returns>
-    /// <exception cref="ArgumentException">Thrown when the argument belongs to another parser or was registered after this result was created.</exception>
-    public static T? GetValue<T>(this ParseResult result, OptionalArgument<T> argument)
-    {
-        ArgumentNullException.ThrowIfNull(result);
-        return result.GetOptionalValue(argument);
-    }
-
-    /// <summary>
     /// Parses the arguments, writes parse errors to <see cref="Console.Error"/>, and exits with code 1 on failure.
     /// </summary>
     /// <param name="parser">The parser to use.</param>
@@ -159,13 +145,16 @@ public static class SimpleArgumentParserExtensions
     }
 
     /// <summary>
-    /// Parses an enum value using the same delegate shape as parser registrations.
+    /// Gets the parsed value for an optional reference-type argument.
     /// </summary>
-    /// <param name="value">The token text to parse.</param>
-    /// <param name="_">Ignored format provider.</param>
-    /// <param name="result">The parsed enum value when parsing succeeds.</param>
-    /// <typeparam name="T">The enum value type.</typeparam>
-    /// <returns><see langword="true"/> when the value matched an enum name or numeric value.</returns>
-    public static bool TryParseEnum<T>(ReadOnlySpan<char> value, IFormatProvider? _, out T result)
-        where T : struct => Enum.TryParse(value, out result);
+    /// <param name="result">The parse result to read from.</param>
+    /// <param name="argument">The argument handle returned when the argument was registered.</param>
+    /// <typeparam name="T">The parsed reference type.</typeparam>
+    /// <returns>The parsed value, or <see langword="null"/> when the argument was not supplied.</returns>
+    /// <exception cref="ArgumentException">Thrown when the argument belongs to another parser or was registered after this result was created.</exception>
+    public static T? GetValue<T>(this ParseResult result, OptionalArgument<T> argument)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        return result.GetOptionalValue(argument);
+    }
 }

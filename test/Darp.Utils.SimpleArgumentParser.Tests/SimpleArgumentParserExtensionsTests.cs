@@ -94,7 +94,18 @@ public sealed class SimpleArgumentParserExtensionsTests
     public void TryParseEnum_WhenValueMatchesEnumName_ReturnsTrue()
     {
         // Act
-        var success = SimpleArgumentParserExtensions.TryParseEnum("X2", null, out SampleChoice result);
+        var success = SimpleArgumentParsers.TryParseEnum("X2", null, out SampleChoice result);
+
+        // Assert
+        success.ShouldBeTrue();
+        result.ShouldBe(SampleChoice.X2);
+    }
+
+    [Fact]
+    public void TryParseEnumIgnoreCase_WhenValueMatchesEnumName_ReturnsTrue()
+    {
+        // Act
+        var success = SimpleArgumentParsers.TryParseEnumIgnoreCase("x2", null, out SampleChoice result);
 
         // Assert
         success.ShouldBeTrue();
