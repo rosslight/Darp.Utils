@@ -373,6 +373,23 @@ public sealed class SimpleArgumentParserTryParseTests
         result.GetValue(amount).ShouldBe(-1.5);
     }
 
+    [Theory]
+    [InlineData("-1e5", -100000d)]
+    [InlineData("-.5", -0.5d)]
+    [InlineData("-Infinity", double.NegativeInfinity)]
+    public void TryParse_NamedArgument_AcceptsNegativeFloatingPointFormats(string value, double expectedValue)
+    {
+        // Arrange
+        var parser = new Parser();
+        Argument<double> amount = parser.AddRequiredNamed<double>("--amount");
+
+        // Act
+        ParseResult result = parser.ShouldParseSuccessfully(["--amount", value]);
+
+        // Assert
+        result.GetValue(amount).ShouldBe(expectedValue);
+    }
+
     [Fact]
     public void TryParse_PositionalArgument_AcceptsNegativeNumberValue()
     {

@@ -508,26 +508,10 @@ public sealed class SimpleArgumentParser(string? description = null)
 
     private static bool LooksLikeNegativeNumber(ReadOnlySpan<char> value)
     {
-        if (value.Length <= 1 || value[0] != '-' || !char.IsDigit(value[1]))
+        if (value.Length <= 1 || value[0] != '-' || value[1] == '-')
             return false;
 
-        var hasDecimalPoint = false;
-        for (var index = 2; index < value.Length; index++)
-        {
-            var c = value[index];
-            if (char.IsDigit(c))
-                continue;
-
-            if (c == '.' && !hasDecimalPoint)
-            {
-                hasDecimalPoint = true;
-                continue;
-            }
-
-            return false;
-        }
-
-        return true;
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out _);
     }
 
     private static bool ParseBoolValue(ReadOnlySpan<char> value, IFormatProvider? provider, out bool result) =>
