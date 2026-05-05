@@ -92,7 +92,8 @@ public sealed class ConfigurationService<TConfig>(
             Config =
                 await JsonSerializer
                     .DeserializeAsync(stream, _configTypeInfo, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false) ?? throw new JsonException("Deserialization yielded no result");
+                    .ConfigureAwait(false)
+                ?? throw new JsonException("Deserialization yielded no result");
             IsLoaded = true;
             return Config;
         }

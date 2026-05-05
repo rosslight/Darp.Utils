@@ -151,7 +151,7 @@ internal static class SinkEmitter
             {
                 _parent = parent;
             }
-            
+
             """
         );
         foreach (

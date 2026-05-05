@@ -151,8 +151,8 @@ public sealed class SimpleArgumentParserRegistrationTests
         parser.AddPositional("config", "default.cfg");
 
         // Act
-        ArgumentException exception = Should.Throw<ArgumentException>(
-            () => parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString)
+        ArgumentException exception = Should.Throw<ArgumentException>(() =>
+            parser.AddRequiredPositional<string>("input", ParserTestHelpers.ParseString)
         );
 
         // Assert
@@ -168,8 +168,8 @@ public sealed class SimpleArgumentParserRegistrationTests
         parser.AddPositional<string>("project", ParserTestHelpers.ParseString);
 
         // Act
-        ArgumentException exception = Should.Throw<ArgumentException>(
-            () => parser.AddRequiredPositional<string>("command", ParserTestHelpers.ParseString)
+        ArgumentException exception = Should.Throw<ArgumentException>(() =>
+            parser.AddRequiredPositional<string>("command", ParserTestHelpers.ParseString)
         );
 
         // Assert

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-
 namespace Darp.Utils.ResxSourceGenerator.Tests.Verifiers;
 
 // Uncomment the following line to write expected files to disk

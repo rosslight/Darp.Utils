@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 // https://github.com/dotnet/roslyn-analyzers/blame/f4c8475010cbc3d5956c99c1f2c2d49c03c5871b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator/AbstractResxGenerator.cs
 
-
 // #pragma warning disable IDE0010 // Add missing cases (noise)
 // #pragma warning disable IDE0057 // Use range operator (incorrectly reported when Range is not defined)
 // #pragma warning disable IDE0058 // Expression value is never used (not sure why this is enabled)
