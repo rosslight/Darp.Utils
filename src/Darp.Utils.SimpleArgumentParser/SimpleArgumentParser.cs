@@ -587,6 +587,12 @@ public sealed class SimpleArgumentParser(string? description = null)
         if (name.StartsWith('-'))
             throw new ArgumentException("Option name cannot start with dashes after '--'.", nameof(name));
 
+        if (name.Contains('=', StringComparison.Ordinal))
+            throw new ArgumentException("Option names cannot contain '='.", nameof(name));
+
+        if (name.Any(char.IsWhiteSpace))
+            throw new ArgumentException("Option names cannot contain whitespace.", nameof(name));
+
         return name;
     }
 

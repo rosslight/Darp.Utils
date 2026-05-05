@@ -62,6 +62,10 @@ public sealed class SimpleArgumentParserRegistrationTests
     [InlineData("-")]
     [InlineData("--")]
     [InlineData("---verbose")]
+    [InlineData("--count=value")]
+    [InlineData("--count=")]
+    [InlineData("--count value")]
+    [InlineData("--count\tvalue")]
     public void AddFlag_WhenNameIsInvalid_ThrowsArgumentException(string? name)
     {
         // Arrange
@@ -80,6 +84,10 @@ public sealed class SimpleArgumentParserRegistrationTests
     [InlineData("--")]
     [InlineData("-count")]
     [InlineData("---count")]
+    [InlineData("--count=value")]
+    [InlineData("--count=")]
+    [InlineData("--count value")]
+    [InlineData("--count\tvalue")]
     public void AddNamed_WhenNameIsInvalid_ThrowsArgumentException(string? name)
     {
         // Arrange
@@ -98,6 +106,10 @@ public sealed class SimpleArgumentParserRegistrationTests
     [InlineData("--")]
     [InlineData("-count")]
     [InlineData("---count")]
+    [InlineData("--count=value")]
+    [InlineData("--count=")]
+    [InlineData("--count value")]
+    [InlineData("--count\tvalue")]
     public void AddRequiredNamed_WhenNameIsInvalid_ThrowsArgumentException(string? name)
     {
         // Arrange
