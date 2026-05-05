@@ -153,8 +153,9 @@ public static class SimpleArgumentParserExtensions
     /// <returns>The parsed value, or <see langword="null"/> when the argument was not supplied.</returns>
     /// <exception cref="ArgumentException">Thrown when the argument belongs to another parser or was registered after this result was created.</exception>
     public static T? GetValue<T>(this ParseResult result, OptionalArgument<T> argument)
+        where T : class
     {
         ArgumentNullException.ThrowIfNull(result);
-        return result.GetOptionalValue(argument);
+        return result.TryGetValue(argument, out T? value) ? value : null;
     }
 }

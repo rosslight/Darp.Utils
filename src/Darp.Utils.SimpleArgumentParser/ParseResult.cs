@@ -42,21 +42,8 @@ public sealed class ParseResult
     /// </remarks>
     /// <exception cref="ArgumentException">Thrown when the argument belongs to another parser or was registered after this result was created.</exception>
     public T? GetValue<T>(OptionalArgument<T> argument)
-        where T : struct
-    {
-        ArgumentNullException.ThrowIfNull(argument);
-        ValidateArgumentAccess(argument);
-        return argument.TryGetValue(_slots, out T value) ? value : null;
-    }
+        where T : struct => TryGetValue(argument, out T value) ? value : null;
 
-    internal T? GetOptionalValue<T>(OptionalArgument<T> argument)
-    {
-        ArgumentNullException.ThrowIfNull(argument);
-        ValidateArgumentAccess(argument);
-        return argument.TryGetValue(_slots, out T? value) ? value : default;
-    }
-
-    /*
     /// <summary>
     /// Tries to get the parsed value for an optional argument.
     /// </summary>
@@ -71,7 +58,6 @@ public sealed class ParseResult
         ValidateArgumentAccess(argument);
         return argument.TryGetValue(_slots, out value);
     }
-    */
 
     private void ValidateArgumentAccess(IArgument argument)
     {
