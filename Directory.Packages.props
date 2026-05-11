@@ -54,7 +54,7 @@
     <PackageVersion Include="TUnit" Version="1.2.11" />
     <PackageVersion Include="Verify.Http" Version="7.5.1" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
-    <PackageVersion Include="Verify.XunitV3" Version="31.16.2" />
+    <PackageVersion Include="Verify.XunitV3" Version="31.16.3" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
