@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0](https://github.com/rosslight/Darp.Utils/compare/v2.0.0-preview.1...v2.0.0) (2026-06-24)
+
+
+### Features
+
+* Bump to stable packages ([6462683](https://github.com/rosslight/Darp.Utils/commit/6462683dfc1c51c57503f75cb4538b8b6c9da388))
+
 ## [2.0.0-preview.1](https://github.com/rosslight/Darp.Utils/compare/v2.0.0-preview...v2.0.0-preview.1) (2026-05-05)
 
 
