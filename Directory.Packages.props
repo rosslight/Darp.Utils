@@ -5,48 +5,44 @@
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Avalonia" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Desktop" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Headless" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Headless.XUnit" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.2" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
+    <PackageVersion Include="Avalonia" Version="12.0.5" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.0.5" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.0.5" />
+    <PackageVersion Include="Avalonia.Headless" Version="12.0.5" />
+    <PackageVersion Include="Avalonia.Headless.XUnit" Version="12.0.5" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.5" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageVersion Include="coverlet.collector" Version="10.0.0">
+    <PackageVersion Include="coverlet.collector" Version="10.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Easy.MessageHub" Version="5.1.0" />
     <PackageVersion Include="FluentAssertions" Version="[7.1.0]" />
     <PackageVersion Include="FluentAssertions.Reactive" Version="0.2.0" />
-    <PackageVersion Include="FluentAvaloniaUI" Version="3.0.0-preview2" />
+    <PackageVersion Include="FluentAvaloniaUI" Version="3.0.0" />
     <PackageVersion Include="Glob" Version="1.1.9" />
-    <PackageVersion Include="MediatR" Version="13.1.0" />
-    <PackageVersion Include="MessagePipe" Version="1.8.1" />
+    <PackageVersion Include="MessagePipe" Version="1.8.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.2" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.2" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" Version="1.1.2" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" Version="1.1.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.11.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.9" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-    <PackageVersion Include="MirrorSharp.AspNetCore" Version="4.0.0" />
-    <PackageVersion Include="MirrorSharp.Common" Version="3.0.10" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
-    <PackageVersion Include="PolySharp" Version="1.15.0" />
+    <PackageVersion Include="PolySharp" Version="1.16.0" />
     <PackageVersion Include="Prism.Core" Version="9.0.537" />
     <PackageVersion Include="PubSub" Version="4.0.2" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
-    <PackageVersion Include="System.Collections.Immutable" Version="10.0.7" />
+    <PackageVersion Include="System.Collections.Immutable" Version="10.0.9" />
     <PackageVersion Include="System.Linq.Async" Version="7.0.1" />
     <PackageVersion Include="System.Reactive" Version="6.1.0" />
     <PackageVersion Include="System.Reactive.Linq" Version="6.1.0" />
@@ -54,7 +50,7 @@
     <PackageVersion Include="TUnit" Version="1.2.11" />
     <PackageVersion Include="Verify.Http" Version="7.5.1" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
-    <PackageVersion Include="Verify.XunitV3" Version="31.16.2" />
+    <PackageVersion Include="Verify.XunitV3" Version="31.20.0" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
