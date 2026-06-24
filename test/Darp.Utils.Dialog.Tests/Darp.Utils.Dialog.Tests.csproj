@@ -7,6 +7,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Darp.Utils.Dialog\Darp.Utils.Dialog.csproj" />
+    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="FluentAssertions.Reactive" />
   </ItemGroup>
 </Project>

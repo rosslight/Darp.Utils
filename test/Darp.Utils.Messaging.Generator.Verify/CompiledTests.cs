@@ -1,7 +1,7 @@
 namespace Darp.Utils.Messaging.Generator.Verify;
 
 using System.Diagnostics;
-using FluentAssertions;
+using Shouldly;
 
 #if True
 
@@ -17,7 +17,7 @@ public sealed class CompiledTests
         subject.Subscribe(sink);
         subject.Publish(intToPublish);
 
-        sink.ReceivedInt.Should().Be(intToPublish);
+        sink.ReceivedInt.ShouldBe(intToPublish);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public sealed class CompiledTests
         subject.Subscribe(sink);
         subject.Publish(intToPublish);
 
-        sink.ReceivedString.Should().BeNull();
+        sink.ReceivedString.ShouldBeNull();
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class CompiledTests
 
         source.Publish(42);
 
-        list.Should().Equal(1, 2, 3, 4);
+        list.ShouldBe([1, 2, 3, 4]);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class CompiledTests
         disp3.Dispose();
         source.Publish(42);
 
-        list.Should().Equal(2, 4);
+        list.ShouldBe([2, 4]);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class CompiledTests
         source.Subscribe<int>(_ =>
         {
             list.Add(1);
-            newSubscription.Should().BeNull();
+            newSubscription.ShouldBeNull();
             newSubscription = source.Subscribe<int>(_ => throw new UnreachableException());
         });
 
@@ -98,7 +98,7 @@ public sealed class CompiledTests
 
         // The new subscription should NOT be called in the same publish cycle
         // because it was added after the publish cycle started
-        list.Should().Equal(1, 2);
+        list.ShouldBe([1, 2]);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public sealed class CompiledTests
 
         // New subscriptions should NOT be called in the same publish cycle
         // because they were added after the publish cycle started
-        list.Should().Equal(1, 2);
+        list.ShouldBe([1, 2]);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public sealed class CompiledTests
         source.Publish(42);
 
         // Only the second subscriber should be called
-        list.Should().Equal(1, 2, 2);
+        list.ShouldBe([1, 2, 2]);
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public sealed class CompiledTests
         source.Publish(42);
         source.Publish(42);
 
-        list.Should().Equal(1, 2, 3, 1);
+        list.ShouldBe([1, 2, 3, 1]);
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public sealed class CompiledTests
 
         // The new subscription should NOT be called in the same publish cycle
         // because it was added after the publish cycle started
-        list.Should().Equal(1, 2, 2, 3);
+        list.ShouldBe([1, 2, 2, 3]);
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public sealed class CompiledTests
 
         // First publish: only original subscriber (1)
         // Second publish: both original subscriber (2) and new subscriber (99)
-        list.Should().Equal(1, 1, 2);
+        list.ShouldBe([1, 1, 2]);
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public sealed class CompiledTests
 
         // First publish: both subscribers (1, 100)
         // Second publish: only remaining subscriber (100)
-        list.Should().Equal(1, 2, 2);
+        list.ShouldBe([1, 2, 2]);
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public sealed class CompiledTests
         source.Publish(42);
         source.Publish(42);
 
-        list.Should().Equal(1, 2, 3);
+        list.ShouldBe([1, 2, 3]);
     }
 }
 

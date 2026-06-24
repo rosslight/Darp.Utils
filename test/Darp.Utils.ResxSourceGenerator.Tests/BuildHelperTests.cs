@@ -1,7 +1,7 @@
 namespace Darp.Utils.ResxSourceGenerator.Tests;
 
 using System.Globalization;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 public class BuildHelperTests
@@ -24,8 +24,8 @@ public class BuildHelperTests
     {
         string[] availableFiles = ["Localization.Resources", fileToCheck];
         var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
-        isChildFile.Should().BeFalse();
-        cultureInfo.Should().BeNull();
+        isChildFile.ShouldBeFalse();
+        cultureInfo.ShouldBeNull();
     }
 
     [Theory]
@@ -41,8 +41,8 @@ public class BuildHelperTests
 
         string[] availableFiles = ["Localization.Resources", fileToCheck];
         var isChildFile = BuildHelper.IsChildFile(fileToCheck, availableFiles, out CultureInfo? cultureInfo);
-        isChildFile.Should().BeTrue();
-        cultureInfo.Should().Be(expectedCulture);
+        isChildFile.ShouldBeTrue();
+        cultureInfo.ShouldBe(expectedCulture);
     }
 
     [Theory]
@@ -54,6 +54,6 @@ public class BuildHelperTests
     )
     {
         var propertyIdentifier = BuildHelper.GetIdentifierFromResourceName(resourceName);
-        propertyIdentifier.Should().Be(expectedPropertyIdentifier);
+        propertyIdentifier.ShouldBe(expectedPropertyIdentifier);
     }
 }

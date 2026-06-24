@@ -5,9 +5,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Darp.Utils.Messaging.Generator;
-using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Shouldly;
 
 public static partial class VerifyHelper
 {
@@ -112,14 +112,7 @@ public static partial class VerifyHelper
             out ImmutableArray<Diagnostic> _
         );
         // Assert that there are no compilation errors (except for CS5001 which informs about the missing program entry)
-        newCompilation
-            .GetDiagnostics()
-            .Should()
-            .NotContain(
-                x => IsDiagnosticInvalid(allowedDiagnosticCode, x),
-                "generated sources throw:\n{0}",
-                string.Join("\n", driver.GetRunResult().GeneratedTrees.ToReadableString())
-            );
+        newCompilation.GetDiagnostics().Where(x => IsDiagnosticInvalid(allowedDiagnosticCode, x)).ShouldBeEmpty();
         return Verifier
             .Verify(driver)
             .UseDirectory(Path.Join("Snapshots", directory))

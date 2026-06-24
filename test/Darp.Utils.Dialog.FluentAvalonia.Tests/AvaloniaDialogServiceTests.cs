@@ -10,8 +10,8 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Darp.Utils.Dialog;
 using Darp.Utils.Dialog.DialogData;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
 
 public class AvaloniaDialogServiceTests
 {
@@ -27,7 +27,7 @@ public class AvaloniaDialogServiceTests
         Action act = () => provider.GetRequiredService<IDialogService>();
 
         // Assert
-        act.Should().NotThrow();
+        act.ShouldNotThrow();
     }
 
     [Fact]
@@ -44,9 +44,9 @@ public class AvaloniaDialogServiceTests
         );
 
         // Assert
-        builder.Title.Should().Be(title);
-        builder.Content.Should().Be(content);
-        builder.Dialog.DataTemplates.Should().HaveCount(1);
+        builder.Title.ShouldBe(title);
+        builder.Content.ShouldBe(content);
+        builder.Dialog.DataTemplates.Count.ShouldBe(1);
     }
 
     [Theory]
@@ -65,8 +65,8 @@ public class AvaloniaDialogServiceTests
         IContentDialogBuilder<int> returnedBuilder = builder.SetDefaultButton(button);
 
         // Assert
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.DefaultButton.Should().Be((global::FluentAvalonia.UI.Controls.FAContentDialogButton)button);
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        builder.Dialog.DefaultButton.ShouldBe((global::FluentAvalonia.UI.Controls.FAContentDialogButton)button);
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class AvaloniaDialogServiceTests
         IContentDialogBuilder<int> returnedBuilder = builder.SetCloseButton(buttonText);
 
         // Assert
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.CloseButtonText.Should().Be(buttonText);
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        builder.Dialog.CloseButtonText.ShouldBe(buttonText);
     }
 
     [AvaloniaFact(Timeout = 5000)]
@@ -119,10 +119,10 @@ public class AvaloniaDialogServiceTests
         ContentDialogResult<int> result = await builder.ShowAsync();
 
         // Assert
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        contentReceivedOnClick.Should().Be(content);
-        result.Result.Should().Be(ContentDialogResult.None);
-        result.Content.Should().Be(content);
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        contentReceivedOnClick.ShouldBe(content);
+        result.Result.ShouldBe(ContentDialogResult.None);
+        result.Content.ShouldBe(content);
         window.Close();
     }
 
@@ -140,8 +140,8 @@ public class AvaloniaDialogServiceTests
         IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(buttonText);
 
         // Assert
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.PrimaryButtonText.Should().Be(buttonText);
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        builder.Dialog.PrimaryButtonText.ShouldBe(buttonText);
     }
 
     [Fact]
@@ -158,14 +158,14 @@ public class AvaloniaDialogServiceTests
         // Act and assert
         IContentDialogBuilder<int> returnedBuilder = builder.SetPrimaryButton(buttonText, isEnabled: subject);
 
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.IsPrimaryButtonEnabled.Should().BeFalse();
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        builder.Dialog.IsPrimaryButtonEnabled.ShouldBeFalse();
 
         subject.OnNext(true);
-        builder.Dialog.IsPrimaryButtonEnabled.Should().BeTrue();
+        builder.Dialog.IsPrimaryButtonEnabled.ShouldBeTrue();
 
         subject.OnNext(false);
-        builder.Dialog.IsPrimaryButtonEnabled.Should().BeFalse();
+        builder.Dialog.IsPrimaryButtonEnabled.ShouldBeFalse();
     }
 
     [AvaloniaFact(Timeout = 5000)]
@@ -199,10 +199,10 @@ public class AvaloniaDialogServiceTests
         ContentDialogResult<int> result = await builder.ShowAsync();
 
         // Assert
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        contentReceivedOnClick.Should().Be(content);
-        result.Result.Should().Be(ContentDialogResult.Primary);
-        result.Content.Should().Be(content);
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        contentReceivedOnClick.ShouldBe(content);
+        result.Result.ShouldBe(ContentDialogResult.Primary);
+        result.Content.ShouldBe(content);
         window.Close();
     }
 
@@ -218,8 +218,8 @@ public class AvaloniaDialogServiceTests
         IContentDialogBuilder<int> returnedBuilder = builder.SetSecondaryButton(buttonText);
 
         // Assert
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.SecondaryButtonText.Should().Be(buttonText);
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        builder.Dialog.SecondaryButtonText.ShouldBe(buttonText);
     }
 
     [Fact]
@@ -236,14 +236,14 @@ public class AvaloniaDialogServiceTests
         // Act and assert
         IContentDialogBuilder<int> returnedBuilder = builder.SetSecondaryButton(buttonText, isEnabled: subject);
 
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        builder.Dialog.IsSecondaryButtonEnabled.Should().BeFalse();
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        builder.Dialog.IsSecondaryButtonEnabled.ShouldBeFalse();
 
         subject.OnNext(true);
-        builder.Dialog.IsSecondaryButtonEnabled.Should().BeTrue();
+        builder.Dialog.IsSecondaryButtonEnabled.ShouldBeTrue();
 
         subject.OnNext(false);
-        builder.Dialog.IsSecondaryButtonEnabled.Should().BeFalse();
+        builder.Dialog.IsSecondaryButtonEnabled.ShouldBeFalse();
     }
 
     [AvaloniaFact(Timeout = 5000)]
@@ -277,10 +277,10 @@ public class AvaloniaDialogServiceTests
         ContentDialogResult<int> result = await builder.ShowAsync();
 
         // Assert
-        builder.Should().BeEquivalentTo(returnedBuilder);
-        contentReceivedOnClick.Should().Be(content);
-        result.Result.Should().Be(ContentDialogResult.Secondary);
-        result.Content.Should().Be(content);
+        builder.ShouldBeEquivalentTo(returnedBuilder);
+        contentReceivedOnClick.ShouldBe(content);
+        result.Result.ShouldBe(ContentDialogResult.Secondary);
+        result.Content.ShouldBe(content);
         window.Close();
     }
 
@@ -323,8 +323,8 @@ public class AvaloniaDialogServiceTests
         ContentDialogResult<MessageBoxViewModel> result = await builder.ShowAsync();
 
         // Assert
-        isSelectableTextBlock.Should().Be(isSelectable);
-        result.Result.Should().Be(ContentDialogResult.None);
+        isSelectableTextBlock.ShouldBe(isSelectable);
+        result.Result.ShouldBe(ContentDialogResult.None);
         window.Close();
     }
 }

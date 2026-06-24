@@ -7,8 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Assets;
 using Darp.Utils.Configuration;
-using FluentAssertions;
-using FluentAssertions.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
@@ -32,8 +30,8 @@ public sealed class ConfigurationServiceTests
         configurationService.Dispose();
 
         // Assert
-        config.Should().NotBeNull();
-        config.Should().BeEquivalentTo(expectedConfig);
+        config.ShouldNotBeNull();
+        config.ShouldBeEquivalentTo(expectedConfig);
     }
 
     [Fact]
@@ -50,8 +48,8 @@ public sealed class ConfigurationServiceTests
         configurationService.Dispose();
 
         // Assert
-        config.Should().NotBeNull();
-        config.Should().BeEquivalentTo(expectedConfig);
+        config.ShouldNotBeNull();
+        config.ShouldBeEquivalentTo(expectedConfig);
     }
 
     [Fact]
@@ -70,11 +68,11 @@ public sealed class ConfigurationServiceTests
         configurationService.Dispose();
 
         // Assert
-        returnedConfig.Should().BeEquivalentTo(newConfig);
-        configurationService.IsLoaded.Should().BeTrue();
-        configurationService.Config.Should().BeEquivalentTo(newConfig);
+        returnedConfig.ShouldBeEquivalentTo(newConfig);
+        configurationService.IsLoaded.ShouldBeTrue();
+        configurationService.Config.ShouldBeEquivalentTo(newConfig);
         TestConfig writtenConfig = await assetsService.DeserializeJsonAsync<TestConfig>(ConfigFileName);
-        writtenConfig.Should().Be(newConfig);
+        writtenConfig.ShouldBe(newConfig);
     }
 
     [Fact]
@@ -86,8 +84,8 @@ public sealed class ConfigurationServiceTests
         configurationService.Dispose();
 
         // Assert
-        configurationService.IsLoaded.Should().BeFalse();
-        configurationService.Config.Should().BeEquivalentTo(new TestConfig());
+        configurationService.IsLoaded.ShouldBeFalse();
+        configurationService.Config.ShouldBeEquivalentTo(new TestConfig());
     }
 
     [Fact]
@@ -98,7 +96,7 @@ public sealed class ConfigurationServiceTests
         var configurationService = new ConfigurationService<TestConfig>(ConfigFileName, assetsService);
 
         // Assert
-        configurationService.Path.Should().Be(Path.Join(BasePath, ConfigFileName));
+        configurationService.Path.ShouldBe(Path.Join(BasePath, ConfigFileName));
         configurationService.Dispose();
     }
 
@@ -108,16 +106,17 @@ public sealed class ConfigurationServiceTests
         // Arrange
         var assetsService = new MemoryAssetsService(BasePath);
         var configurationService = new ConfigurationService<TestConfig>(ConfigFileName, assetsService);
-        IMonitor<ConfigurationService<TestConfig>> monitor = configurationService.Monitor();
+        List<string?> _events = [];
+        configurationService.PropertyChanged += (_, args) => _events.Add(args.PropertyName);
 
         // Act
         await configurationService.WriteConfigurationAsync(configurationService.Config, CancellationToken.None);
         configurationService.Dispose();
 
         // Assert
-        monitor.Should().RaisePropertyChangeFor(service => service.IsLoaded);
-        monitor.Should().NotRaisePropertyChangeFor(service => service.Config);
-        monitor.Should().RaisePropertyChangeFor(service => service.IsDisposed);
+        _events.Count.ShouldBe(2);
+        _events[0].ShouldBe(nameof(ConfigurationService<>.IsLoaded));
+        _events[1].ShouldBe(nameof(ConfigurationService<>.IsDisposed));
     }
 
     [Fact]
@@ -127,16 +126,17 @@ public sealed class ConfigurationServiceTests
         var newConfig = new TestConfig { Setting = "newValue" };
         var assetsService = new MemoryAssetsService(BasePath);
         var configurationService = new ConfigurationService<TestConfig>(ConfigFileName, assetsService);
-        IMonitor<ConfigurationService<TestConfig>> monitor = configurationService.Monitor();
+        List<string?> _events = [];
+        configurationService.PropertyChanged += (_, args) => _events.Add(args.PropertyName);
 
         // Act
         await configurationService.WriteConfigurationAsync(newConfig, CancellationToken.None);
         configurationService.Dispose();
 
         // Assert
-        monitor.Should().RaisePropertyChangeFor(service => service.IsLoaded);
-        monitor.Should().RaisePropertyChangeFor(service => service.Config);
-        monitor.Should().RaisePropertyChangeFor(service => service.IsDisposed);
+        _events[0].ShouldBe(nameof(ConfigurationService<>.Config));
+        _events[1].ShouldBe(nameof(ConfigurationService<>.IsLoaded));
+        _events[2].ShouldBe(nameof(ConfigurationService<>.IsDisposed));
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public sealed class ConfigurationServiceTests
             .BuildServiceProvider();
 
         IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
-        service.IsLoaded.Should().BeFalse();
+        service.IsLoaded.ShouldBeFalse();
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public sealed class ConfigurationServiceTests
             .BuildServiceProvider();
 
         IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
-        service.IsLoaded.Should().BeFalse();
+        service.IsLoaded.ShouldBeFalse();
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public sealed class ConfigurationServiceTests
             .BuildServiceProvider();
 
         IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
-        service.IsLoaded.Should().BeFalse();
+        service.IsLoaded.ShouldBeFalse();
         service.Path.ShouldBe(Path.Join("some/other/path", ConfigFileName));
     }
 
@@ -202,7 +202,7 @@ public sealed class ConfigurationServiceTests
         );
 
         // Assert
-        observer.Values.Should().ContainSingle().Which.Should().Be(TestLogLevel.Verbose);
+        observer.Values.ShouldHaveSingleItem().ShouldBe(TestLogLevel.Verbose);
         configurationService.Dispose();
     }
 }

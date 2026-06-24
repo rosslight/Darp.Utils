@@ -3,7 +3,7 @@ namespace Darp.Utils.ResxSourceGenerator.Tests;
 using System;
 using System.Collections.Immutable;
 using Darp.Utils.ResxSourceGenerator;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 public class ImmutableDictionaryEqualityComparerTests
@@ -12,14 +12,14 @@ public class ImmutableDictionaryEqualityComparerTests
         ImmutableDictionaryEqualityComparer<string, int>.Instance;
 
     [Fact]
-    public void Equals_BothNull_ReturnsTrue() => Comparer.Equals(null, null).Should().BeTrue();
+    public void Equals_BothNull_ReturnsTrue() => Comparer.Equals(null, null).ShouldBeTrue();
 
     [Fact]
     public void Equals_XNull_YNotNull_ReturnsFalse()
     {
         ImmutableDictionary<string, int>? y = ImmutableDictionary<string, int>.Empty;
 
-        Comparer.Equals(null, y).Should().BeFalse();
+        Comparer.Equals(null, y).ShouldBeFalse();
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public class ImmutableDictionaryEqualityComparerTests
     {
         ImmutableDictionary<string, int>? x = ImmutableDictionary<string, int>.Empty;
 
-        Comparer.Equals(x, null).Should().BeFalse();
+        Comparer.Equals(x, null).ShouldBeFalse();
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class ImmutableDictionaryEqualityComparerTests
     {
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty;
 
-        Comparer.Equals(x, x).Should().BeTrue();
+        Comparer.Equals(x, x).ShouldBeTrue();
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class ImmutableDictionaryEqualityComparerTests
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1);
         ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>.Empty.Add("key1", 1);
 
-        Comparer.Equals(x, y).Should().BeTrue();
+        Comparer.Equals(x, y).ShouldBeTrue();
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class ImmutableDictionaryEqualityComparerTests
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1);
         ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>.Empty.Add("key2", 1);
 
-        Comparer.Equals(x, y).Should().BeFalse();
+        Comparer.Equals(x, y).ShouldBeFalse();
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class ImmutableDictionaryEqualityComparerTests
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1);
         ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>.Empty.Add("key1", 2);
 
-        Comparer.Equals(x, y).Should().BeFalse();
+        Comparer.Equals(x, y).ShouldBeFalse();
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class ImmutableDictionaryEqualityComparerTests
             .Create<string, int>(StringComparer.Ordinal)
             .Add("key1", 1);
 
-        Comparer.Equals(x, y).Should().BeFalse();
+        Comparer.Equals(x, y).ShouldBeFalse();
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class ImmutableDictionaryEqualityComparerTests
             .Create<string, int>(StringComparer.OrdinalIgnoreCase)
             .Add("KEY1", 1);
 
-        Comparer.Equals(x, y).Should().BeTrue();
+        Comparer.Equals(x, y).ShouldBeTrue();
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class ImmutableDictionaryEqualityComparerTests
             .Create<string, string>(EqualityComparer<string>.Default, StringComparer.OrdinalIgnoreCase)
             .Add("key1", "value");
 
-        comparer.Equals(x, y).Should().BeFalse();
+        comparer.Equals(x, y).ShouldBeFalse();
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public class ImmutableDictionaryEqualityComparerTests
             .Create<string, string>(EqualityComparer<string>.Default, StringComparer.Ordinal)
             .Add("key1", "value2");
 
-        comparer.Equals(x, y).Should().BeFalse();
+        comparer.Equals(x, y).ShouldBeFalse();
     }
 
     [Fact]
@@ -139,18 +139,18 @@ public class ImmutableDictionaryEqualityComparerTests
             .Create<string, string>(EqualityComparer<string>.Default, StringComparer.OrdinalIgnoreCase)
             .Add("key1", "VALUE");
 
-        comparer.Equals(x, y).Should().BeTrue();
+        comparer.Equals(x, y).ShouldBeTrue();
     }
 
     [Fact]
-    public void GetHashCode_Null_ReturnsZero() => Comparer.GetHashCode(null).Should().Be(0);
+    public void GetHashCode_Null_ReturnsZero() => Comparer.GetHashCode(null).ShouldBe(0);
 
     [Fact]
     public void GetHashCode_EmptyDictionary_ReturnsZero()
     {
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty;
 
-        Comparer.GetHashCode(x).Should().Be(0);
+        Comparer.GetHashCode(x).ShouldBe(0);
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class ImmutableDictionaryEqualityComparerTests
     {
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1).Add("key2", 2);
 
-        Comparer.GetHashCode(x).Should().Be(2);
+        Comparer.GetHashCode(x).ShouldBe(2);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class ImmutableDictionaryEqualityComparerTests
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1);
         ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>.Empty.Add("key1", 1).Add("key2", 2);
 
-        Comparer.Equals(x, y).Should().BeFalse();
+        Comparer.Equals(x, y).ShouldBeFalse();
     }
 
     [Fact]
@@ -176,6 +176,6 @@ public class ImmutableDictionaryEqualityComparerTests
         ImmutableDictionary<string, int> x = ImmutableDictionary<string, int>.Empty.Add("key1", 1).Add("key2", 2);
         ImmutableDictionary<string, int> y = ImmutableDictionary<string, int>.Empty.Add("key2", 2).Add("key1", 1);
 
-        Comparer.Equals(x, y).Should().BeTrue();
+        Comparer.Equals(x, y).ShouldBeTrue();
     }
 }
