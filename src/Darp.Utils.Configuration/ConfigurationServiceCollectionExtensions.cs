@@ -28,7 +28,7 @@ public static class ConfigurationServiceCollectionExtensions
     )
         where TConfig : new()
     {
-        serviceCollection.TryAddSingleton<IConfigurationService<TConfig>>(provider => new ConfigurationService<TConfig>(
+        serviceCollection.TryAddSingleton<ConfigService<TConfig>>(provider => new ConfigService<TConfig>(
             configFileName,
             provider.GetRequiredService<IAssetsFactory>().GetAssets(assetsName),
             typeInfo
@@ -76,7 +76,7 @@ public static class ConfigurationServiceCollectionExtensions
     )
         where TConfig : new()
     {
-        serviceCollection.TryAddSingleton<IConfigurationService<TConfig>>(provider => new ConfigurationService<TConfig>(
+        serviceCollection.TryAddSingleton<ConfigService<TConfig>>(provider => new ConfigService<TConfig>(
             configFileName,
             provider.GetRequiredService<IAssetsFactory>().GetAssets(assetsName)
         ));

@@ -4,6 +4,7 @@ using System.ComponentModel;
 
 /// <summary> A generic interface for a configuration file </summary>
 /// <typeparam name="TConfig">The type describing the underlying config</typeparam>
+[Obsolete("Use the ConfigService directly, please", true)]
 public interface IConfigurationService<TConfig> : IDisposable, INotifyPropertyChanged
 {
     /// <summary> Gives back whether a config value is available </summary>
