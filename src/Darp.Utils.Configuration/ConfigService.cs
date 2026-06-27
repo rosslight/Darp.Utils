@@ -74,7 +74,10 @@ public sealed class ConfigService<TConfig>(
     /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
     /// <returns>The new config</returns>
     /// <remarks>This method may not be called from a change event caused by either <see cref="LoadConfigAsync"/> or <see cref="UpdateConfigAsync"/></remarks>
-    public async Task<TConfig> LoadConfigAsync(Func<TConfig> initialConfigProvider, CancellationToken cancellationToken)
+    public async Task<TConfig> LoadConfigAsync(
+        Func<TConfig> initialConfigProvider,
+        CancellationToken cancellationToken = default
+    )
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         ArgumentNullException.ThrowIfNull(initialConfigProvider);
