@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/rosslight/Darp.Utils/compare/v2.0.0...v2.1.0) (2026-06-27)
+
+
+### Features
+
+* refactor the config service ([#37](https://github.com/rosslight/Darp.Utils/issues/37)) ([5fa9ab6](https://github.com/rosslight/Darp.Utils/commit/5fa9ab6db5650ed3b3ef0b1aa592bbaefbc77150))
+
 ## [2.0.0](https://github.com/rosslight/Darp.Utils/compare/v2.0.0-preview.1...v2.0.0) (2026-06-24)
 
 
