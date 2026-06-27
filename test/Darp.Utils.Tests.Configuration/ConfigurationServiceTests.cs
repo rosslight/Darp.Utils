@@ -61,6 +61,41 @@ public sealed class ConfigurationServiceTests
     }
 
     [Fact]
+    public async Task LoadConfigAsync_FileDoesNotExist_WhenInitialConfigProviderReturnsNull_ShouldThrowAndNotCreateFile()
+    {
+        // Arrange
+        var assetsService = new MemoryAssetsService(BasePath);
+        var configurationService = new ConfigService<TestConfig>(ConfigFileName, assetsService);
+
+        // Act
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            await configurationService.LoadConfigAsync(() => null!, CancellationToken)
+        );
+        configurationService.Dispose();
+
+        // Assert
+        configurationService.IsLoaded.ShouldBeFalse();
+        assetsService.Exists(ConfigFileName).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task LoadConfigAsync_WhenFirstLoad_ShouldRaiseIsLoadedThenConfigChanged()
+    {
+        // Arrange
+        var assetsService = new MemoryAssetsService(BasePath);
+        var configurationService = new ConfigService<TestConfig>(ConfigFileName, assetsService);
+        List<string?> events = [];
+        configurationService.PropertyChanged += (_, args) => events.Add(args.PropertyName);
+
+        // Act
+        await configurationService.LoadConfigAsync(() => new TestConfig(), CancellationToken);
+        configurationService.Dispose();
+
+        // Assert
+        events.ShouldBe([nameof(ConfigService<>.IsLoaded), nameof(ConfigService<>.Config)]);
+    }
+
+    [Fact]
     public async Task UpdateConfigAsync_WritesConfigAndUpdatesCachedConfig()
     {
         // Arrange
@@ -84,6 +119,47 @@ public sealed class ConfigurationServiceTests
             cancellationToken: CancellationToken
         );
         writtenConfig.ShouldBe(newConfig);
+    }
+
+    [Fact]
+    public async Task UpdateConfigAsync_WhenNotLoaded_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var assetsService = new MemoryAssetsService(BasePath);
+        var configurationService = new ConfigService<TestConfig>(ConfigFileName, assetsService);
+
+        // Act
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            await configurationService.UpdateConfigAsync(config => config, CancellationToken)
+        );
+        configurationService.Dispose();
+
+        // Assert
+        assetsService.Exists(ConfigFileName).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task UpdateConfigAsync_WhenUpdateFuncReturnsNull_ShouldThrowAndKeepExistingConfig()
+    {
+        // Arrange
+        var assetsService = new MemoryAssetsService(BasePath);
+        var configurationService = new ConfigService<TestConfig>(ConfigFileName, assetsService);
+        var initialConfig = new TestConfig { Setting = "Initial" };
+        await configurationService.LoadConfigAsync(() => initialConfig, CancellationToken);
+
+        // Act
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            await configurationService.UpdateConfigAsync(_ => null!, CancellationToken)
+        );
+        configurationService.Dispose();
+
+        // Assert
+        configurationService.Config.ShouldBe(initialConfig);
+        TestConfig writtenConfig = await assetsService.DeserializeJsonAsync<TestConfig>(
+            ConfigFileName,
+            cancellationToken: CancellationToken
+        );
+        writtenConfig.ShouldBe(initialConfig);
     }
 
     [Fact]

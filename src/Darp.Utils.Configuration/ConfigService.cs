@@ -86,6 +86,7 @@ public sealed class ConfigService<TConfig>(
             if (!_configurationAssetsService.Exists(_configFileName))
             {
                 newConfig = initialConfigProvider();
+                ThrowIfNull(newConfig);
                 await _configurationAssetsService
                     .SerializeJsonAsync(_configFileName, newConfig, _configTypeInfo, cancellationToken)
                     .ConfigureAwait(false);
@@ -126,6 +127,7 @@ public sealed class ConfigService<TConfig>(
             if (!IsLoaded)
                 throw new InvalidOperationException("Config is not loaded yet!");
             TConfig newConfig = updateFunc(Config);
+            ThrowIfNull(newConfig);
             if (EqualityComparer<TConfig>.Default.Equals(_configValue.Value, newConfig))
                 return _configValue.GetValueOrThrow();
             await _configurationAssetsService
@@ -144,13 +146,18 @@ public sealed class ConfigService<TConfig>(
 
     private void SetConfig(TConfig value, out bool hasConfigChanged, out bool hasIsLoadedChanged)
     {
-        if (value is null)
-            throw new InvalidOperationException("Config cannot be null.");
+        ThrowIfNull(value);
         ConfigValue oldConfig = _configValue;
         _configValue = new ConfigValue(true, value);
         hasConfigChanged =
             !oldConfig.IsLoaded || !EqualityComparer<TConfig>.Default.Equals(oldConfig.Value, _configValue.Value);
         hasIsLoadedChanged = oldConfig.IsLoaded != _configValue.IsLoaded;
+    }
+
+    private static void ThrowIfNull([NotNull] TConfig? value)
+    {
+        if (value is null)
+            throw new InvalidOperationException("Config cannot be null.");
     }
 
     private void RaiseIfPropertyChanged(bool isChanged, [CallerMemberName] string? propertyName = null)
