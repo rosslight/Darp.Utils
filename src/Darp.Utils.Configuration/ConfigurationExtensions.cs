@@ -29,20 +29,29 @@ file sealed class ConfigurationObservable<TConfig, T>(
 
     public IDisposable Subscribe(IObserver<T> observer)
     {
-        T currentValue = _valueSelector(_configurationService.Config);
-        PropertyChangedEventHandler handler = GetConfigChangedHandler(observer, currentValue);
+        var hasCurrentValue = _configurationService.IsLoaded;
+        T? currentValue = hasCurrentValue ? _valueSelector(_configurationService.Config) : default;
+        if (hasCurrentValue)
+            observer.OnNext(currentValue!);
+
+        PropertyChangedEventHandler handler = GetConfigChangedHandler(observer, hasCurrentValue, currentValue);
         _configurationService.PropertyChanged += handler;
         return new Disposable(() => _configurationService.PropertyChanged -= handler);
     }
 
-    private PropertyChangedEventHandler GetConfigChangedHandler(IObserver<T> observer, T currentValue) =>
+    private PropertyChangedEventHandler GetConfigChangedHandler(
+        IObserver<T> observer,
+        bool hasCurrentValue,
+        T? currentValue
+    ) =>
         (_, args) =>
         {
             if (args.PropertyName is not nameof(ConfigService<>.Config))
                 return;
             T newValue = _valueSelector(_configurationService.Config);
-            if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
+            if (hasCurrentValue && EqualityComparer<T>.Default.Equals(currentValue, newValue))
                 return;
+            hasCurrentValue = true;
             observer.OnNext(newValue);
             currentValue = newValue;
         };

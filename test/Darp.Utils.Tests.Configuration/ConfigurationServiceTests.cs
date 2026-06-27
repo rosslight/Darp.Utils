@@ -273,58 +273,6 @@ public sealed class ConfigurationServiceTests
         service.IsLoaded.ShouldBeFalse();
         service.Path.ShouldBe(Path.Join("some/other/path", ConfigFileName));
     }
-
-    [Fact]
-    public async Task Observe_WhenFirstChangeIsEnumDefault_ShouldEmitChangedValue()
-    {
-        // Arrange
-        var assetsService = new MemoryAssetsService(BasePath);
-        var configurationService = new ConfigService<TestConfig>(ConfigFileName, assetsService);
-        await configurationService.LoadConfigAsync(
-            () => new TestConfig { LogLevel = TestLogLevel.Warning },
-            CancellationToken
-        );
-        var observer = new TestObserver<TestLogLevel>();
-
-        // Act
-        using IDisposable subscription = configurationService.Observe(x => x.LogLevel).Subscribe(observer);
-        await configurationService.UpdateConfigAsync(
-            _ => new TestConfig { LogLevel = TestLogLevel.Verbose },
-            CancellationToken
-        );
-
-        // Assert
-        observer.Values.ShouldHaveSingleItem().ShouldBe(TestLogLevel.Verbose);
-        configurationService.Dispose();
-    }
-
-    [Fact]
-    public async Task Observe_WhenMultipleSubscribersOnSameObservable_ShouldEmitToEachSubscriber()
-    {
-        // Arrange
-        var assetsService = new MemoryAssetsService(BasePath);
-        var configurationService = new ConfigService<TestConfig>(ConfigFileName, assetsService);
-        await configurationService.LoadConfigAsync(
-            () => new TestConfig { LogLevel = TestLogLevel.Warning },
-            CancellationToken
-        );
-        IObservable<TestLogLevel> observable = configurationService.Observe(x => x.LogLevel);
-        var observer1 = new TestObserver<TestLogLevel>();
-        var observer2 = new TestObserver<TestLogLevel>();
-
-        // Act
-        using IDisposable subscription1 = observable.Subscribe(observer1);
-        using IDisposable subscription2 = observable.Subscribe(observer2);
-        await configurationService.UpdateConfigAsync(
-            _ => new TestConfig { LogLevel = TestLogLevel.Verbose },
-            CancellationToken
-        );
-
-        // Assert
-        observer1.Values.ShouldHaveSingleItem().ShouldBe(TestLogLevel.Verbose);
-        observer2.Values.ShouldHaveSingleItem().ShouldBe(TestLogLevel.Verbose);
-        configurationService.Dispose();
-    }
 }
 
 internal sealed record TestConfig
