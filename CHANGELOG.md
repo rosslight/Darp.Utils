@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/rosslight/Darp.Utils/compare/v2.1.0...v2.1.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* allow observing config before load ([3f6850b](https://github.com/rosslight/Darp.Utils/commit/3f6850b41e0b88370230a7378c249236b1bc5084))
+
 ## [2.1.0](https://github.com/rosslight/Darp.Utils/compare/v2.0.0...v2.1.0) (2026-06-27)
 
 
