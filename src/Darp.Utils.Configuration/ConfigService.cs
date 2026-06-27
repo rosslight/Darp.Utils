@@ -53,13 +53,14 @@ public sealed class ConfigService<TConfig>(
     /// <summary> The JsonSerializerOptions used </summary>
     public JsonSerializerOptions WriteOptions => _configTypeInfo.Options;
 
-    /// <summary> Gives back whether a config value is available </summary>
-    public bool IsLoaded => _configValue.IsLoaded;
-
     /// <summary> If true, the config service is disposed of and no longer usable. Methods will throw. </summary>
     public bool IsDisposed { get; private set; }
 
+    /// <summary> Gives back whether a <see cref="Config"/> value is available </summary>
+    public bool IsLoaded => _configValue.IsLoaded;
+
     /// <summary> The current config </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the config is not loaded yet</exception>
     public TConfig Config => _configValue.GetValueOrThrow();
 
     /// <summary> The path to the main config file </summary>
@@ -72,6 +73,7 @@ public sealed class ConfigService<TConfig>(
     /// <param name="initialConfigProvider">A callback to be called when the config could not be found and has to be created</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
     /// <returns>The new config</returns>
+    /// <remarks>This method may not be called from a change event caused by either <see cref="LoadConfigAsync"/> or <see cref="UpdateConfigAsync"/></remarks>
     public async Task<TConfig> LoadConfigAsync(Func<TConfig> initialConfigProvider, CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -109,6 +111,7 @@ public sealed class ConfigService<TConfig>(
     /// <param name="updateFunc">The update function. Provides the current value of the config to reduce races.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
     /// <returns>The new config</returns>
+    /// <remarks>This method may not be called from a change event caused by either <see cref="LoadConfigAsync"/> or <see cref="UpdateConfigAsync"/></remarks>
     public async Task<TConfig> UpdateConfigAsync(
         Func<TConfig, TConfig> updateFunc,
         CancellationToken cancellationToken = default
@@ -123,6 +126,8 @@ public sealed class ConfigService<TConfig>(
             if (!IsLoaded)
                 throw new InvalidOperationException("Config is not loaded yet!");
             TConfig newConfig = updateFunc(Config);
+            if (EqualityComparer<TConfig>.Default.Equals(_configValue.Value, newConfig))
+                return _configValue.GetValueOrThrow();
             await _configurationAssetsService
                 .SerializeJsonAsync(_configFileName, newConfig, _configTypeInfo, cancellationToken)
                 .ConfigureAwait(false);

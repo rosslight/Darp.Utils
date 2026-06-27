@@ -65,7 +65,7 @@ ServiceProvider provider = new ServiceCollection()
     .AddConfigurationFile<TestConfig>("config.json")
     .BuildServiceProvider();
 
-IConfigurationService<TestConfig> service = provider.GetRequiredService<IConfigurationService<TestConfig>>();
+ConfigService<TestConfig> service = provider.GetRequiredService<ConfigService<TestConfig>>();
 TestConfig config = await service.LoadConfigurationAsync();
 await service.WriteConfigurationAsync(config with { Setting = "NewValue" });
 ```
