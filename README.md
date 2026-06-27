@@ -66,8 +66,8 @@ ServiceProvider provider = new ServiceCollection()
     .BuildServiceProvider();
 
 ConfigService<TestConfig> service = provider.GetRequiredService<ConfigService<TestConfig>>();
-TestConfig config = await service.LoadConfigurationAsync();
-await service.WriteConfigurationAsync(config with { Setting = "NewValue" });
+TestConfig config = await service.LoadConfigAsync(() => new TestConfig());
+await service.UpdateConfigAsync(config => config with { Setting = "NewValue" });
 ```
 
 ## Darp.Utils.Dialog

@@ -109,7 +109,10 @@ public sealed class ConfigService<TConfig>(
     }
 
     /// <summary> Updates the <see cref="Config"/>. </summary>
-    /// <param name="updateFunc">The update function. Provides the current value of the config to reduce races.</param>
+    /// <param name="updateFunc">
+    /// The update function. Provides the current value of the config to reduce races.
+    /// DO NOT EDIT the current value of the config. Changes will not be applied
+    /// </param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation</param>
     /// <returns>The new config</returns>
     /// <remarks>This method may not be called from a change event caused by either <see cref="LoadConfigAsync"/> or <see cref="UpdateConfigAsync"/></remarks>

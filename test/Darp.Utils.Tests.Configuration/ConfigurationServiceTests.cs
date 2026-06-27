@@ -16,7 +16,7 @@ public sealed class ConfigurationServiceTests
     private const string ConfigFileName = "testConfig.json";
     private const string BasePath = "some/path";
 
-    public static CancellationToken CancellationToken { get; } = TestContext.Current.CancellationToken;
+    private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task LoadConfigAsync_FileExists_DeserializesAndReturnsConfig()
