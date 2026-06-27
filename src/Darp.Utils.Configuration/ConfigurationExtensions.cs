@@ -2,7 +2,7 @@ namespace Darp.Utils.Configuration;
 
 using System.ComponentModel;
 
-/// <summary> Extensions for <see cref="IConfigurationService{TConfig}"/> </summary>
+/// <summary> Extensions for <see cref="ConfigService{TConfig}"/> </summary>
 public static class ConfigurationServiceExtensions
 {
     /// <summary> Observe changes to a specific configuration value </summary>
@@ -15,37 +15,36 @@ public static class ConfigurationServiceExtensions
         this ConfigService<TConfig> configurationService,
         Func<TConfig, T> valueSelector
     )
-        where TConfig : new() => new ConfigurationObservable<TConfig, T>(configurationService, valueSelector);
+        where TConfig : notnull => new ConfigurationObservable<TConfig, T>(configurationService, valueSelector);
 }
 
 file sealed class ConfigurationObservable<TConfig, T>(
     ConfigService<TConfig> configurationService,
     Func<TConfig, T> valueSelector
 ) : IObservable<T>
-    where TConfig : new()
+    where TConfig : notnull
 {
     private readonly ConfigService<TConfig> _configurationService = configurationService;
     private readonly Func<TConfig, T> _valueSelector = valueSelector;
-    private T? _currentValue;
 
     public IDisposable Subscribe(IObserver<T> observer)
     {
-        _currentValue = _valueSelector(_configurationService.Config);
-        PropertyChangedEventHandler handler = GetConfigChangedHandler(observer);
+        T currentValue = _valueSelector(_configurationService.Config);
+        PropertyChangedEventHandler handler = GetConfigChangedHandler(observer, currentValue);
         _configurationService.PropertyChanged += handler;
         return new Disposable(() => _configurationService.PropertyChanged -= handler);
     }
 
-    private PropertyChangedEventHandler GetConfigChangedHandler(IObserver<T> observer) =>
+    private PropertyChangedEventHandler GetConfigChangedHandler(IObserver<T> observer, T currentValue) =>
         (_, args) =>
         {
             if (args.PropertyName is not nameof(ConfigService<>.Config))
                 return;
             T newValue = _valueSelector(_configurationService.Config);
-            if (EqualityComparer<T>.Default.Equals(_currentValue, newValue))
+            if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
                 return;
             observer.OnNext(newValue);
-            _currentValue = newValue;
+            currentValue = newValue;
         };
 }
 

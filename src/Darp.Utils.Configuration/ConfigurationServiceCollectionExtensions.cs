@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 public static class ConfigurationServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds a new configuration file and registers a corresponding <see cref="IConfigurationService{TConfig}"/>.
+    /// Adds a new configuration file and registers a corresponding <see cref="ConfigService{TConfig}"/>.
     /// Requires a configured <see cref="IAssetsService"/> with the given <paramref name="assetsName"/>
     /// </summary>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
@@ -26,7 +26,7 @@ public static class ConfigurationServiceCollectionExtensions
         string configFileName,
         JsonTypeInfo<TConfig> typeInfo
     )
-        where TConfig : new()
+        where TConfig : notnull
     {
         serviceCollection.TryAddSingleton<ConfigService<TConfig>>(provider => new ConfigService<TConfig>(
             configFileName,
@@ -37,7 +37,7 @@ public static class ConfigurationServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds a new configuration file and registers a corresponding <see cref="IConfigurationService{TConfig}"/>.
+    /// Adds a new configuration file and registers a corresponding <see cref="ConfigService{TConfig}"/>.
     /// Requires a configured <see cref="IAssetsService"/>
     /// </summary>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
@@ -51,10 +51,10 @@ public static class ConfigurationServiceCollectionExtensions
         string configFileName,
         JsonTypeInfo<TConfig> typeInfo
     )
-        where TConfig : new() => serviceCollection.AddConfigurationFile(null, configFileName, typeInfo);
+        where TConfig : notnull => serviceCollection.AddConfigurationFile(null, configFileName, typeInfo);
 
     /// <summary>
-    /// Adds a new configuration file and registers a corresponding <see cref="IConfigurationService{TConfig}"/>.
+    /// Adds a new configuration file and registers a corresponding <see cref="ConfigService{TConfig}"/>.
     /// Requires a configured <see cref="IAssetsService"/> with the given <paramref name="assetsName"/>
     /// </summary>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
@@ -74,7 +74,7 @@ public static class ConfigurationServiceCollectionExtensions
         string? assetsName,
         string configFileName
     )
-        where TConfig : new()
+        where TConfig : notnull
     {
         serviceCollection.TryAddSingleton<ConfigService<TConfig>>(provider => new ConfigService<TConfig>(
             configFileName,
@@ -84,7 +84,7 @@ public static class ConfigurationServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds a new configuration file and registers a corresponding <see cref="IConfigurationService{TConfig}"/>.
+    /// Adds a new configuration file and registers a corresponding <see cref="ConfigService{TConfig}"/>.
     /// Requires a configured <see cref="IAssetsService"/>
     /// </summary>
     /// <param name="serviceCollection"> The <see cref="IServiceCollection"/> to add the service to.</param>
@@ -102,5 +102,5 @@ public static class ConfigurationServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         string configFileName
     )
-        where TConfig : new() => serviceCollection.AddConfigurationFile<TConfig>(null, configFileName);
+        where TConfig : notnull => serviceCollection.AddConfigurationFile<TConfig>(null, configFileName);
 }
