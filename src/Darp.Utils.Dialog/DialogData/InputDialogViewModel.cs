@@ -59,7 +59,7 @@ public sealed class InputDialogViewModel : ObservableValidator, IDialogData<stri
     /// <inheritdoc />
     public bool TryGetResultData([NotNullWhen(true)] out string? resultData)
     {
-        if (string.IsNullOrEmpty(Input))
+        if (HasErrors || string.IsNullOrEmpty(Input))
         {
             resultData = null;
             return false;

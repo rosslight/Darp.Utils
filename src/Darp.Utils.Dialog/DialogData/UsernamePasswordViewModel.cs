@@ -110,16 +110,21 @@ public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDi
     {
         get
         {
-            foreach (var memberName in GetErrors().SelectMany(x => x.MemberNames))
+            string propertyName;
+            switch (Step)
             {
-                return memberName switch
-                {
-                    nameof(Username) when Step is UsernamePasswordStep.RequestUsername => false,
-                    nameof(Password) when Step is UsernamePasswordStep.RequestPassword => false,
-                    _ => true,
-                };
+                case UsernamePasswordStep.RequestUsername:
+                    propertyName = nameof(Username);
+                    break;
+                case UsernamePasswordStep.RequestPassword:
+                    propertyName = nameof(Password);
+                    break;
+                case UsernamePasswordStep.Done:
+                    return true;
+                default:
+                    throw new InvalidOperationException($"Unexpected username password step '{Step}'");
             }
-            return true;
+            return !GetErrors(propertyName).Any();
         }
     }
 
@@ -142,12 +147,12 @@ public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDi
         switch (Step)
         {
             case UsernamePasswordStep.RequestUsername:
-                if (string.IsNullOrWhiteSpace(Username))
+                if (!IsCurrentStepValid || string.IsNullOrWhiteSpace(Username))
                     return false;
                 Step = UsernamePasswordStep.RequestPassword;
                 return false;
             case UsernamePasswordStep.RequestPassword:
-                if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+                if (!IsCurrentStepValid || string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
                     return false;
                 if (
                     CheckHandler is not null

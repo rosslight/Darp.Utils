@@ -58,13 +58,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             .CreateUsernamePasswordDialog("Supply a custom login")
             .ConfigureUsernameStep(
                 "Enter username",
-                username =>
+                validateUsername: username =>
                     new EmailAddressAttribute().IsValid(username)
                         ? ValidationResult.Success
                         : new ValidationResult("The Username should be a valid email address")
             )
             .ConfigurePasswordStep(
                 "Enter password",
+                validatePassword: s =>
+                    s.Length > 5
+                        ? ValidationResult.Success
+                        : new ValidationResult("The password should be at least 5 characters long"),
                 checkHandler: async (username, password, token) =>
                 {
                     await Task.Delay(1000, token);
