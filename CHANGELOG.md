@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.2](https://github.com/rosslight/Darp.Utils/compare/v2.1.1...v2.1.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* Properly catch invalid state for Input and UsernamePassword dialogs ([edd7099](https://github.com/rosslight/Darp.Utils/commit/edd7099f112b006a46b808c0cef15cc80ff7c675))
+* Some smaller races and inconsistencies in the DialogService ([ece77bd](https://github.com/rosslight/Darp.Utils/commit/ece77bd6d78797c4c0a6d9ad003c811d829ef2c8))
+* Use control specific Dispatchers from Avalonia v12 ([f7b2a8b](https://github.com/rosslight/Darp.Utils/commit/f7b2a8b70df039d069ce91f89ba5a9f5dcaba428))
+
 ## [2.1.1](https://github.com/rosslight/Darp.Utils/compare/v2.1.0...v2.1.1) (2026-06-27)
 
 
