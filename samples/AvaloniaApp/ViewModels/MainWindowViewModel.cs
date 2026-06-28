@@ -66,7 +66,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             .ConfigurePasswordStep(
                 "Enter password",
                 validatePassword: s =>
-                    s.Length > 5
+                    s.Length >= 5
                         ? ValidationResult.Success
                         : new ValidationResult("The password should be at least 5 characters long"),
                 checkHandler: async (username, password, token) =>

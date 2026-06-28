@@ -227,12 +227,13 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         CancellationTokenRegistration? registration = null;
         try
         {
-            registration = source.Token.Register(() => Dispatcher.UIThread.Invoke(() => Dialog.Hide()));
+            Dispatcher dispatcher = _topLevel?.Dispatcher ?? Dispatcher.UIThread;
+            registration = source.Token.Register(() => dispatcher.Invoke(() => Dialog.Hide()));
             ContentDialogResult result;
-            if (Dispatcher.UIThread.CheckAccess())
+            if (dispatcher.CheckAccess())
                 result = await ShowDialogAsync().ConfigureAwait(true);
             else
-                result = await Dispatcher.UIThread.InvokeAsync(ShowDialogAsync).ConfigureAwait(true);
+                result = await dispatcher.InvokeAsync(ShowDialogAsync).ConfigureAwait(true);
 
             return new ContentDialogResult<TContent>(result, Content);
         }

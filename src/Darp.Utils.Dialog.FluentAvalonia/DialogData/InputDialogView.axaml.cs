@@ -27,7 +27,7 @@ public partial class InputDialogView : UserControl
             InputBox.Classes.Add("revealPasswordButton");
         }
 
-        Dispatcher.UIThread.Post(() => InputBox.Focus());
+        Dispatcher.Post(() => InputBox.Focus());
 
         base.OnInitialized();
     }

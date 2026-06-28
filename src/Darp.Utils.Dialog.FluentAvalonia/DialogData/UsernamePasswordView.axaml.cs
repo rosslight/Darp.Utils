@@ -17,7 +17,7 @@ public partial class UsernamePasswordView : UserControl
     /// <inheritdoc />
     protected override void OnLoaded(RoutedEventArgs e)
     {
-        Dispatcher.UIThread.Post(() => UsernameTextBox.Focus());
+        Dispatcher.Post(() => UsernameTextBox.Focus());
         PasswordTextBox.TextChanged += (sender, args) =>
         {
             if (DataContext is UsernamePasswordViewModel vm)
@@ -36,9 +36,9 @@ public partial class UsernamePasswordView : UserControl
                 if (args.PropertyName is nameof(UsernamePasswordViewModel.Step))
                 {
                     if (vm.Step is UsernamePasswordStep.RequestUsername)
-                        Dispatcher.UIThread.Post(() => UsernameTextBox.Focus());
+                        Dispatcher.Post(() => UsernameTextBox.Focus());
                     else if (vm.Step is UsernamePasswordStep.RequestPassword)
-                        Dispatcher.UIThread.Post(() => PasswordTextBox.Focus());
+                        Dispatcher.Post(() => PasswordTextBox.Focus());
                 }
             };
         }
