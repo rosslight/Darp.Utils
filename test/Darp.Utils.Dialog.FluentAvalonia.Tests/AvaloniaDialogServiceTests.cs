@@ -1,6 +1,8 @@
 namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
 
+using System.Collections;
 using System.Reactive.Subjects;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -10,6 +12,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Darp.Utils.Dialog;
 using Darp.Utils.Dialog.DialogData;
+using global::FluentAvalonia.UI.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
@@ -168,6 +171,54 @@ public class AvaloniaDialogServiceTests
         builder.Dialog.IsPrimaryButtonEnabled.ShouldBeFalse();
     }
 
+    [Fact]
+    public void SetPrimaryButton_IsEnabled_ShouldNotRegisterDialogDisposablesOnService()
+    {
+        // Arrange
+        var service = new AvaloniaDialogService();
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42)
+        );
+        var subject = new BehaviorSubject<bool>(true);
+
+        // Act
+        builder.SetPrimaryButton("Ok", isEnabled: subject);
+
+        // Assert
+        service.GetRegisteredDisposableCount().ShouldBe(0);
+    }
+
+    [Fact]
+    public void SetPrimaryButton_IsEnabled_ShouldCancelPrimaryClick_WhenDisabled()
+    {
+        // Arrange
+        var service = new AvaloniaDialogService();
+        FluentAvaloniaContentDialogBuilder<int> builder = Dispatcher.UIThread.Invoke(() =>
+            new FluentAvaloniaContentDialogBuilder<int>(service, "Title", 42)
+        );
+        var subject = new BehaviorSubject<bool>(false);
+        var wasClicked = false;
+
+        // Act
+        builder.SetPrimaryButton(
+            "Ok",
+            isEnabled: subject,
+            onClick: (_, _) =>
+            {
+                wasClicked = true;
+                return Task.FromResult(true);
+            }
+        );
+        // Invoke the dialog hook directly: keyboard routing is not reliable in headless tests,
+        // and this is the path Enter/default-button activation ultimately reaches.
+        global::FluentAvalonia.UI.Controls.FAContentDialogButtonClickEventArgs args =
+            Extensions.InvokePrimaryButtonClick(builder.Dialog);
+
+        // Assert
+        wasClicked.ShouldBeFalse();
+        args.Cancel.ShouldBeTrue();
+    }
+
     [AvaloniaFact(Timeout = 5000)]
     public async Task SetPrimaryButton_OnClick_ShouldFireCorrectly()
     {
@@ -202,6 +253,28 @@ public class AvaloniaDialogServiceTests
         builder.ShouldBeEquivalentTo(returnedBuilder);
         contentReceivedOnClick.ShouldBe(content);
         result.Result.ShouldBe(ContentDialogResult.Primary);
+        result.Content.ShouldBe(content);
+        window.Close();
+    }
+
+    [AvaloniaFact(Timeout = 5000)]
+    public async Task ShowAsync_DisposeAwaitable_ShouldCloseDialogWithoutFaultingTask()
+    {
+        // Arrange
+        const int content = 42;
+        var service = new AvaloniaDialogService();
+        var window = new Window();
+        var builder = new FluentAvaloniaContentDialogBuilder<int>(service, "Title", content, window);
+
+        // Act
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        DialogAwaitable<int> dialog = builder.ShowAsync();
+        dialog.Dispose();
+        ContentDialogResult<int> result = await dialog;
+
+        // Assert
+        result.Result.ShouldBe(ContentDialogResult.None);
         result.Content.ShouldBe(content);
         window.Close();
     }
@@ -331,6 +404,37 @@ public class AvaloniaDialogServiceTests
 
 file static class Extensions
 {
+    public static int GetRegisteredDisposableCount(this AvaloniaDialogService service)
+    {
+        FieldInfo? field = typeof(AvaloniaDialogService).GetField(
+            "_disposables",
+            BindingFlags.Instance | BindingFlags.NonPublic
+        );
+        if (field?.GetValue(service) is not ICollection disposables)
+            return 0;
+        return disposables.Count;
+    }
+
+    public static global::FluentAvalonia.UI.Controls.FAContentDialogButtonClickEventArgs InvokePrimaryButtonClick(
+        global::FluentAvalonia.UI.Controls.FAContentDialog dialog
+    )
+    {
+        FAContentDialogButtonClickEventArgs args =
+            (global::FluentAvalonia.UI.Controls.FAContentDialogButtonClickEventArgs?)
+                Activator.CreateInstance(
+                    typeof(global::FluentAvalonia.UI.Controls.FAContentDialogButtonClickEventArgs),
+                    nonPublic: true
+                )
+            ?? throw new InvalidOperationException("Could not create primary button click event args");
+        MethodInfo method =
+            typeof(global::FluentAvalonia.UI.Controls.FAContentDialog).GetMethod(
+                "OnPrimaryButtonClick",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public
+            ) ?? throw new InvalidOperationException("Could not find primary button click handler");
+        method.Invoke(dialog, [args]);
+        return args;
+    }
+
     public static T GetFirstDescendant<T>(this Visual visual, string name)
         where T : StyledElement => visual.GetVisualDescendants().GetFirstDescendant<T>(name);
 

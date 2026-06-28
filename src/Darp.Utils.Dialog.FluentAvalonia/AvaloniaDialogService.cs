@@ -8,7 +8,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 public sealed class AvaloniaDialogService : IDialogService
 {
     private readonly Func<Type, TopLevel?> _topLevelGetter;
-    private readonly List<IDisposable> _disposables = [];
     private readonly Type? _dialogRootType;
 
     /// <summary>
@@ -38,27 +37,8 @@ public sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public IDialogService WithDialogRoot(Type dialogRootType)
-    {
-        return dialogRootType == _dialogRootType ? this : new AvaloniaDialogService(dialogRootType, _topLevelGetter);
-    }
-
-    internal T RegisterDisposable<T>(T disposable)
-        where T : IDisposable
-    {
-        _disposables.Add(disposable);
-        return disposable;
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        foreach (IDisposable disposable in _disposables)
-        {
-            disposable.Dispose();
-        }
-        _disposables.Clear();
-    }
+    public IDialogService WithDialogRoot(Type dialogRootType) =>
+        dialogRootType == _dialogRootType ? this : new AvaloniaDialogService(dialogRootType, _topLevelGetter);
 
     private static Window? GetCurrentApplicationWindow(Type? dialogRootType)
     {

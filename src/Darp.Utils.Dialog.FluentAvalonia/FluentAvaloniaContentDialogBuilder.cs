@@ -12,7 +12,6 @@ using Avalonia.Threading;
 using DialogData;
 using global::FluentAvalonia.Core;
 using ContentDialogButton = ContentDialogButton;
-using ContentDialogResult = Dialog.ContentDialogResult;
 using FluentContentDialog = global::FluentAvalonia.UI.Controls.FAContentDialog;
 using FluentContentDialogButton = global::FluentAvalonia.UI.Controls.FAContentDialogButton;
 
@@ -20,8 +19,8 @@ using FluentContentDialogButton = global::FluentAvalonia.UI.Controls.FAContentDi
 /// <typeparam name="TContent"> The type of the content </typeparam>
 public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialogBuilder<TContent>
 {
-    private readonly AvaloniaDialogService _dialogService;
     private readonly TopLevel? _topLevel;
+    private readonly List<IDisposable> _disposables = [];
 
     internal FluentContentDialog Dialog { get; }
 
@@ -46,7 +45,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         TopLevel? topLevel = null
     )
     {
-        _dialogService = dialogService;
+        ArgumentNullException.ThrowIfNull(dialogService);
         _topLevel = topLevel;
         Dialog = new FluentContentDialog { Title = title, Content = content };
         Dialog.AddHandler(
@@ -113,19 +112,29 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     {
         EnsureNotShown();
         Dialog.PrimaryButtonText = text;
-        BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
+        BehaviorSubject<bool> notExecutingSubject = RegisterDisposable(new BehaviorSubject<bool>(true));
+        var isButtonEnabled = true;
         if (isEnabled is not null)
         {
-            Dialog[!FluentContentDialog.IsPrimaryButtonEnabledProperty] = isEnabled
+            IObservable<bool> buttonEnabled = isEnabled
                 .CombineLatest(notExecutingSubject)
                 .Select(x => x.First && x.Second)
-                .ToBinding();
+                .Do(x => isButtonEnabled = x);
+            Dialog[!FluentContentDialog.IsPrimaryButtonEnabledProperty] = buttonEnabled.ToBinding();
         }
 
-        if (onClick is not null)
+        if (onClick is not null || isEnabled is not null)
         {
             Dialog.PrimaryButtonClick += async (_, args) =>
             {
+                if (!isButtonEnabled)
+                {
+                    args.Cancel = true;
+                    return;
+                }
+                if (onClick is null)
+                    return;
+
                 FADeferral? deferral = null;
                 try
                 {
@@ -153,19 +162,29 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
     {
         EnsureNotShown();
         Dialog.SecondaryButtonText = text;
-        BehaviorSubject<bool> notExecutingSubject = _dialogService.RegisterDisposable(new BehaviorSubject<bool>(true));
+        BehaviorSubject<bool> notExecutingSubject = RegisterDisposable(new BehaviorSubject<bool>(true));
+        var isButtonEnabled = true;
         if (isEnabled is not null)
         {
-            Dialog[!FluentContentDialog.IsSecondaryButtonEnabledProperty] = isEnabled
+            IObservable<bool> buttonEnabled = isEnabled
                 .CombineLatest(notExecutingSubject)
                 .Select(x => x.First && x.Second)
-                .ToBinding();
+                .Do(x => isButtonEnabled = x);
+            Dialog[!FluentContentDialog.IsSecondaryButtonEnabledProperty] = buttonEnabled.ToBinding();
         }
 
-        if (onClick is not null)
+        if (onClick is not null || isEnabled is not null)
         {
             Dialog.SecondaryButtonClick += async (_, args) =>
             {
+                if (!isButtonEnabled)
+                {
+                    args.Cancel = true;
+                    return;
+                }
+                if (onClick is null)
+                    return;
+
                 FADeferral? deferral = null;
                 try
                 {
@@ -208,10 +227,7 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
         CancellationTokenRegistration? registration = null;
         try
         {
-            registration = source.Token.Register(() =>
-            {
-                Dispatcher.UIThread.Invoke(() => Dialog.Hide());
-            });
+            registration = source.Token.Register(() => Dispatcher.UIThread.Invoke(() => Dialog.Hide()));
             ContentDialogResult result;
             if (Dispatcher.UIThread.CheckAccess())
                 result = await ShowDialogAsync().ConfigureAwait(true);
@@ -225,11 +241,29 @@ public sealed class FluentAvaloniaContentDialogBuilder<TContent> : IContentDialo
             if (registration is not null)
                 await registration.Value.DisposeAsync().ConfigureAwait(true);
             if (_cancelTokenSource is not null)
+            {
                 await _cancelTokenSource.CancelAsync().ConfigureAwait(true);
+                _cancelTokenSource.Dispose();
+            }
+            DisposeDisposables();
         }
 
         async Task<ContentDialogResult> ShowDialogAsync() =>
             (ContentDialogResult)await Dialog.ShowAsync(_topLevel).ConfigureAwait(true);
+    }
+
+    private T RegisterDisposable<T>(T disposable)
+        where T : IDisposable
+    {
+        _disposables.Add(disposable);
+        return disposable;
+    }
+
+    private void DisposeDisposables()
+    {
+        foreach (IDisposable disposable in _disposables)
+            disposable.Dispose();
+        _disposables.Clear();
     }
 
     private void EnsureNotShown([CallerMemberName] string? operationName = null)

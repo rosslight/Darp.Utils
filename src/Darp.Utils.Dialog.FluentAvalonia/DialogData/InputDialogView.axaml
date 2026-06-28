@@ -31,7 +31,7 @@
         </SelectableTextBlock>
         <TextBox Name="InputBox"
                  Text="{CompiledBinding Input}"
-                 Watermark="{CompiledBinding InputWatermark}"
+                 PlaceholderText="{CompiledBinding InputWatermark}"
                  PasswordChar="{CompiledBinding IsPasswordInput, Converter={x:Static dialogData1:Converters.DialogCharConverter}}"
                  Classes.revealPasswordButton="{CompiledBinding IsPasswordInput}"/>
     </StackPanel>
