@@ -26,7 +26,7 @@ public class ResxGeneratorTests
             TestState = { AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) } },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ build_metadata.EmbeddedResource.RelativeDir = Second/
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -89,7 +89,7 @@ build_property.RootNamespace = {rootNamespace}
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -118,7 +118,7 @@ build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -147,14 +147,16 @@ build_metadata.EmbeddedResource.ClassName = {className}
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
     [InlineData("0", "value {0}")]
     [InlineData("replacement", "value {replacement}")]
+    [InlineData("replacement_T", "Snapshot captured at {replacement:T}")]
     [InlineData("x", "value {x}")]
     [InlineData("0_1_2", "value {0} {1} {2}")]
+    [InlineData("0_T", "Snapshot captured at {0:T}")]
     public async Task SingleString_EmitFormatMethodsAsync(string identifier, string value)
     {
         var code = ResxDocument("Name", value);
@@ -179,7 +181,7 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -198,7 +200,7 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -224,7 +226,7 @@ build_metadata.EmbeddedResource.Public = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -249,7 +251,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -269,7 +271,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                     ),
                 },
             },
-        }.RunAsync();
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -294,7 +296,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                         .WithArguments(key),
                 },
             },
-        }.RunAsync();
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -317,7 +319,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                         .WithArguments("Name"),
                 },
             },
-        }.RunAsync();
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -340,7 +342,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -366,6 +368,6 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 }

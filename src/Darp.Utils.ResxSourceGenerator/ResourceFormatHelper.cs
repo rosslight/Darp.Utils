@@ -34,18 +34,4 @@ internal static class ResourceFormatHelper
 
         return arguments.ToList();
     }
-
-    public static string ReplaceNamedFormatItems(string value, IReadOnlyList<string>? formatterNames)
-    {
-        if (formatterNames is null)
-            return value;
-
-        for (var i = 0; i < formatterNames.Count; i++)
-        {
-            var pattern = @"(?<!\{)\{" + Regex.Escape(formatterNames[i]) + @"(,\s*-?\d+)?(:[^{}]*)?\}(?!\})";
-            value = Regex.Replace(value, pattern, match => $"{{{i}{match.Groups[1].Value}{match.Groups[2].Value}}}");
-        }
-
-        return value;
-    }
 }

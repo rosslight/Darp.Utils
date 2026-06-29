@@ -3,7 +3,6 @@ namespace Darp.Utils.ResxSourceGenerator;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
@@ -97,6 +96,7 @@ internal static class BuildHelper
         }
 
         string? getStringMethod = null;
+        string? formatHelperMethods = null;
         if (resourceInformation.Settings.EmitFormatMethods)
         {
             getStringMethod += $$$$"""
@@ -106,9 +106,115 @@ internal static class BuildHelper
 {{{{memberIndent}}}}    if (formatterNames == null) return value;
 {{{{memberIndent}}}}    for (var i = 0; i < formatterNames.Length; i++)
 {{{{memberIndent}}}}    {
-{{{{memberIndent}}}}        value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
+{{{{memberIndent}}}}        value = ReplaceNamedFormatItem(value, formatterNames[i], i);
 {{{{memberIndent}}}}    }
 {{{{memberIndent}}}}    return value;
+{{{{memberIndent}}}}}
+
+""";
+            formatHelperMethods += $$$$"""
+{{{{memberIndent}}}}private static string ReplaceNamedFormatItem(string value, string formatterName, int index)
+{{{{memberIndent}}}}{
+{{{{memberIndent}}}}    global::System.Text.StringBuilder? builder = null;
+{{{{memberIndent}}}}    var appendFrom = 0;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    for (var i = 0; i < value.Length; i++)
+{{{{memberIndent}}}}    {
+{{{{memberIndent}}}}        if (value[i] != '{')
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}        if (i + 1 < value.Length && value[i + 1] == '{')
+{{{{memberIndent}}}}        {
+{{{{memberIndent}}}}            i++;
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}        }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        var nameStart = i + 1;
+{{{{memberIndent}}}}        if (!IsMatchAt(value, nameStart, formatterName))
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        var suffixStart = nameStart + formatterName.Length;
+{{{{memberIndent}}}}        if (suffixStart >= value.Length)
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        var suffixEnd = suffixStart;
+{{{{memberIndent}}}}        while (suffixEnd < value.Length && value[suffixEnd] != '}')
+{{{{memberIndent}}}}        {
+{{{{memberIndent}}}}            if (value[suffixEnd] == '{')
+{{{{memberIndent}}}}            {
+{{{{memberIndent}}}}                suffixEnd = -1;
+{{{{memberIndent}}}}                break;
+{{{{memberIndent}}}}            }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}            suffixEnd++;
+{{{{memberIndent}}}}        }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        if (suffixEnd < 0 || suffixEnd >= value.Length)
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}        if (suffixEnd + 1 < value.Length && value[suffixEnd + 1] == '}')
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}        if (!IsValidFormatSuffix(value, suffixStart, suffixEnd))
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        builder ??= new global::System.Text.StringBuilder(value.Length);
+{{{{memberIndent}}}}        builder.Append(value, appendFrom, i - appendFrom);
+{{{{memberIndent}}}}        builder.Append('{').Append(index);
+{{{{memberIndent}}}}        builder.Append(value, suffixStart, suffixEnd - suffixStart);
+{{{{memberIndent}}}}        builder.Append('}');
+{{{{memberIndent}}}}        appendFrom = suffixEnd + 1;
+{{{{memberIndent}}}}        i = suffixEnd;
+{{{{memberIndent}}}}    }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    if (builder == null)
+{{{{memberIndent}}}}        return value;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    builder.Append(value, appendFrom, value.Length - appendFrom);
+{{{{memberIndent}}}}    return builder.ToString();
+{{{{memberIndent}}}}}
+
+{{{{memberIndent}}}}private static bool IsMatchAt(string value, int start, string formatterName)
+{{{{memberIndent}}}}{
+{{{{memberIndent}}}}    if (start + formatterName.Length > value.Length)
+{{{{memberIndent}}}}        return false;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    for (var i = 0; i < formatterName.Length; i++)
+{{{{memberIndent}}}}    {
+{{{{memberIndent}}}}        if (value[start + i] != formatterName[i])
+{{{{memberIndent}}}}            return false;
+{{{{memberIndent}}}}    }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    return true;
+{{{{memberIndent}}}}}
+
+{{{{memberIndent}}}}private static bool IsValidFormatSuffix(string value, int start, int end)
+{{{{memberIndent}}}}{
+{{{{memberIndent}}}}    if (start == end)
+{{{{memberIndent}}}}        return true;
+{{{{memberIndent}}}}    if (value[start] == ':')
+{{{{memberIndent}}}}        return true;
+{{{{memberIndent}}}}    if (value[start] != ',')
+{{{{memberIndent}}}}        return false;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    var i = start + 1;
+{{{{memberIndent}}}}    while (i < end && char.IsWhiteSpace(value[i]))
+{{{{memberIndent}}}}    {
+{{{{memberIndent}}}}        i++;
+{{{{memberIndent}}}}    }
+{{{{memberIndent}}}}    if (i < end && value[i] == '-')
+{{{{memberIndent}}}}    {
+{{{{memberIndent}}}}        i++;
+{{{{memberIndent}}}}    }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    var digitStart = i;
+{{{{memberIndent}}}}    while (i < end && char.IsDigit(value[i]))
+{{{{memberIndent}}}}    {
+{{{{memberIndent}}}}        i++;
+{{{{memberIndent}}}}    }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    if (i == digitStart)
+{{{{memberIndent}}}}        return false;
+{{{{memberIndent}}}}    if (i == end)
+{{{{memberIndent}}}}        return true;
+{{{{memberIndent}}}}    return value[i] == ':';
 {{{{memberIndent}}}}}
 
 """;
@@ -159,7 +265,7 @@ internal static class BuildHelper
 {{memberIndent}}{
 {{keysMembers}}
 {{memberIndent}}}
-{{classIndent}}}
+{{formatHelperMethods}}{{classIndent}}}
 """;
         var debugInformation = resourceCollection.GenerateDebugInformation();
         var result = $"""
@@ -574,33 +680,14 @@ namespace {{namespaceName}}
 
     private readonly struct ResourceString
     {
-        private static readonly Regex NamedParameterMatcher = new(
-            @"\{([a-z]\w*)\}",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled
-        );
-        private static readonly Regex NumberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
         private readonly IReadOnlyList<string> _arguments;
 
         public ResourceString(string identifier, string value)
         {
             Identifier = identifier;
             Value = value;
-
-            MatchCollection match = NamedParameterMatcher.Matches(value);
-            UsingNamedArgs = match.Count > 0;
-
-            if (!UsingNamedArgs)
-            {
-                match = NumberParameterMatcher.Matches(value);
-            }
-
-            IEnumerable<string> arguments = match.Cast<Match>().Select(m => m.Groups[1].Value).Distinct();
-            if (!UsingNamedArgs)
-            {
-                arguments = arguments.OrderBy(Convert.ToInt32);
-            }
-
-            _arguments = arguments.ToList();
+            _arguments = ResourceFormatHelper.GetArguments(value, out var usingNamedArgs);
+            UsingNamedArgs = usingNamedArgs;
         }
 
         public string Identifier { get; }
