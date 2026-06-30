@@ -103,8 +103,6 @@ namespace TestProject
         
                 if (suffixEnd < 0 || suffixEnd >= value.Length)
                     continue;
-                if (suffixEnd + 1 < value.Length && value[suffixEnd + 1] == '}')
-                    continue;
                 if (!IsValidFormatSuffix(value, suffixStart, suffixEnd))
                     continue;
         

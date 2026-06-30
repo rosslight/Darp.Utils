@@ -150,8 +150,6 @@ internal static class BuildHelper
 {{{{memberIndent}}}}
 {{{{memberIndent}}}}        if (suffixEnd < 0 || suffixEnd >= value.Length)
 {{{{memberIndent}}}}            continue;
-{{{{memberIndent}}}}        if (suffixEnd + 1 < value.Length && value[suffixEnd + 1] == '}')
-{{{{memberIndent}}}}            continue;
 {{{{memberIndent}}}}        if (!IsValidFormatSuffix(value, suffixStart, suffixEnd))
 {{{{memberIndent}}}}            continue;
 {{{{memberIndent}}}}

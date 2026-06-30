@@ -16,6 +16,8 @@ public sealed class GeneratedResourcesTests
         resources.FormatNumericTime(timestamp).ShouldBe("Numeric 13:45");
         resources.FormatNamedTime(timestamp).ShouldBe("Named 13:45");
         resources.FormatNamedAligned(timestamp).ShouldBe("Aligned '      13'");
+        resources.FormatNamedBracedTime(timestamp).ShouldBe("Braced {13:45}");
+        resources.FormatNamedTrailingBrace(timestamp).ShouldBe("Trailing 13:45}");
     }
 
     [Theory]
@@ -33,6 +35,8 @@ public sealed class GeneratedResourcesTests
     [InlineData("{myName,10}", "myName", 0, "{0,10}")]
     [InlineData("{myName,10:T}", "myName", 0, "{0,10:T}")]
     [InlineData("{{myName:T}}", "myName", 0, "{{myName:T}}")]
+    [InlineData("{{{myName:T}}}", "myName", 0, "{{{0:T}}}")]
+    [InlineData("{myName}}}", "myName", 0, "{0}}}")]
     [InlineData("{myNameTotal:T}", "myName", 0, "{myNameTotal:T}")]
     [InlineData("{myName:T} {otherName:N2}", "otherName", 1, "{myName:T} {1:N2}")]
     public void GeneratedReplaceNamedFormatItem_ShouldPreserveCompositeFormatItemShape(

@@ -67,6 +67,12 @@
   <data name="NamedAligned" xml:space="preserve">
     <value>Aligned '{timestamp,8:HH}'</value>
   </data>
+  <data name="NamedBracedTime" xml:space="preserve">
+    <value>Braced {{{timestamp:HH:mm}}}</value>
+  </data>
+  <data name="NamedTrailingBrace" xml:space="preserve">
+    <value>Trailing {timestamp:HH:mm}}}</value>
+  </data>
   <data name="LocalizedNumber" xml:space="preserve">
     <value>Amount {amount:N2}</value>
   </data>

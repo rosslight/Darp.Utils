@@ -12,6 +12,10 @@ public sealed class ResourceFormatHelperTests
     [InlineData("{myName,10}", true, "myName")]
     [InlineData("{0,10:T}", false, "0")]
     [InlineData("{myName,10:T}", true, "myName")]
+    [InlineData("{{{0}}}", false, "0")]
+    [InlineData("{0}}}", false, "0")]
+    [InlineData("{{{myName:T}}}", true, "myName")]
+    [InlineData("{myName}}}", true, "myName")]
     public void GetArguments_ShouldFindArgumentsInCompositeFormatItems(
         string value,
         bool expectedUsingNamedArgs,
@@ -33,5 +37,16 @@ public sealed class ResourceFormatHelperTests
         IReadOnlyList<string> arguments = ResourceFormatHelper.GetArguments(value, out _);
 
         arguments.ShouldBe(expectedArguments);
+    }
+
+    [Theory]
+    [InlineData("{{0}}")]
+    [InlineData("{{myName:T}}")]
+    public void GetArguments_ShouldIgnoreEscapedBraceLiterals(string value)
+    {
+        IReadOnlyList<string> arguments = ResourceFormatHelper.GetArguments(value, out var usingNamedArgs);
+
+        usingNamedArgs.ShouldBeFalse();
+        arguments.ShouldBeEmpty();
     }
 }

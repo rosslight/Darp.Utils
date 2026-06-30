@@ -154,6 +154,7 @@ build_metadata.EmbeddedResource.ClassName = {className}
     [InlineData("0", "value {0}")]
     [InlineData("replacement", "value {replacement}")]
     [InlineData("replacement_T", "Snapshot captured at {replacement:T}")]
+    [InlineData("replacement_braces_T", "Snapshot captured at {{{replacement:T}}}")]
     [InlineData("x", "value {x}")]
     [InlineData("0_1_2", "value {0} {1} {2}")]
     [InlineData("0_T", "Snapshot captured at {0:T}")]
