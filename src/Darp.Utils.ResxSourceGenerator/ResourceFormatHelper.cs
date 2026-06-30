@@ -2,11 +2,17 @@ namespace Darp.Utils.ResxSourceGenerator;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 internal static class ResourceFormatHelper
 {
     public static IReadOnlyList<string> GetArguments(string value, out bool usingNamedArgs)
+    {
+        return GetArguments(value, out usingNamedArgs, out _);
+    }
+
+    public static IReadOnlyList<string> GetArguments(string value, out bool usingNamedArgs, out bool hasMixedArguments)
     {
         var namedArguments = new List<string>();
         var numberedArguments = new List<string>();
@@ -33,13 +39,26 @@ internal static class ResourceFormatHelper
             i = end;
         }
 
+        hasMixedArguments = namedArguments.Count > 0 && numberedArguments.Count > 0;
+        if (hasMixedArguments)
+        {
+            usingNamedArgs = false;
+            return [];
+        }
+
         usingNamedArgs = namedArguments.Count > 0;
         if (usingNamedArgs)
         {
             return namedArguments;
         }
 
-        return numberedArguments.OrderBy(Convert.ToInt32).ToList();
+        if (numberedArguments.Count == 0)
+        {
+            return numberedArguments;
+        }
+
+        var maxArgumentIndex = numberedArguments.Select(x => Convert.ToInt32(x, CultureInfo.InvariantCulture)).Max();
+        return Enumerable.Range(0, maxArgumentIndex + 1).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
     }
 
     private static bool TryReadFormatItem(

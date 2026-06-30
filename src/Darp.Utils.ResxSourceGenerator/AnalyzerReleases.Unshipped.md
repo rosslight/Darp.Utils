@@ -7,3 +7,4 @@
 | DarpResX003 | Globalization | Warning  | Missing Value in resource file       |
 | DarpResX004 | Globalization | Warning  | Duplicate Key in resource file       |
 | DarpResX005 | Globalization | Warning  | Missing translation for specific Key |
+| DarpResX006 | Globalization | Warning  | Mixed format argument styles         |

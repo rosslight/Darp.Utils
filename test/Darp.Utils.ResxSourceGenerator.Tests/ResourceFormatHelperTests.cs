@@ -31,6 +31,7 @@ public sealed class ResourceFormatHelperTests
     [Theory]
     [InlineData("{0} {1} {2}", "0", "1", "2")]
     [InlineData("{2} {0} {1}", "0", "1", "2")]
+    [InlineData("{1:T}", "0", "1")]
     [InlineData("{myName} {otherName}", "myName", "otherName")]
     public void GetArguments_ShouldReturnDistinctArgumentsInStableOrder(string value, params string[] expectedArguments)
     {
@@ -47,6 +48,20 @@ public sealed class ResourceFormatHelperTests
         IReadOnlyList<string> arguments = ResourceFormatHelper.GetArguments(value, out var usingNamedArgs);
 
         usingNamedArgs.ShouldBeFalse();
+        arguments.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void GetArguments_ShouldRejectMixedNamedAndNumberedArguments()
+    {
+        IReadOnlyList<string> arguments = ResourceFormatHelper.GetArguments(
+            "{0} {myName}",
+            out var usingNamedArgs,
+            out var hasMixedArguments
+        );
+
+        usingNamedArgs.ShouldBeFalse();
+        hasMixedArguments.ShouldBeTrue();
         arguments.ShouldBeEmpty();
     }
 }

@@ -64,6 +64,16 @@ internal static class BuildHelper
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor MixedFormatArgumentsWarning = new(
+        id: "DarpResX006",
+        title: "Mixed format argument styles",
+        messageFormat: "Entry with key '{0}' mixes named and numbered format items and will not get a format method",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
+
     public static bool TryGenerateSource(
         ResourceCollection resourceCollection,
         in List<Diagnostic> diagnostics,
@@ -381,6 +391,18 @@ internal static class BuildHelper
                 var resourceString = new ResourceString(propertyIdentifier, value);
                 if (resourceString.HasArguments)
                 {
+                    if (resourceString.HasMixedArguments)
+                    {
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                descriptor: MixedFormatArgumentsWarning,
+                                location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
+                                messageArgs: [name]
+                            )
+                        );
+                        continue;
+                    }
+
                     RenderFormatMethod(memberIndent, membersBuilder, resourceString);
                 }
             }
@@ -684,8 +706,9 @@ namespace {{namespaceName}}
         {
             Identifier = identifier;
             Value = value;
-            _arguments = ResourceFormatHelper.GetArguments(value, out var usingNamedArgs);
+            _arguments = ResourceFormatHelper.GetArguments(value, out var usingNamedArgs, out var hasMixedArguments);
             UsingNamedArgs = usingNamedArgs;
+            HasMixedArguments = hasMixedArguments;
         }
 
         public string Identifier { get; }
@@ -693,7 +716,9 @@ namespace {{namespaceName}}
 
         public bool UsingNamedArgs { get; }
 
-        public bool HasArguments => _arguments.Count > 0;
+        public bool HasArguments => _arguments.Count > 0 || HasMixedArguments;
+
+        public bool HasMixedArguments { get; }
 
         public string GetArgumentNames() => string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
 

@@ -61,6 +61,9 @@
   <data name="NumericTime" xml:space="preserve">
     <value>Numeric {0:HH:mm}</value>
   </data>
+  <data name="NumericSecondTime" xml:space="preserve">
+    <value>Numeric second {1:HH:mm}</value>
+  </data>
   <data name="NamedTime" xml:space="preserve">
     <value>Named {timestamp:HH:mm}</value>
   </data>

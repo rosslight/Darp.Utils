@@ -14,6 +14,7 @@ public sealed class GeneratedResourcesTests
         var timestamp = new DateTime(2024, 1, 2, 13, 45, 0);
 
         resources.FormatNumericTime(timestamp).ShouldBe("Numeric 13:45");
+        resources.FormatNumericSecondTime("ignored", timestamp).ShouldBe("Numeric second 13:45");
         resources.FormatNamedTime(timestamp).ShouldBe("Named 13:45");
         resources.FormatNamedAligned(timestamp).ShouldBe("Aligned '      13'");
         resources.FormatNamedBracedTime(timestamp).ShouldBe("Braced {13:45}");
