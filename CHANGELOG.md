@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/rosslight/Darp.Utils/compare/v2.1.2...v2.1.3) (2026-09-06)
+
+
+### Bug Fixes
+
+* No more errors caused by duplicate resx entries ([#46](https://github.com/rosslight/Darp.Utils/issues/46)) ([30a2649](https://github.com/rosslight/Darp.Utils/commit/30a264946814bd44c25a0c14c68c041da4495766))
+
 ## [2.1.2](https://github.com/rosslight/Darp.Utils/compare/v2.1.1...v2.1.2) (2026-06-28)
 
 
