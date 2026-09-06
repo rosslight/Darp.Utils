@@ -1,6 +1,27 @@
 <Project>
   <!-- Inspired by Microsoft.CodeAnalysis.ResxSourceGenerator targets file -->
   <Target
+    Name="AddResxFilesToSourceGenerator"
+    DependsOnTargets="PrepareResourceNames"
+    BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile"
+  >
+    <ItemGroup>
+      <!-- Keep one AdditionalFiles item per RESX so Roslyn and dotnet watch load one document per path. -->
+      <_ResxSourceGeneratorResource Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.resx'" />
+      <AdditionalFiles Remove="@(_ResxSourceGeneratorResource)" />
+      <AdditionalFiles
+        Include="@(_ResxSourceGeneratorResource)"
+        WithCulture="%(_ResxSourceGeneratorResource.WithCulture)"
+        GenerateSource="%(_ResxSourceGeneratorResource.GenerateSource)"
+        ClassName="%(_ResxSourceGeneratorResource.ClassName)"
+        EmitFormatMethods="%(_ResxSourceGeneratorResource.EmitFormatMethods)"
+        Public="%(_ResxSourceGeneratorResource.Public)"
+      />
+      <_ResxSourceGeneratorResource Remove="@(_ResxSourceGeneratorResource)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
     Name="ShowResxFilesInHierarchy"
     BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile"
     Condition="$(ResxSourceGenerator_SkipShowResxFilesInHierarchy) != 'true'"
