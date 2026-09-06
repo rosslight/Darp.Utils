@@ -51,10 +51,10 @@ is_global = true
 build_property.RootNamespace = TestProject
 
 [/0/First/Resources.resx]
-build_metadata.EmbeddedResource.RelativeDir = First/
+build_metadata.AdditionalFiles.RelativeDir = First/
 
 [/0/Second/Resources.resx]
-build_metadata.EmbeddedResource.RelativeDir = Second/
+build_metadata.AdditionalFiles.RelativeDir = Second/
 "
                     ),
                 },
@@ -111,7 +111,7 @@ build_property.RootNamespace = {rootNamespace}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
+build_metadata.AdditionalFiles.RelativeDir = {relativeDir}
 "
                     ),
                 },
@@ -140,7 +140,7 @@ build_metadata.EmbeddedResource.RelativeDir = {relativeDir}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.EmbeddedResource.ClassName = {className}
+build_metadata.AdditionalFiles.ClassName = {className}
 """
                     ),
                 },
@@ -172,7 +172,7 @@ build_metadata.EmbeddedResource.ClassName = {className}
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.EmbeddedResource.EmitFormatMethods = true
+build_metadata.AdditionalFiles.EmitFormatMethods = true
 """
                     ),
                 },
@@ -202,6 +202,28 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
     }
 
     [Fact]
+    public async Task SingleString_DuplicateResourceFilesAsync()
+    {
+        await new VerifyCS.Test(testMethod: nameof(SingleString_DifferentLanguagesAsync))
+        {
+            TestState =
+            {
+                AdditionalFiles =
+                {
+                    ("/0/Resources.resx", ResxDocument("Name", "value")),
+                    ("/0/Resources.resx", ResxDocument("Name", "value")),
+                    ("/0/Resources.de-DE.resx", ResxDocument("Name", "DE: value")),
+                    ("/0/Resources.de-DE.resx", ResxDocument("Name", "DE: value")),
+                    ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
+                    ("/0/Resources.fr.resx", ResxDocument("Name", "FR: value")),
+                },
+            },
+        }
+            .AddGeneratedSources()
+            .RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
     public async Task SingleString_PublicAsync()
     {
         await new VerifyCS.Test
@@ -217,7 +239,7 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
 is_global = true
 
 [/0/Resources.resx]
-build_metadata.EmbeddedResource.Public = true
+build_metadata.AdditionalFiles.Public = true
 """
                     ),
                 },
