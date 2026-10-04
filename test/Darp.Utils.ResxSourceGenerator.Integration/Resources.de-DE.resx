@@ -94,4 +94,5 @@
   <data name="ReplaceNamedFormatItems" xml:space="preserve"><value>Helper name is a valid key</value></data>
   <data name="ReplaceNamedFormatItems_" xml:space="preserve"><value>Helper suffix is also a valid key</value></data>
   <data name="IdentifierEquivalence" xml:space="preserve"><value>{cl&#x200D;ass} / {ab_} / {a&#x200D;b} / {ab}</value></data>
+  <data name="ReplaceNamedFormat&#x200D;Items__" xml:space="preserve"><value>Equivalent helper name</value></data>
 </root>

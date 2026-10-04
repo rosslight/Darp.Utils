@@ -298,9 +298,12 @@ internal static class BuildHelper
             );
             return false;
         }
-        var memberNames = new HashSet<string>(values.Keys.Select(GetIdentifierFromResourceName), StringComparer.Ordinal)
+        var memberNames = new HashSet<string>(
+            values.Keys.Select(x => GetIdentifierComparisonName(GetIdentifierFromResourceName(x))),
+            StringComparer.Ordinal
+        )
         {
-            resourceInformation.ClassName,
+            GetIdentifierComparisonName(resourceInformation.ClassName),
         };
         Dictionary<CultureInfo, Dictionary<string, XElement>> otherCulturesEntries = [];
         foreach (KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages)
@@ -349,7 +352,7 @@ internal static class BuildHelper
                     case FormatArgumentStyle.Numbered:
                     case FormatArgumentStyle.Named:
                         var methodName = "Format" + propertyIdentifier;
-                        if (memberNames.Contains(methodName))
+                        if (memberNames.Contains(GetIdentifierComparisonName(methodName)))
                         {
                             diagnostics.Add(
                                 Diagnostic.Create(
@@ -463,9 +466,7 @@ internal static class BuildHelper
         foreach (var argument in arguments)
         {
             // C# ignores formatting characters in identifiers; resource names remain ordinal strings.
-            var parameterName = usingNamedArgs
-                ? new string(argument.Where(c => char.GetUnicodeCategory(c) != UnicodeCategory.Format).ToArray())
-                : "p" + argument;
+            var parameterName = usingNamedArgs ? GetIdentifierComparisonName(argument) : "p" + argument;
             while (!usedParameterNames.Add(parameterName))
                 parameterName += "_";
             parameterNames.Add(parameterName);
@@ -492,6 +493,10 @@ internal static class BuildHelper
 """
         );
     }
+
+    // C# removes Unicode formatting characters when comparing identifiers.
+    private static string GetIdentifierComparisonName(string identifier) =>
+        new string(identifier.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.Format).ToArray());
 
     private static string EscapeKeyword(string identifier) =>
         SyntaxFacts.GetKeywordKind(identifier) is SyntaxKind.None ? identifier : "@" + identifier;

@@ -269,6 +269,7 @@ Both remain available when a formatting diagnostic prevents method generation.
   a name unknown to the default resource is left untouched and causes a `FormatException` when formatting.
 - Numbered and named items cannot be mixed in a single value (see [DarpResX006](#darpresx006---mixed-format-argument-styles)).
 - A format method whose name matches a resource property or the containing class is omitted with [DarpResX008](#darpresx008---format-method-name-collision).
+  These comparisons ignore Unicode formatting characters, as C# identifier comparisons do.
   Its resource property and key remain available; public methods are not silently renamed.
 
 ### Public

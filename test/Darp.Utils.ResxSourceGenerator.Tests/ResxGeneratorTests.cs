@@ -238,8 +238,11 @@ namespace TestProject
         }.RunAsync(TestContext.Current.CancellationToken);
     }
 
-    [Fact]
-    public async Task FormatMethodNameCollision_ShouldWarnAndRetainRawProperties()
+    [Theory]
+    [InlineData("Name", "FormatName")]
+    [InlineData("Name", "For\u200DmatName")]
+    [InlineData("Na\u200Dme", "FormatName")]
+    public async Task FormatMethodNameCollision_ShouldWarnAndRetainRawProperties(string name, string conflictingName)
     {
         await new VerifyCS.Test
         {
@@ -250,7 +253,7 @@ namespace TestProject
                 {
                     (
                         "/0/Resources.resx",
-                        ResxDocumentWithValues([("Name", "{0:T}"), ("FormatName", "Existing resource")])
+                        ResxDocumentWithValues([(name, "{0:T}"), (conflictingName, "Existing resource")])
                     ),
                 },
                 AnalyzerConfigFiles =
@@ -268,14 +271,16 @@ namespace TestProject
                 {
                     new DiagnosticResult("DarpResX008", DiagnosticSeverity.Warning)
                         .WithLocation("/0/Resources.resx", default)
-                        .WithArguments("Name", "FormatName"),
+                        .WithArguments(name, "Format" + name),
                 },
             },
         }.RunAsync(TestContext.Current.CancellationToken);
     }
 
-    [Fact]
-    public async Task FormatMethodNameMatchingClass_ShouldWarnAndRetainRawAccess()
+    [Theory]
+    [InlineData("FormatName")]
+    [InlineData("For\u200DmatName")]
+    public async Task FormatMethodNameMatchingClass_ShouldWarnAndRetainRawAccess(string className)
     {
         await new VerifyCS.Test
         {
@@ -287,7 +292,7 @@ namespace TestProject
                 {
                     (
                         "/.globalconfig",
-                        "is_global = true\n\n[/0/Resources.resx]\nbuild_metadata.AdditionalFiles.EmitFormatMethods = true\nbuild_metadata.AdditionalFiles.ClassName = TestProject.FormatName\n"
+                        $"is_global = true\n\n[/0/Resources.resx]\nbuild_metadata.AdditionalFiles.EmitFormatMethods = true\nbuild_metadata.AdditionalFiles.ClassName = TestProject.{className}\n"
                     ),
                 },
                 Sources =
