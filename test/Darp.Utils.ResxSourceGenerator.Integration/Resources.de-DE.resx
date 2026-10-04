@@ -91,4 +91,6 @@
   <data name="LookupCollision" xml:space="preserve"><value>{name}</value></data>
   <data name="{name}" xml:space="preserve"><value>Wrong resource</value></data>
   <data name="InvalidSpecifier" xml:space="preserve"><value>{value:Q}</value></data>
+  <data name="ReplaceNamedFormatItems" xml:space="preserve"><value>Helper name is a valid key</value></data>
+  <data name="ReplaceNamedFormatItems_" xml:space="preserve"><value>Helper suffix is also a valid key</value></data>
 </root>

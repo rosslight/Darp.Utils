@@ -107,7 +107,7 @@ internal static class BuildHelper
                 memberIndent,
                 out var members,
                 out var keysMembers,
-                out var hasNamedFormatMethods,
+                out var formatHelperName,
                 diagnostics,
                 cancellationToken
             )
@@ -118,12 +118,12 @@ internal static class BuildHelper
         }
 
         string? formatHelperMethods = null;
-        if (hasNamedFormatMethods)
+        if (formatHelperName is not null)
         {
             formatHelperMethods = $$$$"""
 
 {{{{memberIndent}}}}/// <summary>Replace the names of format items like <c>{name:T}</c> with their index in <paramref name="names"/></summary>
-{{{{memberIndent}}}}private static string ReplaceNamedFormatItems(string value, string[] names)
+{{{{memberIndent}}}}private static string {{{{formatHelperName}}}}(string value, string[] names)
 {{{{memberIndent}}}}{
 {{{{memberIndent}}}}    global::System.Text.StringBuilder? builder = null;
 {{{{memberIndent}}}}    var appendFrom = 0;
@@ -252,12 +252,12 @@ internal static class BuildHelper
         string memberIndent,
         [NotNullWhen(true)] out string? members,
         [NotNullWhen(true)] out string? keysMembers,
-        out bool hasNamedFormatMethods,
+        out string? formatHelperName,
         in List<Diagnostic> diagnostics,
         CancellationToken cancellationToken
     )
     {
-        hasNamedFormatMethods = false;
+        formatHelperName = null;
         ResourceInformation resourceInformation = resourceCollection.BaseInformation;
         var classReference = resourceInformation.Namespace is null
             ? $"global::{resourceInformation.ClassName}"
@@ -334,7 +334,19 @@ internal static class BuildHelper
                 {
                     case FormatArgumentStyle.Numbered:
                     case FormatArgumentStyle.Named:
-                        hasNamedFormatMethods |= style is FormatArgumentStyle.Named;
+                        if (style is FormatArgumentStyle.Named && formatHelperName is null)
+                        {
+                            var memberNames = new HashSet<string>(
+                                values.Keys.Select(GetIdentifierFromResourceName),
+                                StringComparer.Ordinal
+                            )
+                            {
+                                resourceInformation.ClassName,
+                            };
+                            formatHelperName = "ReplaceNamedFormatItems";
+                            while (memberNames.Contains(formatHelperName))
+                                formatHelperName += "_";
+                        }
                         RenderFormatMethod(
                             memberIndent,
                             membersBuilder,
@@ -342,7 +354,7 @@ internal static class BuildHelper
                             propertyIdentifier,
                             value,
                             arguments,
-                            usingNamedArgs: style is FormatArgumentStyle.Named
+                            formatHelperName: style is FormatArgumentStyle.Named ? formatHelperName : null
                         );
                         break;
                     case FormatArgumentStyle.Mixed:
@@ -418,13 +430,14 @@ internal static class BuildHelper
         string propertyIdentifier,
         string value,
         IReadOnlyList<string> arguments,
-        bool usingNamedArgs
+        string? formatHelperName
     )
     {
         // Members are qualified because a parameter might be named like a member of the generated class
+        var usingNamedArgs = formatHelperName is not null;
         var argumentNames = string.Join(", ", arguments.Select(x => $"\"{x}\""));
         var format = usingNamedArgs
-            ? $"{classReference}.ReplaceNamedFormatItems(this.@{propertyIdentifier}, new[] {{ {argumentNames} }})"
+            ? $"{classReference}.{formatHelperName}(this.@{propertyIdentifier}, new[] {{ {argumentNames} }})"
             : $"this.@{propertyIdentifier}";
         var parameterNames = arguments.Select(x => usingNamedArgs ? x : "p" + x).ToList();
         var parameters = parameterNames.Select(EscapeKeyword).ToList();

@@ -65,6 +65,8 @@ public sealed class GeneratedResourcesTests
         resources.NamedEscaped.ShouldBe("{{name}} / {{{name}}} / {name}}}");
         resources.EscapedOnly.ShouldBe("{{name}}");
         resources.FormatLookupCollision("Ada").ShouldBe("Ada");
+        resources.ReplaceNamedFormatItems.ShouldBe("Helper name is a valid key");
+        resources.ReplaceNamedFormatItems_.ShouldBe("Helper suffix is also a valid key");
     }
 
     [Fact]
