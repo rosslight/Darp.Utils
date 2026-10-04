@@ -280,6 +280,9 @@ namespace TestProject
     [Theory]
     [InlineData("FormatName")]
     [InlineData("For\u200DmatName")]
+    [InlineData("@FormatName")]
+    [InlineData("@For\u200DmatName")]
+    [InlineData(@"For\u006DatName")]
     public async Task FormatMethodNameMatchingClass_ShouldWarnAndRetainRawAccess(string className)
     {
         await new VerifyCS.Test

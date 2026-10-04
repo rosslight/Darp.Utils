@@ -494,9 +494,9 @@ internal static class BuildHelper
         );
     }
 
-    // C# removes Unicode formatting characters when comparing identifiers.
+    // Let Roslyn handle verbatim identifiers, Unicode escapes and formatting characters.
     private static string GetIdentifierComparisonName(string identifier) =>
-        new string(identifier.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.Format).ToArray());
+        SyntaxFactory.ParseToken(identifier).ValueText;
 
     private static string EscapeKeyword(string identifier) =>
         SyntaxFacts.GetKeywordKind(identifier) is SyntaxKind.None ? identifier : "@" + identifier;
