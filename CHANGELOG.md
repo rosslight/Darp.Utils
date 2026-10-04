@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.4](https://github.com/rosslight/Darp.Utils/compare/v2.1.3...v2.1.4) (2026-10-04)
+
+
+### Bug Fixes
+
+* support composite format items in generated resources ([#42](https://github.com/rosslight/Darp.Utils/issues/42)) ([35dfa57](https://github.com/rosslight/Darp.Utils/commit/35dfa57870bee8b979b6ed9c28c6844a6c7fcb07))
+
 ## [2.1.3](https://github.com/rosslight/Darp.Utils/compare/v2.1.2...v2.1.3) (2026-09-06)
 
 
