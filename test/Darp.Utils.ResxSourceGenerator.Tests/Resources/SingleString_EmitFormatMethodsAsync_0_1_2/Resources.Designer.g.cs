@@ -38,16 +38,6 @@ namespace TestProject
         /// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
-        private string GetResourceString(string resourceKey, string[]? formatterNames)
-        {
-            var value = GetResourceString(resourceKey);
-            if (formatterNames == null) return value;
-            for (var i = 0; i < formatterNames.Length; i++)
-            {
-                value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
-            }
-            return value;
-        }
 
         /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
         /// <value>value {0} {1} {2}</value>
@@ -58,7 +48,7 @@ namespace TestProject
         /// <param name="p1">The parameter to be used at position {1}</param>
         /// <param name="p2">The parameter to be used at position {2}</param>
         /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
-        public string @FormatName(object? p0, object? p1, object? p2) => string.Format(Culture, @Name, p0, p1, p2);
+        public string @FormatName(object? p0, object? p1, object? p2) => string.Format(this.Culture, this.@Name, p0, p1, p2);
 
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys

@@ -26,7 +26,7 @@ public class ResxGeneratorTests
             TestState = { AdditionalFiles = { ("/0/Resources.resx", ResxValueDocument) } },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ build_metadata.AdditionalFiles.RelativeDir = Second/
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -89,7 +89,7 @@ build_property.RootNamespace = {rootNamespace}
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -118,7 +118,7 @@ build_metadata.AdditionalFiles.RelativeDir = {relativeDir}
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -147,20 +147,25 @@ build_metadata.AdditionalFiles.ClassName = {className}
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
     [InlineData("0", "value {0}")]
     [InlineData("replacement", "value {replacement}")]
+    [InlineData("replacement_T", "Snapshot captured at {replacement:T}")]
+    [InlineData("replacement_braces_T", "Snapshot captured at {{{replacement:T}}}")]
     [InlineData("x", "value {x}")]
     [InlineData("0_1_2", "value {0} {1} {2}")]
+    [InlineData("0_T", "Snapshot captured at {0:T}")]
+    [InlineData("1_T", "Snapshot captured at {1:T}")]
     public async Task SingleString_EmitFormatMethodsAsync(string identifier, string value)
     {
         var code = ResxDocument("Name", value);
 
         await new VerifyCS.Test(identifier: identifier)
         {
+            LanguageVersion = CSharpLanguageVersion.CSharp8,
             TestState =
             {
                 AdditionalFiles = { ("/0/Resources.resx", code) },
@@ -179,7 +184,132 @@ build_metadata.AdditionalFiles.EmitFormatMethods = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Theory]
+    [InlineData("{0} / {name}", "DarpResX006")]
+    [InlineData("{256}", "DarpResX007")]
+    [InlineData("{2147483647}", "DarpResX007")]
+    [InlineData("{999999999999}", "DarpResX007")]
+    public async Task UnsupportedFormats_ShouldWarnAndRetainCompilableRawAccess(string value, string diagnosticId)
+    {
+        var diagnostic = new DiagnosticResult(diagnosticId, DiagnosticSeverity.Warning).WithLocation(
+            "/0/Resources.resx",
+            default
+        );
+        diagnostic =
+            diagnosticId == "DarpResX006" ? diagnostic.WithArguments("Name") : diagnostic.WithArguments("Name", 255);
+        await new VerifyCS.Test
+        {
+            LanguageVersion = CSharpLanguageVersion.CSharp8,
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocument("Name", value)) },
+                AnalyzerConfigFiles =
+                {
+                    (
+                        "/.globalconfig",
+                        """
+is_global = true
+
+[/0/Resources.resx]
+build_metadata.AdditionalFiles.EmitFormatMethods = true
+"""
+                    ),
+                },
+                Sources =
+                {
+                    """
+namespace TestProject
+{
+    partial class Resources
+    {
+        // Compiles only when the entry retains its property and key.
+        // This property also prevents any FormatName method from being emitted.
+        public string FormatName => Name + Keys.Name;
+    }
+}
+""",
+                },
+                ExpectedDiagnostics = { diagnostic },
+            },
+        }.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Theory]
+    [InlineData("Name", "FormatName")]
+    [InlineData("Name", "For\u200DmatName")]
+    [InlineData("Na\u200Dme", "FormatName")]
+    public async Task FormatMethodNameCollision_ShouldWarnAndRetainRawProperties(string name, string conflictingName)
+    {
+        await new VerifyCS.Test
+        {
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
+            TestState =
+            {
+                AdditionalFiles =
+                {
+                    (
+                        "/0/Resources.resx",
+                        ResxDocumentWithValues([(name, "{0:T}"), (conflictingName, "Existing resource")])
+                    ),
+                },
+                AnalyzerConfigFiles =
+                {
+                    (
+                        "/.globalconfig",
+                        "is_global = true\n\n[/0/Resources.resx]\nbuild_metadata.AdditionalFiles.EmitFormatMethods = true\n"
+                    ),
+                },
+                Sources =
+                {
+                    "namespace TestProject { class Consumer { public string Read(Resources r) => r.Name + r.FormatName + Resources.Keys.Name + Resources.Keys.FormatName; } }",
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX008", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default)
+                        .WithArguments(name, "Format" + name),
+                },
+            },
+        }.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Theory]
+    [InlineData("FormatName")]
+    [InlineData("For\u200DmatName")]
+    [InlineData("@FormatName")]
+    [InlineData("@For\u200DmatName")]
+    [InlineData(@"For\u006DatName")]
+    public async Task FormatMethodNameMatchingClass_ShouldWarnAndRetainRawAccess(string className)
+    {
+        await new VerifyCS.Test
+        {
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocument("Name", "{name:T}")) },
+                AnalyzerConfigFiles =
+                {
+                    (
+                        "/.globalconfig",
+                        $"is_global = true\n\n[/0/Resources.resx]\nbuild_metadata.AdditionalFiles.EmitFormatMethods = true\nbuild_metadata.AdditionalFiles.ClassName = TestProject.{className}\n"
+                    ),
+                },
+                Sources =
+                {
+                    "namespace TestProject { class Consumer { public string Read(FormatName r) => r.Name + FormatName.Keys.Name; } }",
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX008", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default)
+                        .WithArguments("Name", "FormatName"),
+                },
+            },
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -198,7 +328,7 @@ build_metadata.AdditionalFiles.EmitFormatMethods = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -246,7 +376,7 @@ build_metadata.AdditionalFiles.Public = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -271,7 +401,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -291,7 +421,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                     ),
                 },
             },
-        }.RunAsync();
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -316,7 +446,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                         .WithArguments(key),
                 },
             },
-        }.RunAsync();
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -339,7 +469,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
                         .WithArguments("Name"),
                 },
             },
-        }.RunAsync();
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -362,7 +492,7 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -388,6 +518,6 @@ build_property.ResxSourceGenerator_EmitDebugInformation = true
             },
         }
             .AddGeneratedSources()
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
     }
 }

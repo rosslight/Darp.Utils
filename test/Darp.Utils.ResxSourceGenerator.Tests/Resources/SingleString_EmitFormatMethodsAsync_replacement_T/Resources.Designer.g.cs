@@ -40,19 +40,19 @@ namespace TestProject
         public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
 
         /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
-        /// <value>value {x}</value>
+        /// <value>Snapshot captured at {replacement:T}</value>
         public string @Name => GetResourceString(Keys.@Name);
         /// <summary>Format the resource of <see cref="Keys.@Name"/></summary>
-        /// <value>value {x}</value>
-        /// <param name="x">The parameter to be used at position {0}</param>
+        /// <value>Snapshot captured at {replacement:T}</value>
+        /// <param name="replacement">The parameter to be used at position {0}</param>
         /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
-        public string @FormatName(object? x) => string.Format(this.Culture, global::TestProject.Resources.ReplaceNamedFormatItems(this.@Name, new[] { "x" }), x);
+        public string @FormatName(object? replacement) => string.Format(this.Culture, global::TestProject.Resources.ReplaceNamedFormatItems(this.@Name, new[] { "replacement" }), replacement);
 
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
         {
             /// <summary> <list type="table">
-            /// <item> <term><b>Default</b></term> <description>value {x}</description> </item>
+            /// <item> <term><b>Default</b></term> <description>Snapshot captured at {replacement:T}</description> </item>
             /// </list> </summary>
             public const string @Name = @"Name";
         }

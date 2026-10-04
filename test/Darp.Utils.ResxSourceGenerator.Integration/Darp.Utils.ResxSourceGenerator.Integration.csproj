@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <EmitFormatMethods>true</EmitFormatMethods>
+    </EmbeddedResource>
+    <PackageReference Include="Shouldly" />
+    <ProjectReference
+      Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+
+  <Import Project="..\..\src\Darp.Utils.ResxSourceGenerator\buildTransitive\Darp.Utils.ResxSourceGenerator.targets" />
+</Project>

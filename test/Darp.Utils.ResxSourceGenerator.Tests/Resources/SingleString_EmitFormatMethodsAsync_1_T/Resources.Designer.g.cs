@@ -40,57 +40,22 @@ namespace TestProject
         public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
 
         /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
-        /// <value>value {x}</value>
+        /// <value>Snapshot captured at {1:T}</value>
         public string @Name => GetResourceString(Keys.@Name);
         /// <summary>Format the resource of <see cref="Keys.@Name"/></summary>
-        /// <value>value {x}</value>
-        /// <param name="x">The parameter to be used at position {0}</param>
+        /// <value>Snapshot captured at {1:T}</value>
+        /// <param name="p0">The parameter to be used at position {0}</param>
+        /// <param name="p1">The parameter to be used at position {1}</param>
         /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
-        public string @FormatName(object? x) => string.Format(this.Culture, global::TestProject.Resources.ReplaceNamedFormatItems(this.@Name, new[] { "x" }), x);
+        public string @FormatName(object? p0, object? p1) => string.Format(this.Culture, this.@Name, p0, p1);
 
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
         {
             /// <summary> <list type="table">
-            /// <item> <term><b>Default</b></term> <description>value {x}</description> </item>
+            /// <item> <term><b>Default</b></term> <description>Snapshot captured at {1:T}</description> </item>
             /// </list> </summary>
             public const string @Name = @"Name";
-        }
-
-        /// <summary>Replace the names of format items like <c>{name:T}</c> with their index in <paramref name="names"/></summary>
-        private static string ReplaceNamedFormatItems(string value, string[] names)
-        {
-            global::System.Text.StringBuilder? builder = null;
-            var appendFrom = 0;
-            for (var i = 0; i < value.Length; i++)
-            {
-                if (value[i] != '{')
-                    continue;
-                if (i + 1 < value.Length && value[i + 1] == '{')
-                {
-                    i++;
-                    continue;
-                }
-        
-                var nameStart = i + 1;
-                var nameEnd = nameStart;
-                while (nameEnd < value.Length && value[nameEnd] != '}' && value[nameEnd] != ',' && value[nameEnd] != ':' && value[nameEnd] != ' ')
-                {
-                    nameEnd++;
-                }
-        
-                var index = global::System.Array.IndexOf(names, value.Substring(nameStart, nameEnd - nameStart));
-                if (index < 0)
-                    continue;
-        
-                builder ??= new global::System.Text.StringBuilder(value.Length);
-                builder.Append(value, appendFrom, nameStart - appendFrom).Append(index);
-                appendFrom = nameEnd;
-            }
-        
-            if (builder == null)
-                return value;
-            return builder.Append(value, appendFrom, value.Length - appendFrom).ToString();
         }
     }
 }

@@ -38,16 +38,6 @@ namespace TestProject
         /// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
-        private string GetResourceString(string resourceKey, string[]? formatterNames)
-        {
-            var value = GetResourceString(resourceKey);
-            if (formatterNames == null) return value;
-            for (var i = 0; i < formatterNames.Length; i++)
-            {
-                value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
-            }
-            return value;
-        }
 
         /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
         /// <value>value {replacement}</value>
@@ -56,7 +46,7 @@ namespace TestProject
         /// <value>value {replacement}</value>
         /// <param name="replacement">The parameter to be used at position {0}</param>
         /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
-        public string @FormatName(object? replacement) => string.Format(Culture, GetResourceString(@Name, new[] { "replacement" }), replacement);
+        public string @FormatName(object? replacement) => string.Format(this.Culture, global::TestProject.Resources.ReplaceNamedFormatItems(this.@Name, new[] { "replacement" }), replacement);
 
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
@@ -65,6 +55,42 @@ namespace TestProject
             /// <item> <term><b>Default</b></term> <description>value {replacement}</description> </item>
             /// </list> </summary>
             public const string @Name = @"Name";
+        }
+
+        /// <summary>Replace the names of format items like <c>{name:T}</c> with their index in <paramref name="names"/></summary>
+        private static string ReplaceNamedFormatItems(string value, string[] names)
+        {
+            global::System.Text.StringBuilder? builder = null;
+            var appendFrom = 0;
+            for (var i = 0; i < value.Length; i++)
+            {
+                if (value[i] != '{')
+                    continue;
+                if (i + 1 < value.Length && value[i + 1] == '{')
+                {
+                    i++;
+                    continue;
+                }
+        
+                var nameStart = i + 1;
+                var nameEnd = nameStart;
+                while (nameEnd < value.Length && value[nameEnd] != '}' && value[nameEnd] != ',' && value[nameEnd] != ':' && value[nameEnd] != ' ')
+                {
+                    nameEnd++;
+                }
+        
+                var index = global::System.Array.IndexOf(names, value.Substring(nameStart, nameEnd - nameStart));
+                if (index < 0)
+                    continue;
+        
+                builder ??= new global::System.Text.StringBuilder(value.Length);
+                builder.Append(value, appendFrom, nameStart - appendFrom).Append(index);
+                appendFrom = nameEnd;
+            }
+        
+            if (builder == null)
+                return value;
+            return builder.Append(value, appendFrom, value.Length - appendFrom).ToString();
         }
     }
 }

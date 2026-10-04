@@ -3,10 +3,10 @@ namespace Darp.Utils.ResxSourceGenerator;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
@@ -65,6 +65,36 @@ internal static class BuildHelper
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor MixedFormatArgumentsWarning = new(
+        id: "DarpResX006",
+        title: "Mixed format argument styles",
+        messageFormat: "Entry with key '{0}' mixes named and numbered format items and will not get a format method",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
+
+    private static readonly DiagnosticDescriptor FormatIndexOutOfRangeWarning = new(
+        id: "DarpResX007",
+        title: "Format item index out of range",
+        messageFormat: "Entry with key '{0}' uses a numbered format item above {1} and will not get a format method",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
+
+    private static readonly DiagnosticDescriptor FormatMethodNameCollisionWarning = new(
+        id: "DarpResX008",
+        title: "Format method name collision",
+        messageFormat: "Entry with key '{0}' cannot generate format method '{1}' because the name is already used by a resource property or its containing class",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
+
     public static bool TryGenerateSource(
         ResourceCollection resourceCollection,
         in List<Diagnostic> diagnostics,
@@ -87,6 +117,7 @@ internal static class BuildHelper
                 memberIndent,
                 out var members,
                 out var keysMembers,
+                out var formatHelperName,
                 diagnostics,
                 cancellationToken
             )
@@ -96,19 +127,45 @@ internal static class BuildHelper
             return false;
         }
 
-        string? getStringMethod = null;
-        if (resourceInformation.Settings.EmitFormatMethods)
+        string? formatHelperMethods = null;
+        if (formatHelperName is not null)
         {
-            getStringMethod += $$$$"""
-{{{{memberIndent}}}}private string GetResourceString(string resourceKey, string[]? formatterNames)
+            formatHelperMethods = $$$$"""
+
+{{{{memberIndent}}}}/// <summary>Replace the names of format items like <c>{name:T}</c> with their index in <paramref name="names"/></summary>
+{{{{memberIndent}}}}private static string {{{{formatHelperName}}}}(string value, string[] names)
 {{{{memberIndent}}}}{
-{{{{memberIndent}}}}    var value = GetResourceString(resourceKey);
-{{{{memberIndent}}}}    if (formatterNames == null) return value;
-{{{{memberIndent}}}}    for (var i = 0; i < formatterNames.Length; i++)
+{{{{memberIndent}}}}    global::System.Text.StringBuilder? builder = null;
+{{{{memberIndent}}}}    var appendFrom = 0;
+{{{{memberIndent}}}}    for (var i = 0; i < value.Length; i++)
 {{{{memberIndent}}}}    {
-{{{{memberIndent}}}}        value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
+{{{{memberIndent}}}}        if (value[i] != '{')
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}        if (i + 1 < value.Length && value[i + 1] == '{')
+{{{{memberIndent}}}}        {
+{{{{memberIndent}}}}            i++;
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}        }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        var nameStart = i + 1;
+{{{{memberIndent}}}}        var nameEnd = nameStart;
+{{{{memberIndent}}}}        while (nameEnd < value.Length && value[nameEnd] != '}' && value[nameEnd] != ',' && value[nameEnd] != ':' && value[nameEnd] != ' ')
+{{{{memberIndent}}}}        {
+{{{{memberIndent}}}}            nameEnd++;
+{{{{memberIndent}}}}        }
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        var index = global::System.Array.IndexOf(names, value.Substring(nameStart, nameEnd - nameStart));
+{{{{memberIndent}}}}        if (index < 0)
+{{{{memberIndent}}}}            continue;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}        builder ??= new global::System.Text.StringBuilder(value.Length);
+{{{{memberIndent}}}}        builder.Append(value, appendFrom, nameStart - appendFrom).Append(index);
+{{{{memberIndent}}}}        appendFrom = nameEnd;
 {{{{memberIndent}}}}    }
-{{{{memberIndent}}}}    return value;
+{{{{memberIndent}}}}
+{{{{memberIndent}}}}    if (builder == null)
+{{{{memberIndent}}}}        return value;
+{{{{memberIndent}}}}    return builder.Append(value, appendFrom, value.Length - appendFrom).ToString();
 {{{{memberIndent}}}}}
 
 """;
@@ -152,14 +209,14 @@ internal static class BuildHelper
 {{memberIndent}}/// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
 {{memberIndent}}[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 {{memberIndent}}public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
-{{getStringMethod}}
+
 {{members}}
 {{memberIndent}}/// <summary>All keys contained in <see cref="{{resourceInformation.ClassName}}"/></summary>
 {{memberIndent}}public static class Keys
 {{memberIndent}}{
 {{keysMembers}}
 {{memberIndent}}}
-{{classIndent}}}
+{{formatHelperMethods}}{{classIndent}}}
 """;
         var debugInformation = resourceCollection.GenerateDebugInformation();
         var result = $"""
@@ -205,11 +262,16 @@ internal static class BuildHelper
         string memberIndent,
         [NotNullWhen(true)] out string? members,
         [NotNullWhen(true)] out string? keysMembers,
+        out string? formatHelperName,
         in List<Diagnostic> diagnostics,
         CancellationToken cancellationToken
     )
     {
+        formatHelperName = null;
         ResourceInformation resourceInformation = resourceCollection.BaseInformation;
+        var classReference = resourceInformation.Namespace is null
+            ? $"global::{resourceInformation.ClassName}"
+            : $"global::{resourceInformation.Namespace}.{resourceInformation.ClassName}";
         var membersBuilder = new StringBuilder();
         var keysMembersBuilder = new StringBuilder();
 
@@ -236,6 +298,13 @@ internal static class BuildHelper
             );
             return false;
         }
+        var memberNames = new HashSet<string>(
+            values.Keys.Select(x => GetIdentifierComparisonName(GetIdentifierFromResourceName(x))),
+            StringComparer.Ordinal
+        )
+        {
+            GetIdentifierComparisonName(resourceInformation.ClassName),
+        };
         Dictionary<CultureInfo, Dictionary<string, XElement>> otherCulturesEntries = [];
         foreach (KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages)
         {
@@ -274,10 +343,63 @@ internal static class BuildHelper
             );
             if (resourceInformation.Settings.EmitFormatMethods)
             {
-                var resourceString = new ResourceString(propertyIdentifier, value);
-                if (resourceString.HasArguments)
+                IReadOnlyList<string> arguments = ResourceFormatHelper.GetArguments(
+                    value,
+                    out FormatArgumentStyle style
+                );
+                switch (style)
                 {
-                    RenderFormatMethod(memberIndent, membersBuilder, resourceString);
+                    case FormatArgumentStyle.Numbered:
+                    case FormatArgumentStyle.Named:
+                        var methodName = "Format" + propertyIdentifier;
+                        if (memberNames.Contains(GetIdentifierComparisonName(methodName)))
+                        {
+                            diagnostics.Add(
+                                Diagnostic.Create(
+                                    descriptor: FormatMethodNameCollisionWarning,
+                                    location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
+                                    messageArgs: [name, methodName]
+                                )
+                            );
+                            break;
+                        }
+                        if (style is FormatArgumentStyle.Named && formatHelperName is null)
+                        {
+                            formatHelperName = "ReplaceNamedFormatItems";
+                            while (memberNames.Contains(formatHelperName))
+                                formatHelperName += "_";
+                        }
+                        RenderFormatMethod(
+                            memberIndent,
+                            membersBuilder,
+                            classReference,
+                            propertyIdentifier,
+                            value,
+                            arguments,
+                            formatHelperName: style is FormatArgumentStyle.Named ? formatHelperName : null
+                        );
+                        break;
+                    case FormatArgumentStyle.Mixed:
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                descriptor: MixedFormatArgumentsWarning,
+                                location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
+                                messageArgs: [name]
+                            )
+                        );
+                        break;
+                    case FormatArgumentStyle.NumberedOutOfRange:
+                        diagnostics.Add(
+                            Diagnostic.Create(
+                                descriptor: FormatIndexOutOfRangeWarning,
+                                location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
+                                messageArgs: [name, ResourceFormatHelper.MaxArgumentIndex]
+                            )
+                        );
+                        break;
+                    case FormatArgumentStyle.None:
+                    default:
+                        break;
                 }
             }
 
@@ -323,33 +445,61 @@ internal static class BuildHelper
         return true;
     }
 
-    private static void RenderFormatMethod(string indent, StringBuilder strings, ResourceString resourceString)
+    private static void RenderFormatMethod(
+        string indent,
+        StringBuilder strings,
+        string classReference,
+        string propertyIdentifier,
+        string value,
+        IReadOnlyList<string> arguments,
+        string? formatHelperName
+    )
     {
-        var propertyIdentifier = resourceString.Identifier;
-        var methodParameters = resourceString.GetMethodParameters();
-        var arguments = resourceString.GetJoinedArguments();
-        var argumentNames = resourceString.UsingNamedArgs
-            ? $"GetResourceString(@{propertyIdentifier}, new[] {{ {resourceString.GetArgumentNames()} }})"
-            : $"@{propertyIdentifier}";
+        // Members are qualified because a parameter might be named like a member of the generated class
+        var usingNamedArgs = formatHelperName is not null;
+        var argumentNames = string.Join(", ", arguments.Select(x => $"\"{x}\""));
+        var format = usingNamedArgs
+            ? $"{classReference}.{formatHelperName}(this.@{propertyIdentifier}, new[] {{ {argumentNames} }})"
+            : $"this.@{propertyIdentifier}";
+        var parameterNames = new List<string>();
+        var usedParameterNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var argument in arguments)
+        {
+            // C# ignores formatting characters in identifiers; resource names remain ordinal strings.
+            var parameterName = usingNamedArgs ? GetIdentifierComparisonName(argument) : "p" + argument;
+            while (!usedParameterNames.Add(parameterName))
+                parameterName += "_";
+            parameterNames.Add(parameterName);
+        }
+        var parameters = parameterNames.Select(EscapeKeyword).ToList();
+        var methodParameters = string.Join(", ", parameters.Select(x => "object? " + x));
         var paramDocs = string.Join(
             "\n",
-            resourceString
-                .GetArguments()
-                .Select(
-                    (x, i) => $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"
-                )
+            parameterNames.Select(
+                (x, i) => $"{indent}/// <param name=\"{x}\">The parameter to be used at position {{{i}}}</param>"
+            )
         );
 
         strings.AppendLine(
             $"""
 {indent}/// <summary>Format the resource of <see cref="Keys.@{propertyIdentifier}"/></summary>
-{indent}/// {GetTrimmedDocComment("value", resourceString.Value)}
+{indent}/// {GetTrimmedDocComment("value", value)}
 {paramDocs}
 {indent}/// <returns>The formatted <see cref="Keys.@{propertyIdentifier}"/> string</returns>
-{indent}public string @Format{propertyIdentifier}({methodParameters}) => string.Format(Culture, {argumentNames}, {arguments});
+{indent}public string @Format{propertyIdentifier}({methodParameters}) => string.Format(this.Culture, {format}, {string.Join(
+                ", ",
+                parameters
+            )});
 """
         );
     }
+
+    // Let Roslyn handle verbatim identifiers, Unicode escapes and formatting characters.
+    private static string GetIdentifierComparisonName(string identifier) =>
+        SyntaxFactory.ParseToken(identifier).ValueText;
+
+    private static string EscapeKeyword(string identifier) =>
+        SyntaxFacts.GetKeywordKind(identifier) is SyntaxKind.None ? identifier : "@" + identifier;
 
     private static bool TryGetResourceDataAndValues(
         this AdditionalText additionalText,
@@ -570,62 +720,5 @@ namespace {{namespaceName}}
         }
 
         return builder.ToString();
-    }
-
-    private readonly struct ResourceString
-    {
-        private static readonly Regex NamedParameterMatcher = new(
-            @"\{([a-z]\w*)\}",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled
-        );
-        private static readonly Regex NumberParameterMatcher = new(@"\{(\d+)\}", RegexOptions.Compiled);
-        private readonly IReadOnlyList<string> _arguments;
-
-        public ResourceString(string identifier, string value)
-        {
-            Identifier = identifier;
-            Value = value;
-
-            MatchCollection match = NamedParameterMatcher.Matches(value);
-            UsingNamedArgs = match.Count > 0;
-
-            if (!UsingNamedArgs)
-            {
-                match = NumberParameterMatcher.Matches(value);
-            }
-
-            IEnumerable<string> arguments = match.Cast<Match>().Select(m => m.Groups[1].Value).Distinct();
-            if (!UsingNamedArgs)
-            {
-                arguments = arguments.OrderBy(Convert.ToInt32);
-            }
-
-            _arguments = arguments.ToList();
-        }
-
-        public string Identifier { get; }
-        public string Value { get; }
-
-        public bool UsingNamedArgs { get; }
-
-        public bool HasArguments => _arguments.Count > 0;
-
-        public string GetArgumentNames() => string.Join(", ", _arguments.Select(a => "\"" + a + "\""));
-
-        public IEnumerable<string> GetArguments()
-        {
-            var usingNamedArgs = UsingNamedArgs;
-            return _arguments.Select(s => GetArgName(s, usingNamedArgs));
-        }
-
-        public string GetJoinedArguments() => string.Join(", ", GetArguments());
-
-        public string GetMethodParameters()
-        {
-            var usingNamedArgs = UsingNamedArgs;
-            return string.Join(", ", _arguments.Select(a => "object? " + GetArgName(a, usingNamedArgs)));
-        }
-
-        private static string GetArgName(string name, bool usingNamedArgs) => usingNamedArgs ? name : 'p' + name;
     }
 }
