@@ -266,6 +266,8 @@ Both remain available when a formatting diagnostic prevents method generation.
 - Parameters are defined by the default resource file. Translations can use the same names in any order;
   a name unknown to the default resource is left untouched and causes a `FormatException` when formatting.
 - Numbered and named items cannot be mixed in a single value (see [DarpResX006](#darpresx006---mixed-format-argument-styles)).
+- A format method whose name matches a resource property or the containing class is omitted with [DarpResX008](#darpresx008---format-method-name-collision).
+  Its resource property and key remain available; public methods are not silently renamed.
 
 ### Public
 
@@ -325,3 +327,11 @@ This warning occurs, when a value uses a numbered format item with an index abov
 The property and the key are still generated, but there will be no `FormatABC` method for this entry.
 
 To fix this warning, use smaller indices or named format items.
+
+### DarpResX008 - Format method name collision
+
+This warning occurs when `FormatABC` would have the same name as a resource property or its containing class.
+For example, a formatted `ABC` entry cannot generate `FormatABC` when another resource key is already named `FormatABC`.
+The resource property and key are still generated, but the conflicting format method is omitted.
+
+To generate the method, rename the conflicting resource key or configure a different class name.

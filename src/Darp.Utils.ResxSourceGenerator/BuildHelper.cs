@@ -85,6 +85,16 @@ internal static class BuildHelper
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor FormatMethodNameCollisionWarning = new(
+        id: "DarpResX008",
+        title: "Format method name collision",
+        messageFormat: "Entry with key '{0}' cannot generate format method '{1}' because the name is already used by a resource property or its containing class",
+        category: "Globalization",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        helpLinkUri: HelpLinkUri,
+        isEnabledByDefault: true
+    );
+
     public static bool TryGenerateSource(
         ResourceCollection resourceCollection,
         in List<Diagnostic> diagnostics,
@@ -288,6 +298,10 @@ internal static class BuildHelper
             );
             return false;
         }
+        var memberNames = new HashSet<string>(values.Keys.Select(GetIdentifierFromResourceName), StringComparer.Ordinal)
+        {
+            resourceInformation.ClassName,
+        };
         Dictionary<CultureInfo, Dictionary<string, XElement>> otherCulturesEntries = [];
         foreach (KeyValuePair<CultureInfo, AdditionalText> pair in resourceCollection.OtherLanguages)
         {
@@ -334,15 +348,20 @@ internal static class BuildHelper
                 {
                     case FormatArgumentStyle.Numbered:
                     case FormatArgumentStyle.Named:
+                        var methodName = "Format" + propertyIdentifier;
+                        if (memberNames.Contains(methodName))
+                        {
+                            diagnostics.Add(
+                                Diagnostic.Create(
+                                    descriptor: FormatMethodNameCollisionWarning,
+                                    location: Location.Create(resourceInformation.ResourceFile.Path, default, default),
+                                    messageArgs: [name, methodName]
+                                )
+                            );
+                            break;
+                        }
                         if (style is FormatArgumentStyle.Named && formatHelperName is null)
                         {
-                            var memberNames = new HashSet<string>(
-                                values.Keys.Select(GetIdentifierFromResourceName),
-                                StringComparer.Ordinal
-                            )
-                            {
-                                resourceInformation.ClassName,
-                            };
                             formatHelperName = "ReplaceNamedFormatItems";
                             while (memberNames.Contains(formatHelperName))
                                 formatHelperName += "_";

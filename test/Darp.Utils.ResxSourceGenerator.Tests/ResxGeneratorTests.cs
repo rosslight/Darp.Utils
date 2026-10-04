@@ -239,6 +239,72 @@ namespace TestProject
     }
 
     [Fact]
+    public async Task FormatMethodNameCollision_ShouldWarnAndRetainRawProperties()
+    {
+        await new VerifyCS.Test
+        {
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
+            TestState =
+            {
+                AdditionalFiles =
+                {
+                    (
+                        "/0/Resources.resx",
+                        ResxDocumentWithValues([("Name", "{0:T}"), ("FormatName", "Existing resource")])
+                    ),
+                },
+                AnalyzerConfigFiles =
+                {
+                    (
+                        "/.globalconfig",
+                        "is_global = true\n\n[/0/Resources.resx]\nbuild_metadata.AdditionalFiles.EmitFormatMethods = true\n"
+                    ),
+                },
+                Sources =
+                {
+                    "namespace TestProject { class Consumer { public string Read(Resources r) => r.Name + r.FormatName + Resources.Keys.Name + Resources.Keys.FormatName; } }",
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX008", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default)
+                        .WithArguments("Name", "FormatName"),
+                },
+            },
+        }.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task FormatMethodNameMatchingClass_ShouldWarnAndRetainRawAccess()
+    {
+        await new VerifyCS.Test
+        {
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocument("Name", "{name:T}")) },
+                AnalyzerConfigFiles =
+                {
+                    (
+                        "/.globalconfig",
+                        "is_global = true\n\n[/0/Resources.resx]\nbuild_metadata.AdditionalFiles.EmitFormatMethods = true\nbuild_metadata.AdditionalFiles.ClassName = TestProject.FormatName\n"
+                    ),
+                },
+                Sources =
+                {
+                    "namespace TestProject { class Consumer { public string Read(FormatName r) => r.Name + FormatName.Keys.Name; } }",
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("DarpResX008", DiagnosticSeverity.Warning)
+                        .WithLocation("/0/Resources.resx", default)
+                        .WithArguments("Name", "FormatName"),
+                },
+            },
+        }.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
     public async Task SingleString_DifferentLanguagesAsync()
     {
         await new VerifyCS.Test

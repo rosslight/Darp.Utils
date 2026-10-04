@@ -9,3 +9,4 @@
 | DarpResX005 | Globalization | Warning  | Missing translation for specific Key |
 | DarpResX006 | Globalization | Warning  | Mixed format argument styles         |
 | DarpResX007 | Globalization | Warning  | Format item index out of range       |
+| DarpResX008 | Globalization | Warning  | Format method name collision         |
