@@ -38,16 +38,6 @@ namespace TestProject
         /// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
-        private string GetResourceString(string resourceKey, string[]? formatterNames)
-        {
-            var value = GetResourceString(resourceKey);
-            if (formatterNames == null) return value;
-            for (var i = 0; i < formatterNames.Length; i++)
-            {
-                value = ReplaceNamedFormatItem(value, formatterNames[i], i);
-            }
-            return value;
-        }
 
         /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
         /// <value>value {0} {1} {2}</value>
@@ -58,7 +48,7 @@ namespace TestProject
         /// <param name="p1">The parameter to be used at position {1}</param>
         /// <param name="p2">The parameter to be used at position {2}</param>
         /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
-        public string @FormatName(object? p0, object? p1, object? p2) => string.Format(Culture, @Name, p0, p1, p2);
+        public string @FormatName(object? p0, object? p1, object? p2) => string.Format(this.Culture, this.@Name, p0, p1, p2);
 
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
@@ -67,107 +57,6 @@ namespace TestProject
             /// <item> <term><b>Default</b></term> <description>value {0} {1} {2}</description> </item>
             /// </list> </summary>
             public const string @Name = @"Name";
-        }
-        private static string ReplaceNamedFormatItem(string value, string formatterName, int index)
-        {
-            global::System.Text.StringBuilder? builder = null;
-            var appendFrom = 0;
-        
-            for (var i = 0; i < value.Length; i++)
-            {
-                if (value[i] != '{')
-                    continue;
-                if (i + 1 < value.Length && value[i + 1] == '{')
-                {
-                    i++;
-                    continue;
-                }
-        
-                var nameStart = i + 1;
-                if (!IsMatchAt(value, nameStart, formatterName))
-                    continue;
-        
-                var suffixStart = nameStart + formatterName.Length;
-                if (suffixStart >= value.Length)
-                    continue;
-        
-                var suffixEnd = suffixStart;
-                while (suffixEnd < value.Length && value[suffixEnd] != '}')
-                {
-                    if (value[suffixEnd] == '{')
-                    {
-                        suffixEnd = -1;
-                        break;
-                    }
-        
-                    suffixEnd++;
-                }
-        
-                if (suffixEnd < 0 || suffixEnd >= value.Length)
-                    continue;
-                if (!IsValidFormatSuffix(value, suffixStart, suffixEnd))
-                    continue;
-        
-                builder ??= new global::System.Text.StringBuilder(value.Length);
-                builder.Append(value, appendFrom, i - appendFrom);
-                builder.Append('{').Append(index);
-                builder.Append(value, suffixStart, suffixEnd - suffixStart);
-                builder.Append('}');
-                appendFrom = suffixEnd + 1;
-                i = suffixEnd;
-            }
-        
-            if (builder == null)
-                return value;
-        
-            builder.Append(value, appendFrom, value.Length - appendFrom);
-            return builder.ToString();
-        }
-
-        private static bool IsMatchAt(string value, int start, string formatterName)
-        {
-            if (start + formatterName.Length > value.Length)
-                return false;
-        
-            for (var i = 0; i < formatterName.Length; i++)
-            {
-                if (value[start + i] != formatterName[i])
-                    return false;
-            }
-        
-            return true;
-        }
-
-        private static bool IsValidFormatSuffix(string value, int start, int end)
-        {
-            if (start == end)
-                return true;
-            if (value[start] == ':')
-                return true;
-            if (value[start] != ',')
-                return false;
-        
-            var i = start + 1;
-            while (i < end && char.IsWhiteSpace(value[i]))
-            {
-                i++;
-            }
-            if (i < end && value[i] == '-')
-            {
-                i++;
-            }
-        
-            var digitStart = i;
-            while (i < end && char.IsDigit(value[i]))
-            {
-                i++;
-            }
-        
-            if (i == digitStart)
-                return false;
-            if (i == end)
-                return true;
-            return value[i] == ':';
         }
     }
 }

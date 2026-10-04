@@ -86,7 +86,7 @@
   <data name="UnicodeAndKeyword" xml:space="preserve"><value>{año} / {class}</value></data>
   <data name="MemberNames" xml:space="preserve"><value>{Culture:N2} / {MemberNames} / {GetResourceString}</value></data>
   <data name="NumericReordered" xml:space="preserve"><value>{2} / {0} / {2}</value></data>
-  <data name="Translated" xml:space="preserve"><value>{firstName} {lastName}: {amount:N2}</value></data>
+  <data name="Translated" xml:space="preserve"><value>{lastName}, {firstName}: {amount:N2} ({firstName})</value></data>
   <data name="EscapedOnly" xml:space="preserve"><value>{{name}}</value></data>
   <data name="LookupCollision" xml:space="preserve"><value>{name}</value></data>
   <data name="{name}" xml:space="preserve"><value>Wrong resource</value></data>

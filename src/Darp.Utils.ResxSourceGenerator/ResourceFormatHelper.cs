@@ -5,17 +5,42 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
+internal enum FormatArgumentStyle
+{
+    /// <summary> The value contains no format items </summary>
+    None,
+
+    /// <summary> The value contains only numbered format items like <c>{0}</c> </summary>
+    Numbered,
+
+    /// <summary> The value contains only named format items like <c>{name}</c> </summary>
+    Named,
+
+    /// <summary> The value contains both numbered and named format items </summary>
+    Mixed,
+
+    /// <summary> The value contains a numbered format item above <see cref="ResourceFormatHelper.MaxArgumentIndex"/> </summary>
+    NumberedOutOfRange,
+}
+
 internal static class ResourceFormatHelper
 {
-    public static IReadOnlyList<string> GetArguments(string value, out bool usingNamedArgs)
-    {
-        return GetArguments(value, out usingNamedArgs, out _);
-    }
+    /// <summary> The highest index of a numbered format item a format method is generated for </summary>
+    /// <remarks> Every index up to the highest one becomes a parameter, so an unbounded index would generate an unbounded method </remarks>
+    public const int MaxArgumentIndex = 255;
 
-    public static IReadOnlyList<string> GetArguments(string value, out bool usingNamedArgs, out bool hasMixedArguments)
+    /// <summary> Find the arguments of all composite format items in the <paramref name="value"/> </summary>
+    /// <param name="value"> The resource value to search </param>
+    /// <param name="style"> The style of the format items found </param>
+    /// <returns>
+    /// The names in order of first appearance for <see cref="FormatArgumentStyle.Named"/>,
+    /// every index from 0 to the highest one for <see cref="FormatArgumentStyle.Numbered"/> and empty otherwise
+    /// </returns>
+    public static IReadOnlyList<string> GetArguments(string value, out FormatArgumentStyle style)
     {
         var namedArguments = new List<string>();
-        var numberedArguments = new List<string>();
+        var maxArgumentIndex = -1;
+        var hasIndexOutOfRange = false;
 
         for (var i = 0; i < value.Length; i++)
         {
@@ -27,40 +52,51 @@ internal static class ResourceFormatHelper
                 continue;
             }
 
-            if (!TryReadFormatItem(value, i, out var argument, out var isNamed, out var end))
+            if (!TryReadFormatItem(value, i, out var argument, out var isNamed, out var closeBrace))
                 continue;
 
-            List<string> arguments = isNamed ? namedArguments : numberedArguments;
-            if (!arguments.Contains(argument))
+            if (isNamed)
             {
-                arguments.Add(argument);
+                if (!namedArguments.Contains(argument))
+                    namedArguments.Add(argument);
+            }
+            else if (
+                int.TryParse(argument, NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+                && index <= MaxArgumentIndex
+            )
+            {
+                maxArgumentIndex = Math.Max(maxArgumentIndex, index);
+            }
+            else
+            {
+                hasIndexOutOfRange = true;
             }
 
-            i = end;
+            i = closeBrace;
         }
 
-        hasMixedArguments = namedArguments.Count > 0 && numberedArguments.Count > 0;
-        if (hasMixedArguments)
+        var hasNumberedArguments = maxArgumentIndex >= 0 || hasIndexOutOfRange;
+        if (namedArguments.Count > 0)
         {
-            usingNamedArgs = false;
+            style = hasNumberedArguments ? FormatArgumentStyle.Mixed : FormatArgumentStyle.Named;
+            return hasNumberedArguments ? [] : namedArguments;
+        }
+        if (hasIndexOutOfRange)
+        {
+            style = FormatArgumentStyle.NumberedOutOfRange;
+            return [];
+        }
+        if (maxArgumentIndex < 0)
+        {
+            style = FormatArgumentStyle.None;
             return [];
         }
 
-        usingNamedArgs = namedArguments.Count > 0;
-        if (usingNamedArgs)
-        {
-            return namedArguments;
-        }
-
-        if (numberedArguments.Count == 0)
-        {
-            return numberedArguments;
-        }
-
-        var maxArgumentIndex = numberedArguments.Select(x => Convert.ToInt32(x, CultureInfo.InvariantCulture)).Max();
+        style = FormatArgumentStyle.Numbered;
         return Enumerable.Range(0, maxArgumentIndex + 1).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
     }
 
+    /// <summary> Read a format item of the form <c>{argument[,alignment][:formatString]}</c> </summary>
     private static bool TryReadFormatItem(
         string value,
         int openBrace,
@@ -77,81 +113,60 @@ internal static class ResourceFormatHelper
         if (argumentStart >= value.Length)
             return false;
 
-        var argumentEnd = argumentStart;
-        if (char.IsDigit(value[argumentEnd]))
+        var i = argumentStart;
+        if (IsAsciiDigit(value[i]))
         {
-            while (argumentEnd < value.Length && char.IsDigit(value[argumentEnd]))
-            {
-                argumentEnd++;
-            }
+            while (i < value.Length && IsAsciiDigit(value[i]))
+                i++;
         }
-        else if (IsIdentifierStart(value[argumentEnd]))
+        else if (value[i].IsIdentifierStartCharacter())
         {
             isNamed = true;
-            while (argumentEnd < value.Length && IsIdentifierPart(value[argumentEnd]))
-            {
-                argumentEnd++;
-            }
+            while (i < value.Length && value[i].IsIdentifierPartCharacter())
+                i++;
         }
         else
         {
             return false;
         }
+        var argumentEnd = i;
 
-        closeBrace = argumentEnd;
-        while (closeBrace < value.Length && value[closeBrace] != '}')
+        i = SkipSpaces(value, i);
+        if (i < value.Length && value[i] == ',')
         {
-            if (value[closeBrace] == '{')
-            {
-                closeBrace = -1;
-                break;
-            }
+            i = SkipSpaces(value, i + 1);
+            if (i < value.Length && value[i] == '-')
+                i++;
 
-            closeBrace++;
+            var widthStart = i;
+            while (i < value.Length && IsAsciiDigit(value[i]))
+                i++;
+            if (i == widthStart)
+                return false;
+            i = SkipSpaces(value, i);
         }
 
-        if (closeBrace < 0 || closeBrace >= value.Length)
-            return false;
-        if (!IsValidFormatSuffix(value, argumentEnd, closeBrace))
+        // The format string is not validated. Its meaning depends on the type of the argument
+        if (i < value.Length && value[i] == ':')
+        {
+            while (i < value.Length && value[i] != '}' && value[i] != '{')
+                i++;
+        }
+
+        if (i >= value.Length || value[i] != '}')
             return false;
 
         argument = value.Substring(argumentStart, argumentEnd - argumentStart);
+        closeBrace = i;
         return true;
     }
 
-    private static bool IsValidFormatSuffix(string value, int start, int end)
+    private static int SkipSpaces(string value, int start)
     {
-        if (start == end)
-            return true;
-        if (value[start] == ':')
-            return true;
-        if (value[start] != ',')
-            return false;
-
-        var i = start + 1;
-        while (i < end && char.IsWhiteSpace(value[i]))
-        {
-            i++;
-        }
-        if (i < end && value[i] == '-')
-        {
-            i++;
-        }
-
-        var digitStart = i;
-        while (i < end && char.IsDigit(value[i]))
-        {
-            i++;
-        }
-
-        if (i == digitStart)
-            return false;
-        if (i == end)
-            return true;
-        return value[i] == ':';
+        while (start < value.Length && value[start] == ' ')
+            start++;
+        return start;
     }
 
-    private static bool IsIdentifierStart(char c) => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z';
-
-    private static bool IsIdentifierPart(char c) => IsIdentifierStart(c) || c is (>= '0' and <= '9') or '_';
+    private static bool IsAsciiDigit(char c) => c is >= '0' and <= '9';
 }

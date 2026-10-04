@@ -1,7 +1,6 @@
 namespace Darp.Utils.ResxSourceGenerator.Integration;
 
 using System.Globalization;
-using System.Reflection;
 using Shouldly;
 using Xunit;
 
@@ -30,32 +29,50 @@ public sealed class GeneratedResourcesTests
         resources.FormatLocalizedNumber(1234.56).ShouldBe(expectedValue);
     }
 
-    [Theory]
-    [InlineData("{myName}", "myName", 0, "{0}")]
-    [InlineData("{myName:T}", "myName", 0, "{0:T}")]
-    [InlineData("{myName,10}", "myName", 0, "{0,10}")]
-    [InlineData("{myName,10:T}", "myName", 0, "{0,10:T}")]
-    [InlineData("{{myName:T}}", "myName", 0, "{{myName:T}}")]
-    [InlineData("{{{myName:T}}}", "myName", 0, "{{{0:T}}}")]
-    [InlineData("{myName}}}", "myName", 0, "{0}}}")]
-    [InlineData("{myNameTotal:T}", "myName", 0, "{myNameTotal:T}")]
-    [InlineData("{myName:T} {otherName:N2}", "otherName", 1, "{myName:T} {1:N2}")]
-    public void GeneratedReplaceNamedFormatItem_ShouldPreserveCompositeFormatItemShape(
-        string value,
-        string formatterName,
-        int index,
-        string expectedValue
-    )
+    [Fact]
+    public void FormatMethods_ShouldPreserveNamesEscapesAndAlignment()
     {
-        InvokeGeneratedReplaceNamedFormatItem(value, formatterName, index).ShouldBe(expectedValue);
+        var resources = new Resources { Culture = CultureInfo.InvariantCulture };
+
+        resources.FormatNamedRepeated("Ada", "Lovelace").ShouldBe("Ada / Lovelace / Ada");
+        resources.FormatNamedEscaped("Ada").ShouldBe("{name} / {Ada} / Ada}");
+        resources.FormatNamedWhitespace(42).ShouldBe("'42.00     '");
+        resources.FormatNumericWhitespace(42).ShouldBe("'     42.00'");
+        resources.FormatUnicodeAndKeyword(año: 2026, @class: "A").ShouldBe("2026 / A");
+        resources
+            .FormatMemberNames(Culture: 42, MemberNames: "Ada", GetResourceString: "X")
+            .ShouldBe("42.00 / Ada / X");
+        resources.FormatNumericReordered("first", "unused", "third").ShouldBe("third / first / third");
     }
 
-    private static string InvokeGeneratedReplaceNamedFormatItem(string value, string formatterName, int index)
+    [Fact]
+    public void FormatMethods_ShouldUseDefaultParameterOrderAcrossTranslations()
     {
-        MethodInfo method =
-            typeof(Resources).GetMethod("ReplaceNamedFormatItem", BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new MissingMethodException(typeof(Resources).FullName, "ReplaceNamedFormatItem");
+        var resources = new Resources { Culture = CultureInfo.InvariantCulture };
 
-        return (string)method.Invoke(null, [value, formatterName, index])!;
+        resources.FormatTranslated("Ada", "Lovelace", 1234.56).ShouldBe("Ada Lovelace: 1,234.56");
+        resources.Culture = CultureInfo.GetCultureInfo("de-DE");
+        resources.FormatTranslated("Ada", "Lovelace", 1234.56).ShouldBe("Lovelace, Ada: 1.234,56 (Ada)");
+        resources.Translated.ShouldBe("{lastName}, {firstName}: {amount:N2} ({firstName})");
+        Resources.Keys.Translated.ShouldBe("Translated");
+    }
+
+    [Fact]
+    public void RawProperties_ShouldPreserveTemplatesAndAvoidSecondResourceLookup()
+    {
+        var resources = new Resources { Culture = CultureInfo.InvariantCulture };
+
+        resources.NamedEscaped.ShouldBe("{{name}} / {{{name}}} / {name}}}");
+        resources.EscapedOnly.ShouldBe("{{name}}");
+        resources.FormatLookupCollision("Ada").ShouldBe("Ada");
+    }
+
+    [Fact]
+    public void FormatMethods_ShouldDelegateValueFormattingToDotNet()
+    {
+        var resources = new Resources { Culture = CultureInfo.InvariantCulture };
+
+        resources.FormatNamedRepeated(null, "Lovelace").ShouldBe(" / Lovelace / ");
+        Should.Throw<FormatException>(() => resources.FormatInvalidSpecifier(42));
     }
 }

@@ -165,6 +165,7 @@ build_metadata.EmbeddedResource.ClassName = {className}
 
         await new VerifyCS.Test(identifier: identifier)
         {
+            LanguageVersion = CSharpLanguageVersion.CSharp8,
             TestState =
             {
                 AdditionalFiles = { ("/0/Resources.resx", code) },
@@ -184,6 +185,57 @@ build_metadata.EmbeddedResource.EmitFormatMethods = true
         }
             .AddGeneratedSources()
             .RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Theory]
+    [InlineData("{0} / {name}", "DarpResX006")]
+    [InlineData("{256}", "DarpResX007")]
+    [InlineData("{2147483647}", "DarpResX007")]
+    [InlineData("{999999999999}", "DarpResX007")]
+    public async Task UnsupportedFormats_ShouldWarnAndRetainCompilableRawAccess(string value, string diagnosticId)
+    {
+        var diagnostic = new DiagnosticResult(diagnosticId, DiagnosticSeverity.Warning).WithLocation(
+            "/0/Resources.resx",
+            default
+        );
+        diagnostic =
+            diagnosticId == "DarpResX006" ? diagnostic.WithArguments("Name") : diagnostic.WithArguments("Name", 255);
+        await new VerifyCS.Test
+        {
+            LanguageVersion = CSharpLanguageVersion.CSharp8,
+            TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,
+            TestState =
+            {
+                AdditionalFiles = { ("/0/Resources.resx", ResxDocument("Name", value)) },
+                AnalyzerConfigFiles =
+                {
+                    (
+                        "/.globalconfig",
+                        """
+is_global = true
+
+[/0/Resources.resx]
+build_metadata.EmbeddedResource.EmitFormatMethods = true
+"""
+                    ),
+                },
+                Sources =
+                {
+                    """
+namespace TestProject
+{
+    partial class Resources
+    {
+        // Compiles only when the entry retains its property and key.
+        // This property also prevents any FormatName method from being emitted.
+        public string FormatName => Name + Keys.Name;
+    }
+}
+""",
+                },
+                ExpectedDiagnostics = { diagnostic },
+            },
+        }.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]

@@ -69,16 +69,6 @@ namespace TestProject
         /// <returns>Returns the resource value as a string or the <paramref name="resourceKey"/> if it could not be found</returns>
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public string GetResourceString(string resourceKey) => ResourceManager.GetString(resourceKey, Culture) ?? resourceKey;
-        private string GetResourceString(string resourceKey, string[]? formatterNames)
-        {
-            var value = GetResourceString(resourceKey);
-            if (formatterNames == null) return value;
-            for (var i = 0; i < formatterNames.Length; i++)
-            {
-                value = value.Replace($"{{{formatterNames[i]}}}", $"{{{i}}}");
-            }
-            return value;
-        }
 
         /// <summary>Get the resource of <see cref="Keys.@Name"/></summary>
         /// <value>value {x}</value>
@@ -87,7 +77,7 @@ namespace TestProject
         /// <value>value {x}</value>
         /// <param name="x">The parameter to be used at position {0}</param>
         /// <returns>The formatted <see cref="Keys.@Name"/> string</returns>
-        public string @FormatName(object? x) => string.Format(Culture, GetResourceString(@Name, new[] { "x" }), x);
+        public string @FormatName(object? x) => string.Format(this.Culture, global::TestProject.Resources.ReplaceNamedFormatItems(this.@Name, new[] { "x" }), x);
 
         /// <summary>All keys contained in <see cref="Resources"/></summary>
         public static class Keys
@@ -97,6 +87,42 @@ namespace TestProject
             /// <item> <term><b>de-DE</b></term> <description>DE: value {x}</description> </item>
             /// </list> </summary>
             public const string @Name = @"Name";
+        }
+
+        /// <summary>Replace the names of format items like <c>{name:T}</c> with their index in <paramref name="names"/></summary>
+        private static string ReplaceNamedFormatItems(string value, string[] names)
+        {
+            global::System.Text.StringBuilder? builder = null;
+            var appendFrom = 0;
+            for (var i = 0; i < value.Length; i++)
+            {
+                if (value[i] != '{')
+                    continue;
+                if (i + 1 < value.Length && value[i + 1] == '{')
+                {
+                    i++;
+                    continue;
+                }
+
+                var nameStart = i + 1;
+                var nameEnd = nameStart;
+                while (nameEnd < value.Length && value[nameEnd] != '}' && value[nameEnd] != ',' && value[nameEnd] != ':' && value[nameEnd] != ' ')
+                {
+                    nameEnd++;
+                }
+
+                var index = global::System.Array.IndexOf(names, value.Substring(nameStart, nameEnd - nameStart));
+                if (index < 0)
+                    continue;
+
+                builder ??= new global::System.Text.StringBuilder(value.Length);
+                builder.Append(value, appendFrom, nameStart - appendFrom).Append(index);
+                appendFrom = nameEnd;
+            }
+
+            if (builder == null)
+                return value;
+            return builder.Append(value, appendFrom, value.Length - appendFrom).ToString();
         }
     }
 }
@@ -112,7 +138,7 @@ This generated code includes features like
 
 It can be used like this:
 ```csharp
-string key = TestProject.Resources.Default.Keys.Name; // Name
+string key = TestProject.Resources.Keys.Name; // Name
 string nameTemplate = TestProject.Resources.Default.Name; // value {x}
 string formattedName = TestProject.Resources.Default.FormatName(x: "1"); // value 1
 
@@ -218,6 +244,29 @@ To generate them, add
     </ItemGroup>
 ```
 
+A `FormatABC` method is generated for each entry whose default value contains at least one format item.
+The property returns the localized template unchanged, and `Keys.ABC` contains the resource key.
+Both remain available when a formatting diagnostic prevents method generation.
+
+| Value                    | Generated method                              |
+|--------------------------|-----------------------------------------------|
+| `Hello {0}`              | `FormatABC(object? p0)`                       |
+| `Hello {2}`              | `FormatABC(object? p0, object? p1, object? p2)` |
+| `Hello {name}`           | `FormatABC(object? name)`                     |
+| `{first} {last} {first}` | `FormatABC(object? first, object? last)`      |
+| `{class}`                | `FormatABC(object? @class)`                   |
+
+- Format items follow the .NET [composite formatting](https://learn.microsoft.com/en-us/dotnet/standard/base-types/composite-formatting) syntax `{argument[,alignment][:formatString]}`.
+  Alignment and format string are passed to `string.Format` unchanged, e.g. `{0,-8}`, `{timestamp:HH:mm}` or `{amount , 10 :N2}`.
+- `{{` and `}}` are escaped braces. `{{name}}` is no format item, `{{{name}}}` is the format item `{name}` surrounded by braces.
+- Numbered items get one parameter for each index from `0` to the highest index used, even if an index in between is missing.
+  The highest supported index is `255` (see [DarpResX007](#darpresx007---format-item-index-out-of-range)).
+- Named items use C# identifier names, including Unicode names such as `año`. Each name gets one parameter, in order of first appearance.
+  Keywords such as `{class}` are escaped in the generated parameter (`@class`), not in the resource template.
+- Parameters are defined by the default resource file. Translations can use the same names in any order;
+  a name unknown to the default resource is left untouched and causes a `FormatException` when formatting.
+- Numbered and named items cannot be mixed in a single value (see [DarpResX006](#darpresx006---mixed-format-argument-styles)).
+
 ### Public
 
 You might need to use the resources outside the project the `.resx` file is located in.
@@ -262,3 +311,17 @@ This warning occurs, when the source generator has found multiple related resour
 Note: This warning will not occur, if a key is present in a translation but not in the default resource file.
 
 To fix this warning, add a translation in the language specific resource file.
+
+### DarpResX006 - Mixed format argument styles
+
+This warning occurs, when a value uses numbered and named format items at the same time, e.g. `{0} {name}`.
+The property and the key are still generated, but there will be no `FormatABC` method for this entry.
+
+To fix this warning, use either numbered or named format items in the value.
+
+### DarpResX007 - Format item index out of range
+
+This warning occurs, when a value uses a numbered format item with an index above `255`, e.g. `{256}`.
+The property and the key are still generated, but there will be no `FormatABC` method for this entry.
+
+To fix this warning, use smaller indices or named format items.
