@@ -23,6 +23,8 @@ using Microsoft.CodeAnalysis.Text;
 [Generator]
 internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
 {
+    private const string AdditionalFilesMetadataPrefix = "build_metadata.AdditionalFiles";
+
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -48,13 +50,17 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
                     return CreateResourceInformation(optionsProvider, resourceFile, compilationInfo);
                 }
             );
-        IncrementalValueProvider<ImmutableArray<ResourceInformation>> allFilesSource =
-            resourceFilesToGenerateSource.Collect();
+        IncrementalValueProvider<ImmutableArray<ResourceInformation>> allFilesSource = resourceFilesToGenerateSource
+            .Collect()
+            .Select(static (resources, _) => DeduplicateByPath(resources));
+        IncrementalValuesProvider<ResourceInformation> uniqueResourceFilesToGenerateSource = allFilesSource.SelectMany(
+            static (resources, _) => resources
+        );
         IncrementalValueProvider<ImmutableDictionary<ResourceInformation, string>> renameMapping = allFilesSource
             .Select(static (values, _) => CreateNamePrefixMapping(values))
             .WithComparer(ImmutableDictionaryEqualityComparer<ResourceInformation, string>.Instance);
         IncrementalValuesProvider<ResourceCollection> resourceFilesToGenerateSourceWithNames =
-            resourceFilesToGenerateSource
+            uniqueResourceFilesToGenerateSource
                 .Combine(renameMapping)
                 .Combine(allFilesSource)
                 .Where(static values =>
@@ -114,6 +120,12 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
         );
     }
 
+    private static ImmutableArray<ResourceInformation> DeduplicateByPath(ImmutableArray<ResourceInformation> resources)
+    {
+        var paths = new HashSet<string>(StringComparer.Ordinal);
+        return resources.Where(resource => paths.Add(resource.ResourceFile.Path)).ToImmutableArray();
+    }
+
     private static ResourceInformation[] CreateResourceInformation(
         AnalyzerConfigOptionsProvider optionsProvider,
         AdditionalText resourceFile,
@@ -123,7 +135,7 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
         AnalyzerConfigOptions globalOptions = optionsProvider.GlobalOptions;
         AnalyzerConfigOptions options = optionsProvider.GetOptions(resourceFile);
 
-        if (!(options.GetBoolValue("build_metadata.EmbeddedResource.GenerateSource") ?? true))
+        if (!(options.GetBoolValue($"{AdditionalFilesMetadataPrefix}.GenerateSource") ?? true))
         {
             // Source generation is explicitly disabled for this resource file
             return [];
@@ -133,10 +145,10 @@ internal sealed class CSharpResxSourceGenerator : IIncrementalGenerator
         var emitDebugInformation =
             globalOptions.GetBoolValue("build_property.ResxSourceGenerator_EmitDebugInformation") ?? false;
 
-        var relativeDir = options.GetValue("build_metadata.EmbeddedResource.RelativeDir");
-        var className = options.GetValue("build_metadata.EmbeddedResource.ClassName");
-        var emitFormatMethods = options.GetBoolValue("build_metadata.EmbeddedResource.EmitFormatMethods") ?? false;
-        var publicResource = options.GetBoolValue("build_metadata.EmbeddedResource.Public") ?? false;
+        var relativeDir = options.GetValue($"{AdditionalFilesMetadataPrefix}.RelativeDir");
+        var className = options.GetValue($"{AdditionalFilesMetadataPrefix}.ClassName");
+        var emitFormatMethods = options.GetBoolValue($"{AdditionalFilesMetadataPrefix}.EmitFormatMethods") ?? false;
+        var publicResource = options.GetBoolValue($"{AdditionalFilesMetadataPrefix}.Public") ?? false;
 
         var resourcePathName = Path.GetFileNameWithoutExtension(resourceFile.Path);
         var computedResourceName = resourcePathName;

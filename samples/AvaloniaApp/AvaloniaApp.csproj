@@ -25,6 +25,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" VersionOverride="4.11.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Features" VersionOverride="4.11.0" />
   </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug' and '$(AVALONIA_TOOLS_LICENSE_KEY)' != ''">
+    <AvaloniaUILicenseKey Include="$(AVALONIA_TOOLS_LICENSE_KEY)" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport.HotReload" />
+  </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
@@ -34,6 +38,7 @@
     <ProjectReference
       Include="..\..\src\Darp.Utils.ResxSourceGenerator\Darp.Utils.ResxSourceGenerator.csproj"
       OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
     />
     <EmbeddedResource Update="Localization\Resources.resx" EmitFormatMethods="true" Public="true" />
   </ItemGroup>
