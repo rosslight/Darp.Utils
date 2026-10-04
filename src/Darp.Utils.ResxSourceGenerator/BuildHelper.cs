@@ -458,7 +458,18 @@ internal static class BuildHelper
         var format = usingNamedArgs
             ? $"{classReference}.{formatHelperName}(this.@{propertyIdentifier}, new[] {{ {argumentNames} }})"
             : $"this.@{propertyIdentifier}";
-        var parameterNames = arguments.Select(x => usingNamedArgs ? x : "p" + x).ToList();
+        var parameterNames = new List<string>();
+        var usedParameterNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var argument in arguments)
+        {
+            // C# ignores formatting characters in identifiers; resource names remain ordinal strings.
+            var parameterName = usingNamedArgs
+                ? new string(argument.Where(c => char.GetUnicodeCategory(c) != UnicodeCategory.Format).ToArray())
+                : "p" + argument;
+            while (!usedParameterNames.Add(parameterName))
+                parameterName += "_";
+            parameterNames.Add(parameterName);
+        }
         var parameters = parameterNames.Select(EscapeKeyword).ToList();
         var methodParameters = string.Join(", ", parameters.Select(x => "object? " + x));
         var paramDocs = string.Join(

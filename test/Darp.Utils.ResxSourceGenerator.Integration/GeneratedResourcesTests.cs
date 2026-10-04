@@ -7,6 +7,20 @@ using Xunit;
 public sealed class GeneratedResourcesTests
 {
     [Fact]
+    public void FormatMethods_ShouldKeepDistinctNamesWithEquivalentCSharpIdentifiers()
+    {
+        var resources = new Resources { Culture = CultureInfo.InvariantCulture };
+
+        resources
+            .FormatIdentifierEquivalence(ab: "first", ab_: "second", ab__: "third", @class: "keyword")
+            .ShouldBe("first / second / third / keyword / second");
+        resources.Culture = CultureInfo.GetCultureInfo("de-DE");
+        resources
+            .FormatIdentifierEquivalence("first", "second", "third", "keyword")
+            .ShouldBe("keyword / third / second / first");
+    }
+
+    [Fact]
     public void FormatWithFormatSpecifiers_ShouldFormatCorrectly()
     {
         var resources = new Resources { Culture = CultureInfo.InvariantCulture };

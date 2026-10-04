@@ -262,6 +262,8 @@ Both remain available when a formatting diagnostic prevents method generation.
 - Numbered items get one parameter for each index from `0` to the highest index used, even if an index in between is missing.
   The highest supported index is `255` (see [DarpResX007](#darpresx007---format-item-index-out-of-range)).
 - Named items use C# identifier names, including Unicode names such as `año`. Each name gets one parameter, in order of first appearance.
+  Names are matched exactly, including in translations. Parameter names omit Unicode formatting characters that C# ignores;
+  if this creates a collision, underscores are appended until the parameter name is unique. Distinct placeholder names keep distinct values.
   Keywords such as `{class}` are escaped in the generated parameter (`@class`), not in the resource template.
 - Parameters are defined by the default resource file. Translations can use the same names in any order;
   a name unknown to the default resource is left untouched and causes a `FormatException` when formatting.
