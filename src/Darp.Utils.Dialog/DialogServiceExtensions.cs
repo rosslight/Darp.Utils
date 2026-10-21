@@ -122,7 +122,7 @@ public static class DialogServiceExtensions
             .CreateContentDialog(title, dialogData)
             .SetDefaultButton(ContentDialogButton.Primary)
             .SetCloseButton("Cancel")
-            .SetPrimaryButton("Ok", dialogData.WhenPropertyChanged(x => x.HasErrors, x => !x));
+            .SetPrimaryButton("Ok", dialogData.WhenPropertyChanged(x => x.IsInputValid));
     }
 
     /// <summary>
