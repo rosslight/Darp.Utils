@@ -1,6 +1,7 @@
 namespace Darp.Utils.Dialog.FluentAvalonia.Tests;
 
 using System.Collections;
+using System.ComponentModel.DataAnnotations;
 using System.Reactive.Subjects;
 using System.Reflection;
 using Avalonia;
@@ -398,6 +399,64 @@ public class AvaloniaDialogServiceTests
         // Assert
         isSelectableTextBlock.ShouldBe(isSelectable);
         result.Result.ShouldBe(ContentDialogResult.None);
+        window.Close();
+    }
+
+    [AvaloniaFact(Timeout = 5000)]
+    public async Task InputDialog_ShouldShowOnlyCallerErrors_OnceInputWasEdited()
+    {
+        // Arrange
+        var window = new Window();
+        IDialogService service = new AvaloniaDialogService(_ => window).WithDialogRoot<Window>();
+        var builder =
+            (FluentAvaloniaContentDialogBuilder<InputDialogViewModel>)
+                service
+                    .CreateInputDialog("Title", "Message")
+                    .ConfigureInput(
+                        "watermark",
+                        isPassword: false,
+                        input =>
+                            input switch
+                            {
+                                null or "" => new ValidationResult("Enter a name"),
+                                "reserved" => new ValidationResult("The name is reserved"),
+                                _ => ValidationResult.Success,
+                            }
+                    );
+        var states = new List<string>();
+
+        // Act
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        builder.Dialog.Opened += (sender, _) =>
+        {
+            TextBox inputBox = sender.GetFirstDescendant<TextBox>("InputBox");
+            states.Add(GetState());
+            foreach (var text in (string[])["reserved", "", "valid", "reserved"])
+            {
+                inputBox.Text = text;
+                states.Add(GetState());
+            }
+            builder.Dialog.Hide();
+
+            string GetState()
+            {
+                Dispatcher.UIThread.RunJobs();
+                IEnumerable<object> errors = DataValidationErrors.GetErrors(inputBox) ?? [];
+                var primaryButton = builder.Dialog.IsPrimaryButtonEnabled ? "enabled" : "disabled";
+                return $"[{string.Join(", ", errors)}] {primaryButton}";
+            }
+        };
+        await builder.ShowAsync();
+
+        // Assert
+        states.ShouldBe([
+            "[] disabled",
+            "[The name is reserved] disabled",
+            "[Enter a name] disabled",
+            "[] enabled",
+            "[The name is reserved] disabled",
+        ]);
         window.Close();
     }
 }

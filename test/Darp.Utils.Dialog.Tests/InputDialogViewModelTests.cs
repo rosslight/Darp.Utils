@@ -23,4 +23,20 @@ public class InputDialogViewModelTests
         result.Should().BeFalse();
         resultData.Should().BeNull();
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void Input_ShouldNotReportOwnError_WhenClearedWithoutValidation(string input)
+    {
+        // Arrange
+        var model = new InputDialogViewModel { Input = "value" };
+
+        // Act
+        model.Input = input;
+
+        // Assert
+        model.HasErrors.Should().BeFalse();
+        model.TryGetResultData(out _).Should().BeFalse();
+    }
 }
