@@ -3,9 +3,8 @@ namespace Darp.Utils.Dialog.DialogData;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.ComponentModel.__Internals;
 using CommunityToolkit.Mvvm.Input;
-using static Helper.Strings;
+using Darp.MvvmValidator;
 
 /// <summary> Current step of the <see cref="UsernamePasswordViewModel"/> dialog </summary>
 public enum UsernamePasswordStep
@@ -26,7 +25,7 @@ public enum UsernamePasswordStep
 public sealed record UsernamePasswordData(string Username, string Password);
 
 /// <summary> Wraps username password dialog information </summary>
-public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDialogData<UsernamePasswordData>
+public sealed partial class UsernamePasswordViewModel : ValidatingObservableObject, IDialogData<UsernamePasswordData>
 {
     /// <summary> The delegate to validate a password </summary>
     /// <param name="username"> The username </param>
@@ -40,11 +39,6 @@ public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDi
     );
 
     /// <summary> Initialize a new instance </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(UsernamePasswordViewModel))]
-#pragma warning disable CS0618 // Type or member is obsolete
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(__ObservableValidatorExtensions))]
-#pragma warning restore CS0618 // Type or member is obsolete
     public UsernamePasswordViewModel()
     {
         ErrorsChanged += (_, _) => OnPropertyChanged(nameof(IsCurrentStepValid));
@@ -60,30 +54,20 @@ public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDi
     public partial string? EnterPasswordMessage { get; set; }
 
     /// <summary> The username </summary>
+    [ObservableProperty]
     [Required]
+    [NotifyPropertyChangedFor(nameof(Password))] // Revalidates Password, which clears a failed check
     [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidateUsername))]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-    public string? Username
-    {
-        get;
-        set => SetProperty(ref field, value, validate: true);
-    }
+    public partial string? Username { get; set; }
 
     /// <summary> The password </summary>
+    [ObservableProperty]
     [Required]
     [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidatePassword))]
-    public string? Password
-    {
-        get;
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-        set => SetProperty(ref field, value, validate: true);
-    }
+    public partial string? Password { get; set; }
 
     /// <summary> An optional function which is used to check the validity of the password </summary>
     public ValidatePasswordAsync? CheckHandler { get; set; }
-
-    /// <summary> The message </summary>
-    public string? PasswordValidationError { get; private set; }
 
     /// <summary> The current step when entering a password </summary>
     public UsernamePasswordStep Step
@@ -154,13 +138,15 @@ public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDi
             case UsernamePasswordStep.RequestPassword:
                 if (!IsCurrentStepValid || string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
                     return false;
+                var password = Password;
                 if (
                     CheckHandler is not null
-                    && !await CheckHandler(Username, Password, cancellationToken).ConfigureAwait(true)
+                    && !await CheckHandler(Username, password, cancellationToken).ConfigureAwait(true)
                 )
                 {
-                    PasswordValidationError = "Username or password are invalid";
-                    OnPropertyChanged(nameof(PasswordValidationError));
+                    // Skip the error if the password was edited while the check ran
+                    if (Password == password)
+                        SetErrors(nameof(Password), [new ValidationResult("Username or password are invalid")]);
                     return false;
                 }
                 Step = UsernamePasswordStep.Done;
@@ -181,13 +167,6 @@ public sealed partial class UsernamePasswordViewModel : ObservableValidator, IDi
         }
         resultData = new UsernamePasswordData(Username, Password);
         return true;
-    }
-
-    /// <summary> Clears the <see cref="PasswordValidationError"/> </summary>
-    public void ClearPasswordValidationError()
-    {
-        PasswordValidationError = null;
-        OnPropertyChanged(nameof(PasswordValidationError));
     }
 
     /// <summary> Validate the username input. Necessary for the CustomValidation attribute </summary>

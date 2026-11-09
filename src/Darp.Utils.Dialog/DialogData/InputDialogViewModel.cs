@@ -3,16 +3,11 @@ namespace Darp.Utils.Dialog.DialogData;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
-using static Helper.Strings;
+using Darp.MvvmValidator;
 
 /// <summary> Data for InputDialogs </summary>
-public sealed class InputDialogViewModel : ObservableValidator, IDialogData<string>
+public sealed partial class InputDialogViewModel : ValidatingObservableObject, IDialogData<string>
 {
-    /// <summary> Initialize a new instance </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(InputDialogViewModel))]
-    public InputDialogViewModel() { }
-
     /// <summary> The message to show on top of the <see cref="Input"/> Field </summary>
     public string? Message { get; init; }
 
@@ -23,17 +18,10 @@ public sealed class InputDialogViewModel : ObservableValidator, IDialogData<stri
     /// The input which can be set in the dialog. It is validated on every change, but not before the first one,
     /// so an untouched dialog shows no error
     /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsInputValid))]
     [CustomValidation(typeof(InputDialogViewModel), nameof(ValidateInput))]
-    public string? Input
-    {
-        get;
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = DynamicDependencyAddedForMethod)]
-        set
-        {
-            if (SetProperty(ref field, value, validate: true))
-                OnPropertyChanged(nameof(IsInputValid));
-        }
-    }
+    public partial string? Input { get; set; }
 
     /// <summary> True, if the <see cref="Input"/> is not empty or whitespace and passed validation </summary>
     [MemberNotNullWhen(true, nameof(Input))]

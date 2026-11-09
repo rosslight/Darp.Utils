@@ -18,6 +18,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial string Text { get; set; } = "// Enter your C# here!";
 
+    public SignUpViewModel SignUp { get; } = new();
+
     public MainWindowViewModel(IDialogService dialogService)
     {
         _dialogService = dialogService.WithDialogRoot<MainWindowViewModel>();
@@ -49,6 +51,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             await Task.Delay(2000, dialog.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
+    }
+
+    [RelayCommand]
+    private async Task OpenInputAsync(CancellationToken cancellationToken)
+    {
+        ContentDialogResult<InputDialogViewModel> result = await _dialogService
+            .CreateInputDialog("Rename", "Enter a new name")
+            .ConfigureInput(
+                watermark: "Name",
+                validateInput: input =>
+                    input is { Length: > 10 }
+                        ? new ValidationResult("The name must be at most 10 characters long")
+                        : null
+            )
+            .ShowAsync(cancellationToken);
+        if (!result.IsPrimary || !result.TryGetResultData(out string? name))
+            return;
+        await _dialogService.ShowMessageBoxDialogAsync("Renamed", name, cancellationToken: cancellationToken);
     }
 
     [RelayCommand]

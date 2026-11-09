@@ -36,6 +36,18 @@
         </StackPanel>
         <Button Content="Open username password dialog"
                 Command="{CompiledBinding OpenUsernamePasswordCommand}" MinWidth="100"/>
+        <Button Content="Open input dialog"
+                Command="{CompiledBinding OpenInputCommand}" MinWidth="100"/>
+        <StackPanel Spacing="4" Margin="0,8" MaxWidth="320" HorizontalAlignment="Left"
+                    DataContext="{CompiledBinding SignUp}" x:DataType="vm:SignUpViewModel">
+            <TextBlock Text="Sign up" FontWeight="SemiBold"/>
+            <TextBox Name="UserNameBox" Text="{CompiledBinding UserName}" PlaceholderText="User name"/>
+            <TextBox Name="EmailBox" Text="{CompiledBinding Email}" PlaceholderText="Email"/>
+            <TextBox Name="PasswordBox" Text="{CompiledBinding Password}" PlaceholderText="Password" PasswordChar="*"/>
+            <TextBox Name="ConfirmPasswordBox" Text="{CompiledBinding ConfirmPassword}" PlaceholderText="Repeat password" PasswordChar="*"/>
+            <Button Name="SubmitButton" Content="Sign up" Command="{CompiledBinding SubmitCommand}"/>
+            <TextBlock Name="SignUpResult" Text="{CompiledBinding Result}"/>
+        </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Button Content="Toggle Theme"
                     Click="ToggleTheme_OnClick" MinWidth="100"/>
