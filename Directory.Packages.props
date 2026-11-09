@@ -18,6 +18,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
+    <PackageVersion Include="Darp.CommunityToolkit.MvvmValidator" Version="0.1.1" />
     <PackageVersion Include="FluentAssertions" Version="[7.1.0]" />
     <PackageVersion Include="FluentAssertions.Reactive" Version="0.2.0" />
     <PackageVersion Include="FluentAvaloniaUI" Version="3.0.0" />
