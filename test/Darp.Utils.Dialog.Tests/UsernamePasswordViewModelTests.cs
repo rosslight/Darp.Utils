@@ -112,4 +112,28 @@ public class UsernamePasswordViewModelTests
         shouldClose.Should().BeFalse();
         model.GetErrors(nameof(UsernamePasswordViewModel.Password)).Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Username_ShouldClearCheckError_WhenEdited()
+    {
+        // Arrange
+        var model = new UsernamePasswordViewModel
+        {
+            CheckHandler = (_, _, _) => Task.FromResult(false),
+            Username = "usrname",
+        };
+        await model.RequestNextStepAsync(CancellationToken.None);
+        model.Password = "password";
+        await model.RequestNextStepAsync(CancellationToken.None);
+        model.RequestUsernameStepCommand.Execute(null);
+
+        // Act
+        model.Username = "username";
+        await model.RequestNextStepAsync(CancellationToken.None);
+
+        // Assert
+        model.Step.Should().Be(UsernamePasswordStep.RequestPassword);
+        model.GetErrors(nameof(UsernamePasswordViewModel.Password)).Should().BeEmpty();
+        model.IsCurrentStepValid.Should().BeTrue();
+    }
 }

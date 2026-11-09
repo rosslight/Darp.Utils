@@ -59,6 +59,9 @@ public sealed partial class UsernamePasswordViewModel : ValidatingObservableObje
     [CustomValidation(typeof(UsernamePasswordViewModel), nameof(ValidateUsername))]
     public partial string? Username { get; set; }
 
+    // A failed check is stored as a password error, so new credentials need a fresh validation
+    partial void OnUsernameChanged(string? value) => ValidateProperty(nameof(Password));
+
     /// <summary> The password </summary>
     [ObservableProperty]
     [Required]
