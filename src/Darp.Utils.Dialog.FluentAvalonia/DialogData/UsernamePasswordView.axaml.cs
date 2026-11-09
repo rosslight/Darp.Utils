@@ -2,7 +2,6 @@ namespace Darp.Utils.Dialog.FluentAvalonia.DialogData;
 
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Darp.Utils.Dialog.DialogData;
 
 /// <summary> A view for <see cref="InputDialogViewModel"/> </summary>
@@ -18,11 +17,6 @@ public partial class UsernamePasswordView : UserControl
     protected override void OnLoaded(RoutedEventArgs e)
     {
         Dispatcher.Post(() => UsernameTextBox.Focus());
-        PasswordTextBox.TextChanged += (sender, args) =>
-        {
-            if (DataContext is UsernamePasswordViewModel vm)
-                vm.ClearPasswordValidationError();
-        };
         base.OnLoaded(e);
     }
 

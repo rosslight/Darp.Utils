@@ -68,9 +68,6 @@ public sealed partial class UsernamePasswordViewModel : ValidatingObservableObje
     /// <summary> An optional function which is used to check the validity of the password </summary>
     public ValidatePasswordAsync? CheckHandler { get; set; }
 
-    /// <summary> The message </summary>
-    public string? PasswordValidationError { get; private set; }
-
     /// <summary> The current step when entering a password </summary>
     public UsernamePasswordStep Step
     {
@@ -140,13 +137,15 @@ public sealed partial class UsernamePasswordViewModel : ValidatingObservableObje
             case UsernamePasswordStep.RequestPassword:
                 if (!IsCurrentStepValid || string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
                     return false;
+                var password = Password;
                 if (
                     CheckHandler is not null
-                    && !await CheckHandler(Username, Password, cancellationToken).ConfigureAwait(true)
+                    && !await CheckHandler(Username, password, cancellationToken).ConfigureAwait(true)
                 )
                 {
-                    PasswordValidationError = "Username or password are invalid";
-                    OnPropertyChanged(nameof(PasswordValidationError));
+                    // Skip the error if the password was edited while the check ran
+                    if (Password == password)
+                        SetErrors(nameof(Password), [new ValidationResult("Username or password are invalid")]);
                     return false;
                 }
                 Step = UsernamePasswordStep.Done;
@@ -167,13 +166,6 @@ public sealed partial class UsernamePasswordViewModel : ValidatingObservableObje
         }
         resultData = new UsernamePasswordData(Username, Password);
         return true;
-    }
-
-    /// <summary> Clears the <see cref="PasswordValidationError"/> </summary>
-    public void ClearPasswordValidationError()
-    {
-        PasswordValidationError = null;
-        OnPropertyChanged(nameof(PasswordValidationError));
     }
 
     /// <summary> Validate the username input. Necessary for the CustomValidation attribute </summary>
