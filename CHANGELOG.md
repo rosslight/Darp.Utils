@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0](https://github.com/rosslight/Darp.Utils/compare/v2.1.3...v2.2.0) (2026-11-11)
+
+
+### Features
+
+* validate dialogs without reflection ([#60](https://github.com/rosslight/Darp.Utils/issues/60)) ([a4680a7](https://github.com/rosslight/Darp.Utils/commit/a4680a72a93f4438ff1560043b6db5ba3fe95d3a))
+
+
+### Bug Fixes
+
+* show no error in an untouched input dialog ([#54](https://github.com/rosslight/Darp.Utils/issues/54)) ([e601276](https://github.com/rosslight/Darp.Utils/commit/e6012769f634e2e174e5be232f4c840503eeb0a0))
+* support composite format items in generated resources ([#42](https://github.com/rosslight/Darp.Utils/issues/42)) ([35dfa57](https://github.com/rosslight/Darp.Utils/commit/35dfa57870bee8b979b6ed9c28c6844a6c7fcb07))
+
 ## [2.1.3](https://github.com/rosslight/Darp.Utils/compare/v2.1.2...v2.1.3) (2026-09-06)
 
 
