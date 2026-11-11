@@ -1,6 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "changelog-path": "CHANGELOG.md",
+  "draft": true,
+  "force-tag-creation": true,
   "packages": {
     ".": {
       "include-v-in-tag": true,

@@ -28,10 +28,16 @@ jobs:
       - release-please
     if: needs.release-please.outputs.release_created
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write   # required to attach the packages to the release and publish it
+      id-token: write   # required for NuGet trusted publishing
+    env:
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0
 
       - uses: actions/cache@v6
@@ -57,7 +63,7 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build --no-restore
 
-      - name: Pack and push to nuget.org
+      - name: Pack
         env:
           SKIP_PROJECTS: "Darp.Utils.Messaging.Generator"
         run: |
@@ -71,15 +77,29 @@ jobs:
                 echo "Skipping project $project_name"
                 continue
             fi
-            dotnet pack $file_name --configuration Release --no-restore
-          done
-          for pkg_name in ./src/**/bin/Release/*.nupkg; do
-            dotnet nuget push $pkg_name --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+            dotnet pack "$file_name" --configuration Release --no-restore
           done
 
-      - name: Attach .nupkg to GitHub Release
+      # The short-lived API key is valid for one hour, so request it right before pushing
+      - name: NuGet login
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to nuget.org
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: |
+          for pkg_name in ./src/**/bin/Release/*.nupkg; do
+            dotnet nuget push "$pkg_name" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          done
+
+      - name: Attach .nupkg to GitHub Release and publish it
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ needs.release-please.outputs.tag_name }}" ./src/**/bin/Release/*.nupkg \
+          gh release upload "$RELEASE_TAG" ./src/**/bin/Release/*.nupkg --clobber \
+            --repo "${{ github.repository }}"
+          gh release edit "$RELEASE_TAG" --draft=false \
             --repo "${{ github.repository }}"
